@@ -476,6 +476,47 @@ CREATE TRIGGER on_booking_completed
   FOR EACH ROW
   EXECUTE FUNCTION credit_user_rewards();
 
+-- ── Automated Reputation & Notifications Trigger ───────────────
+CREATE OR REPLACE FUNCTION sync_agent_rating()
+RETURNS TRIGGER AS $$
+DECLARE
+  v_avg_rating NUMERIC(3,2);
+BEGIN
+  -- Logic: Fire only when rating or feedback is provided/updated
+  IF (NEW.agent_rating IS DISTINCT FROM OLD.agent_rating) AND NEW.agent_rating IS NOT NULL THEN
+    
+    -- 1. Recalculate average for this agent
+    SELECT ROUND(AVG(agent_rating)::numeric, 2)
+    INTO v_avg_rating
+    FROM public.bookings
+    WHERE agent_id = NEW.agent_id
+    AND agent_rating IS NOT NULL;
+
+    -- 2. Update Agent Profile
+    UPDATE public.profiles
+    SET rating = COALESCE(v_avg_rating, 5.00)
+    WHERE id = NEW.agent_id;
+
+    -- 3. Send Notification to Agent
+    INSERT INTO public.notifications (target_user, target_role, type, title, body)
+    VALUES (
+      NEW.agent_id,
+      'agent',
+      'info',
+      'New Review! ⭐',
+      'A client just rated your service ' || NEW.agent_rating || ' stars. Keep up the clean work!'
+    );
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+DROP TRIGGER IF EXISTS on_rating_submitted ON public.bookings;
+CREATE TRIGGER on_rating_submitted
+  AFTER UPDATE OF agent_rating ON public.bookings
+  FOR EACH ROW
+  EXECUTE FUNCTION sync_agent_rating();
+
 -- ═══════════════════════════════════════════════════════════════
 -- Master Configuration Complete!
 -- ═══════════════════════════════════════════════════════════════

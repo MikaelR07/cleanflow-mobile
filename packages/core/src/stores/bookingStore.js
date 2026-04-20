@@ -312,11 +312,8 @@ export const useBookingStore = create((set, get) => ({
 
   /* ── Agent Rating ────────────────────────────────────────── */
   submitAgentRating: async (bookingId, rating, feedback = null) => {
-    const { bookings } = get();
-    const targeted = bookings.find(b => b.id === bookingId);
-    if (!targeted || !targeted.agentId) return;
-
     // 1. Update the booking itself
+    // The database trigger 'on_rating_submitted' handles profile updates & notifications
     const { error: bookingError } = await supabase
       .from('bookings')
       .update({ 
@@ -326,27 +323,12 @@ export const useBookingStore = create((set, get) => ({
       })
       .eq('id', bookingId);
 
-    if (bookingError) throw bookingError;
-
-    // 2. Recalculate Agent's Total Average
-    const { data: agentBookings, error: fetchError } = await supabase
-      .from('bookings')
-      .select('agent_rating')
-      .eq('agent_id', targeted.agentId)
-      .not('agent_rating', 'is', null);
-
-    if (!fetchError && agentBookings.length > 0) {
-      const sum = agentBookings.reduce((acc, b) => acc + b.agent_rating, 0);
-      const avg = sum / agentBookings.length;
-
-      // 3. Update Agent's Profile
-      await supabase
-        .from('profiles')
-        .update({ rating: parseFloat(avg.toFixed(2)) })
-        .eq('id', targeted.agentId);
+    if (bookingError) {
+      console.error('[CleanFlow Logistics] Submit Rating Error:', bookingError);
+      throw bookingError;
     }
 
-    // 4. Update local state
+    // 2. Update local state
     set((state) => ({
       bookings: state.bookings.map((b) =>
         b.id === bookingId ? { ...b, agentRating: rating, agentFeedback: feedback } : b
