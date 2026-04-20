@@ -23,10 +23,24 @@ export default function LandingPage() {
         agent: '5174',
         business: '5175'
       };
+      
+      // Log a warning in dev if the production keys aren't defined in the environment
+      const prodKey = `VITE_URL_${app.toUpperCase()}`;
+      if (!import.meta.env[prodKey]) {
+        console.warn(`[CleanFlow] Production URL for ${app} is missing (${prodKey}). Links will use localhost in DEV.`);
+      }
+
       return `http://localhost:${ports[app]}`;
     }
-    // Production Netlify URLs
-    return import.meta.env[`VITE_URL_${app.toUpperCase()}`] || '#';
+
+    // Production Fallbacks (Safe-defaults if Netlify env vars are missing)
+    const fallbacks = {
+      client: 'https://cleanflow-client.netlify.app',
+      agent: 'https://cleanflow-agent.netlify.app',
+      business: 'https://cleanflow-business.netlify.app'
+    };
+
+    return import.meta.env[`VITE_URL_${app.toUpperCase()}`] || fallbacks[app] || '#';
   };
 
   const portals = [
