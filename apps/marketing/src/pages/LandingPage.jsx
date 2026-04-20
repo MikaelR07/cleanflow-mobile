@@ -16,13 +16,26 @@ export default function LandingPage() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  const getPortalLink = (app) => {
+    if (import.meta.env.DEV) {
+      const ports = {
+        client: '5173',
+        agent: '5174',
+        business: '5175'
+      };
+      return `http://localhost:${ports[app]}`;
+    }
+    // Production Netlify URLs
+    return import.meta.env[`VITE_URL_${app.toUpperCase()}`] || '#';
+  };
+
   const portals = [
     {
       title: "CleanFlow Resident",
       description: "Manage household waste with a tap. Schedule pickups, track rewards, and reduce your carbon footprint effortlessly.",
       icon: User,
       color: "from-emerald-500 to-teal-600",
-      link: "https://cleanflow-client.vercel.app",
+      link: getPortalLink('client'),
       features: ["Smart Scheduling", "Reward Tokens", "Impact Analytics"]
     },
     {
@@ -30,7 +43,7 @@ export default function LandingPage() {
       description: "The professional hub for waste collectors. Optimize logistics, earn bounties, and streamline your operations.",
       icon: Truck,
       color: "from-blue-500 to-indigo-600",
-      link: "https://cleanflow-agent.vercel.app",
+      link: getPortalLink('agent'),
       features: ["Live Job Board", "Route Optimization", "Digital Bounty System"]
     },
     {
@@ -38,7 +51,7 @@ export default function LandingPage() {
       description: "Industrial-grade recycling marketplace. Bulk trading, AI market intelligence, and verified compliance for companies.",
       icon: Building2,
       color: "from-indigo-500 to-purple-600",
-      link: "https://cleanflow-business.vercel.app",
+      link: getPortalLink('business'),
       features: ["B2B Marketplace", "AI Market Advisor", "Verification Center"]
     }
   ];

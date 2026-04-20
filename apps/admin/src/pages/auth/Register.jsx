@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Recycle, User, Phone, Lock, Hash, MapPin, Bike, Loader2, ArrowLeft } from 'lucide-react';
+import { Recycle, User, Phone, Lock, Hash, MapPin, Bike, Loader2, ArrowLeft, ShieldCheck } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuthStore, ROLES } from '@cleanflow/core';
 import LocationSelector from '@cleanflow/ui/components/LocationSelector';
@@ -14,7 +14,8 @@ export default function Register() {
     role: ROLES.ADMIN,
     location: null,
     idNumber: '',
-    vehicle: ''
+    vehicle: '',
+    accessKey: ''
   });
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
@@ -46,6 +47,13 @@ export default function Register() {
 
     if (formData.role === ROLES.AGENT && !formData.idNumber) {
       toast.error('Missing Agent Details', { description: 'Agents must provide a National ID number.' });
+      return;
+    }
+
+    // Security Gate: Admin Access Key Validation
+    const masterKey = import.meta.env.VITE_ADMIN_REGISTRATION_KEY;
+    if (masterKey && formData.accessKey !== masterKey) {
+      toast.error('Security Violation', { description: 'The provided Admin Access Key is incorrect. Unauthorized provisioning blocked.' });
       return;
     }
 
@@ -126,6 +134,24 @@ export default function Register() {
               value={formData.location} 
               onChange={(newLoc) => setFormData(prev => ({ ...prev, location: newLoc }))} 
             />
+          </div>
+
+          {/* Security Gate Field */}
+          <div className="pt-4 border-t border-slate-100 dark:border-slate-800">
+            <label className="block text-xs font-black text-rose-500 mb-1.5 uppercase tracking-widest">Admin Access Key</label>
+            <div className="relative">
+              <ShieldCheck className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-rose-500/50" />
+              <input 
+                type="password" 
+                name="accessKey" 
+                value={formData.accessKey} 
+                onChange={handleInputChange} 
+                placeholder="Required Secret Key" 
+                className="w-full pl-11 pr-4 py-3 bg-rose-500/5 dark:bg-rose-500/10 border border-rose-500/20 rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-rose-500/50 text-sm font-mono tracking-widest" 
+                required 
+              />
+            </div>
+            <p className="text-[10px] text-slate-500 mt-2 font-bold italic tracking-tight">Only authorized personnel can provision administrator accounts.</p>
           </div>
 
           <button
