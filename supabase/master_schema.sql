@@ -166,7 +166,9 @@ CREATE POLICY "Users and Agents view relevant bookings" ON public.bookings FOR S
 );
 CREATE POLICY "Users create bookings" ON public.bookings FOR INSERT WITH CHECK (auth.uid() = user_id);
 CREATE POLICY "Parties update bookings" ON public.bookings FOR UPDATE USING (
-  auth.uid() = user_id OR auth.uid() = agent_id OR 
+  (status = 'pending' AND agent_id IS NULL) OR
+  auth.uid() = user_id OR 
+  auth.uid() = agent_id OR 
   public.get_my_role() = 'admin'
 );
 

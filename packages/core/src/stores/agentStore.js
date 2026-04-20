@@ -272,19 +272,25 @@ export const useAgentStore = create((set, get) => ({
       const { userId, profile } = useAuthStore.getState();
       if (!userId) return false;
 
-      // 1. Update Booking
-      const { error: updateError } = await supabase
+      // 1. Update Booking with exact count verification
+      const { error: updateError, count } = await supabase
         .from('bookings')
         .update({ 
           agent_id: userId, 
           status: 'confirmed',
           updated_at: new Date().toISOString()
-        })
-        .eq('id', jobId);
+        }, { count: 'exact' })
+        .eq('id', jobId)
+        .eq('status', 'pending'); // Ensure we only claim jobs that are still pending
 
       if (updateError) {
         console.error('[CleanFlow Agent] Accept Job Error:', updateError);
         throw new Error(updateError.message || 'Failed to claim job');
+      }
+
+      if (count === 0) {
+        console.warn('[CleanFlow Agent] Claim failed: Row count is 0. Likely RLS block or race condition.');
+        throw new Error('This job was already claimed or is no longer available.');
       }
 
       // 2. Refresh State
