@@ -1,0 +1,69 @@
+@import "leaflet/dist/leaflet.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --primary: 153 100% 33%;
+    --primary-foreground: 0 0% 100%;
+  }
+
+  body {
+    @apply antialiased text-slate-900 dark:text-slate-50 transition-colors duration-300;
+    /* Native App Feel Optimizations */
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    overscroll-behavior-y: none; /* Prevents pull-to-refresh effect unless components handle it */
+    -webkit-tap-highlight-color: transparent;
+    user-select: none; /* Native apps usually disable text selection except on inputs */
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply text-slate-950 dark:text-white;
+  }
+}
+
+@layer components {
+  .card {
+    @apply bg-white dark:bg-slate-900 
+           border border-slate-200/60 dark:border-slate-800/80 
+           rounded-3xl shadow-sm hover:shadow-md 
+           transition-all duration-300;
+  }
+
+  .glass {
+    @apply bg-white/95 dark:bg-slate-900/95 backdrop-blur-md;
+  }
+
+  .btn-primary {
+    @apply bg-primary hover:bg-primary/90 text-white font-bold py-3 px-6 rounded-2xl shadow-lg shadow-primary/20 transition-all active:scale-95;
+  }
+}
+
+/* ── LEAFLET DARK MODE OVERRIDES ─────────────────────────────────── */
+.dark .leaflet-popup-content-wrapper,
+.dark .leaflet-popup-tip {
+  background-color: #0f172a !important; /* slate-900 */
+  color: #f8fafc !important; /* slate-50 */
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.dark .leaflet-popup-close-button {
+  color: #94a3b8 !important;
+}
+
+.custom-popup .leaflet-popup-content {
+  margin: 8px !important;
+}
+
+@keyframes voice-bar {
+  0%, 100% { height: 10px; opacity: 0.3; }
+  50% { height: 60px; opacity: 1; }
+}
+
+.animate-voice-bar {
+  animation: voice-bar 0.8s infinite ease-in-out;
+}

@@ -1,0 +1,22 @@
+{
+  "name": "@cleanflow/ui",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.js",
+  "exports": {
+    ".": "./src/index.js",
+    "./components/*": "./src/components/*.jsx",
+    "./src/*": "./src/*"
+  },
+  "dependencies": {
+    "@cleanflow/core": "*",
+    "leaflet": "^1.9.4",
+    "lucide-react": "^1.8.0",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "react-leaflet": "^5.0.0",
+    "sonner": "^2.0.7",
+    "tailwindcss": "^4.2.2"
+  }
+}

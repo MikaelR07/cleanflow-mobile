@@ -1,0 +1,14 @@
+{
+  "name": "@cleanflow/supabase",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.js",
+  "exports": {
+    ".": "./src/index.js",
+    "./src/*": "./src/*"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.103.3"
+  }
+}

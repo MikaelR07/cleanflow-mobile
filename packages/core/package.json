@@ -1,0 +1,20 @@
+{
+  "name": "@cleanflow/core",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.js",
+  "exports": {
+    ".": "./src/index.js",
+    "./stores/*": "./src/stores/*.js",
+    "./lib/*": "./src/lib/*.js",
+    "./data/*": "./src/data/*.js",
+    "./src/*": "./src/*"
+  },
+  "dependencies": {
+    "@cleanflow/constants": "*",
+    "@cleanflow/supabase": "*",
+    "@supabase/supabase-js": "^2.103.3",
+    "zustand": "^5.0.12"
+  }
+}

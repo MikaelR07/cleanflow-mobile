@@ -1,0 +1,164 @@
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { ArrowLeft, Package, Clock, CheckCircle2, XCircle, ShoppingBag, Loader2, Truck } from 'lucide-react';
+import { useMarketplaceStore } from '@cleanflow/core';
+
+const STATUS_CONFIG = {
+  pending:   { label: 'Pending',   color: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',   icon: Clock },
+  confirmed: { label: 'Confirmed', color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',           icon: Package },
+  completed: { label: 'Completed', color: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400', icon: CheckCircle2 },
+  cancelled: { label: 'Cancelled', color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',               icon: XCircle },
+};
+
+export default function MyOrders() {
+  const { myOrders, fetchMyActivity, cancelOrder, requestTransport, isLoading } = useMarketplaceStore();
+  const [activeTab, setActiveTab] = useState('pending');
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    fetchMyActivity();
+  }, []);
+
+  const tabs = ['pending', 'confirmed', 'completed', 'cancelled'];
+  const filteredOrders = myOrders.filter(o => o.status === activeTab);
+
+  return (
+    <div className="space-y-6 animate-fade-in pb-20">
+
+      {/* Header */}
+      <div className="flex items-center gap-3">
+        <button onClick={() => navigate('/')} className="p-2 -ml-2 rounded-full hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-500 transition-colors">
+          <ArrowLeft className="w-5 h-5" />
+        </button>
+        <div>
+          <h1 className="text-xl font-black text-slate-900 dark:text-white">My Orders</h1>
+          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{myOrders.length} total purchases</p>
+        </div>
+      </div>
+
+      {/* Tab Strip */}
+      <div className="flex bg-slate-100 dark:bg-slate-900 p-1.5 rounded-2xl gap-1">
+        {tabs.map(tab => {
+          const count = myOrders.filter(o => o.status === tab).length;
+          return (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`flex-1 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all ${
+                activeTab === tab
+                  ? 'bg-white dark:bg-slate-800 text-primary shadow-sm'
+                  : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
+              }`}
+            >
+              {tab} {count > 0 && `(${count})`}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Orders List */}
+      {isLoading && myOrders.length === 0 ? (
+        <div className="py-20 text-center">
+          <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto mb-3" />
+          <p className="text-sm text-slate-500">Loading orders...</p>
+        </div>
+      ) : filteredOrders.length > 0 ? (
+        <div className="space-y-4">
+          {filteredOrders.map(order => {
+            const config = STATUS_CONFIG[order.status] || STATUS_CONFIG.pending;
+            const StatusIcon = config.icon;
+            return (
+              <div key={order.id} className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-5 shadow-sm hover:shadow-md transition-all">
+                
+                {/* Header row */}
+                <div className="flex justify-between items-start mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-2xl bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-2xl">
+                      {order.emoji || '♻️'}
+                    </div>
+                    <div>
+                      <h3 className="font-black text-slate-900 dark:text-white text-sm">{order.material} Purchase</h3>
+                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">
+                        {new Date(order.createdAt).toLocaleDateString('en-KE', { day: 'numeric', month: 'short', year: 'numeric' })}
+                      </p>
+                    </div>
+                  </div>
+                  <span className={`text-[9px] font-black uppercase tracking-wider px-2.5 py-1.5 rounded-full flex items-center gap-1 ${config.color}`}>
+                    <StatusIcon className="w-3 h-3" /> {config.label}
+                  </span>
+                </div>
+
+                {/* Logistics Status */}
+                {order.bookingId && (
+                  <div className="mb-4 p-3 bg-primary/5 dark:bg-primary/10 rounded-2xl border border-primary/10 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                        <Truck className="w-4 h-4 text-primary" />
+                      </div>
+                      <div>
+                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Freight Tracking</p>
+                        <p className="text-xs font-black text-primary uppercase">{order.logisticsStatus || 'Pending Pickup'}</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-1">
+                      {[1, 2, 3, 4].map(step => (
+                        <div key={step} className={`w-1.5 h-1.5 rounded-full ${order.logisticsStatus === 'completed' || step === 1 ? 'bg-primary' : 'bg-slate-200 dark:bg-slate-700'}`} />
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Stats row */}
+                <div className="flex items-center justify-between py-3 border-y border-slate-100 dark:border-slate-800 my-3">
+                  <div>
+                    <p className="text-[9px] text-slate-400 font-black uppercase tracking-widest">Seller</p>
+                    <p className="text-sm font-bold text-slate-800 dark:text-white">{order.sellerName}</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-[9px] text-slate-400 font-black uppercase tracking-widest">Quantity</p>
+                    <p className="text-sm font-black text-primary">{order.quantity} KG</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-[9px] text-slate-400 font-black uppercase tracking-widest">Total</p>
+                    <p className="text-sm font-black text-slate-800 dark:text-white">KES {Number(order.totalPrice).toLocaleString()}</p>
+                  </div>
+                </div>
+
+                {/* Actions */}
+                <div className="flex gap-3 mt-4">
+                  {(order.status === 'pending' || order.status === 'confirmed') && !order.bookingId && (
+                    <button
+                      onClick={() => requestTransport(order)}
+                      className="flex-1 py-3 bg-primary hover:bg-emerald-600 text-white text-[10px] font-black uppercase tracking-widest rounded-xl shadow-lg shadow-primary/20 transition-all flex items-center justify-center gap-2"
+                    >
+                      <Truck className="w-4 h-4" /> Request Transport
+                    </button>
+                  )}
+                  {order.status === 'pending' && (
+                    <button
+                      onClick={() => cancelOrder(order.id)}
+                      className={`py-3 text-[10px] font-black uppercase tracking-widest text-rose-500 border border-slate-200 dark:border-slate-800 rounded-xl hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors ${order.bookingId ? 'flex-1' : 'px-6'}`}
+                    >
+                      {order.bookingId ? 'Cancel' : 'Cancel Order'}
+                    </button>
+                  )}
+                </div>
+                {order.status === 'completed' && (
+                  <div className="text-center text-[10px] font-black text-emerald-600 uppercase tracking-widest pt-1">
+                    ✓ Transaction Complete
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      ) : (
+        <div className="text-center py-20 bg-slate-50 dark:bg-slate-900/50 rounded-3xl border-2 border-dashed border-slate-200 dark:border-slate-800">
+          <ShoppingBag className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+          <h3 className="font-black text-slate-900 dark:text-white">No {activeTab} orders</h3>
+          <p className="text-sm text-slate-500 mt-1">Your purchase history will appear here.</p>
+        </div>
+      )}
+    </div>
+  );
+}

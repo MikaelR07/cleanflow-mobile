@@ -1,0 +1,321 @@
+import { useState, useEffect } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { 
+  Recycle, User, Phone, Lock, ChevronRight, MapPin, 
+  Loader2, ArrowLeft, ShieldCheck, Mail, Sparkles, Star,
+  Fingerprint, Shield, X
+} from 'lucide-react';
+import { toast } from 'sonner';
+import { useAuthStore, ROLES } from '@cleanflow/core';
+import LocationSelector from '@cleanflow/ui/components/LocationSelector';
+
+export default function Register() {
+  const [formData, setFormData] = useState({
+    name: '',
+    phone: '',
+    otp: '',
+    pin: '',
+    confirmPin: '',
+    role: ROLES.USER,
+    location: null,
+  });
+  const [isLoading, setIsLoading] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [phoneAvailable, setPhoneAvailable] = useState(null);
+  
+  const navigate = useNavigate();
+  const { register, checkAvailability } = useAuthStore();
+
+  // ── WEB OTP API LISTENER ──────────────────────────────────────────
+  useEffect(() => {
+    if (!isVerifying) return;
+
+    if ('OTPCredential' in window) {
+      const ac = new AbortController();
+      navigator.credentials.get({
+        otp: { transport: ['sms'] },
+        signal: ac.signal
+      }).then(otp => {
+        setFormData(prev => ({ ...prev, otp: otp.code }));
+        toast.success('OTP Received', { description: 'Code auto-filled from SMS.' });
+      }).catch(err => {
+        console.log('Web OTP listener closed:', err);
+      });
+      return () => ac.abort();
+    }
+  }, [isVerifying]);
+
+  const handleInputChange = async (e) => {
+    const { name, value } = e.target;
+    
+    // 1. Full Name Validation (Alpha-only + space)
+    if (name === 'name') {
+      const clean = value.replace(/[^a-zA-Z\s]/g, ''); // Numbers/symbols blocked
+      setFormData(prev => ({ ...prev, [name]: clean }));
+      return;
+    }
+
+    // 2. Phone mask: digits only, max 10
+    if (name === 'phone') {
+      const clean = value.replace(/\D/g, '').slice(0, 10);
+      setFormData(prev => ({ ...prev, [name]: clean }));
+      
+      if (clean.length === 10) {
+        const available = await checkAvailability(clean);
+        setPhoneAvailable(available);
+      } else {
+        setPhoneAvailable(null);
+      }
+      return;
+    }
+    
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const initiateRegistration = (e) => {
+    e.preventDefault();
+
+    // ── TWO-WORD VALIDATION ──
+    const nameParts = formData.name.trim().split(/\s+/);
+    if (nameParts.length < 2) {
+      return toast.error('Incomplete Name', { description: 'Please provide at least a First and Last name.' });
+    }
+    
+    if (formData.phone.length !== 10) return toast.error('Format Error', { description: 'Phone must be exactly 10 digits.' });
+    if (phoneAvailable === false) return toast.error('Blocked', { description: 'This number is already registered.' });
+    if (formData.pin.length < 8) return toast.error('Security Risk', { description: 'Passcode must be at least 8 characters.' });
+    if (formData.pin !== formData.confirmPin) return toast.error('Match Error', { description: 'Passcodes do not match.' });
+    if (!formData.location?.estate) return toast.error('Field Missing', { description: 'Please select your estate location.' });
+
+    // Show Verification Modal
+    setIsVerifying(true);
+    toast.info('Verification Required', { description: 'A simulated SMS has been dispatched to ' + formData.phone });
+  };
+
+  const handleFinalSubmit = async () => {
+    if (formData.otp !== '123456') {
+      return toast.error('Invalid OTP', { description: 'Incorrect code. Try 123456 for this demo.' });
+    }
+
+    setIsLoading(true);
+    try {
+      await register(formData);
+      toast.success('Protocol Active', { description: 'Secure account created and verified.' });
+      navigate('/', { replace: true });
+    } catch (err) {
+      toast.error('System Failure', { description: err.message });
+      setIsVerifying(false);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-dvh flex flex-col justify-center bg-slate-50 dark:bg-slate-950 px-4 py-12 relative transition-colors duration-500 overflow-x-hidden">
+      {/* Visual Accents */}
+      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary via-green-400 to-secondary" />
+      <div className="absolute -top-24 -left-24 w-64 h-64 bg-primary/5 rounded-full blur-3xl opacity-50" />
+      
+      <div className="max-w-md w-full mx-auto relative z-10 animate-fade-in">
+        
+        {/* Header */}
+        <div className="flex items-center justify-between mb-10">
+          <Link to="/login" className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-primary transition-colors">
+            <ArrowLeft className="w-4 h-4" /> Back to Sign In
+          </Link>
+          <div className="flex items-center gap-2">
+            <span className="text-xl font-black text-slate-900 dark:text-white leading-none">Clean<span className="text-primary">Flow</span></span>
+            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-white shadow-lg shadow-primary/20">
+              <Recycle className="w-4 h-4" />
+            </div>
+          </div>
+        </div>
+
+        <div className="mb-10 text-center sm:text-left">
+          <h1 className="text-3xl font-black text-slate-900 dark:text-white tracking-tighter">Join the Ecosystem</h1>
+          <p className="text-xs text-slate-500 font-bold uppercase tracking-widest mt-2">Professional Environmental Registration</p>
+        </div>
+
+        {/* Global Registration Form */}
+        <form onSubmit={initiateRegistration} className="space-y-6">
+          
+          {/* Section 1: Identity */}
+          <div className="glass p-6 rounded-[2rem] border border-slate-200 dark:border-slate-800 shadow-xl shadow-slate-200/40 dark:shadow-none space-y-5">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-5 h-5 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
+                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+              </div>
+              <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Personal Identification</h3>
+            </div>
+
+            <div className="space-y-4">
+              <div className="relative group">
+                <User className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-primary transition-colors" />
+                <input 
+                  type="text" 
+                  name="name" 
+                  value={formData.name} 
+                  onChange={handleInputChange} 
+                  placeholder="Full Legal Name" 
+                  className="w-full pl-11 pr-4 py-3.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl text-sm font-medium focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all" 
+                  required 
+                />
+              </div>
+
+              <div className="relative group">
+                <Phone className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-primary transition-colors" />
+                <input 
+                  type="tel" 
+                  name="phone" 
+                  value={formData.phone} 
+                  onChange={handleInputChange} 
+                  placeholder="Phone Number (07... / 01...)" 
+                  className={`w-full pl-11 pr-12 py-3.5 bg-white dark:bg-slate-900 border rounded-2xl text-sm font-black tracking-widest focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all ${
+                    phoneAvailable === false ? 'border-rose-300 ring-rose-100' : 'border-slate-200 dark:border-slate-800'
+                  }`} 
+                  required 
+                />
+                {phoneAvailable === true && (
+                  <ShieldCheck className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-emerald-500 animate-in fade-in zoom-in" />
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Section 2: Security */}
+          <div className="glass p-6 rounded-[2rem] border border-slate-200 dark:border-slate-800 shadow-xl shadow-slate-200/40 dark:shadow-none space-y-5">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-5 h-5 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                <div className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+              </div>
+              <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Security Vault</h3>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="relative group">
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-primary transition-colors" />
+                <input 
+                  type="password" 
+                  name="pin" 
+                  value={formData.pin} 
+                  onChange={handleInputChange} 
+                  placeholder="Passcode" 
+                  className="w-full pl-11 pr-4 py-3.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl text-sm font-medium focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all" 
+                  required 
+                />
+              </div>
+              <div className="relative group">
+                <Shield className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-primary transition-colors" />
+                <input 
+                  type="password" 
+                  name="confirmPin" 
+                  value={formData.confirmPin} 
+                  onChange={handleInputChange} 
+                  placeholder="Confirm" 
+                  className="w-full pl-11 pr-4 py-3.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl text-sm font-medium focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all" 
+                  required 
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Section 3: Location */}
+          <div className="glass p-6 rounded-[2rem] border border-slate-200 dark:border-slate-800 shadow-xl shadow-slate-200/40 dark:shadow-none space-y-5">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-5 h-5 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
+                <div className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+              </div>
+              <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Operation Sector</h3>
+            </div>
+
+            <div className="min-h-[140px]">
+              <LocationSelector 
+                value={formData.location} 
+                onChange={(newLoc) => setFormData(prev => ({ ...prev, location: newLoc }))} 
+              />
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="w-full py-5 bg-gradient-to-r from-primary to-green-600 text-white rounded-[1.5rem] font-black text-[13px] uppercase tracking-[0.2em] shadow-2xl shadow-primary/30 hover:shadow-primary/40 active:scale-[0.98] transition-all flex justify-center items-center gap-3 disabled:opacity-50 mt-4 group"
+          >
+            {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <>Initiate Protocol <Sparkles className="w-5 h-5 group-hover:animate-spin" /></>}
+          </button>
+        </form>
+
+        <p className="text-center text-[10px] font-black uppercase tracking-widest text-slate-400 mt-10">
+          Already part of the network? {' '}
+          <Link to="/login" className="text-primary hover:underline underline-offset-4">Authenticate Instead</Link>
+        </p>
+      </div>
+
+      {/* ── VERIFICATION OVERLAY ────────────────────────────────────── */}
+      {isVerifying && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-300">
+          <div className="max-w-sm w-full bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 shadow-2xl border border-slate-200 dark:border-slate-800 relative animate-in zoom-in slide-in-from-bottom-8 duration-500 ease-out">
+            <button 
+              onClick={() => setIsVerifying(false)}
+              className="absolute right-6 top-6 p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="text-center space-y-6">
+              <div className="w-20 h-20 bg-primary/10 rounded-[2rem] flex items-center justify-center mx-auto mb-2 text-primary">
+                <ShieldCheck className="w-10 h-10" />
+              </div>
+              
+              <div>
+                <h3 className="text-2xl font-black text-slate-900 dark:text-white">Verify Phone</h3>
+                <p className="text-sm text-slate-500 font-medium mt-2">
+                  Enter the 6-digit code sent to <br />
+                  <span className="text-primary font-black tracking-widest">{formData.phone}</span>
+                </p>
+              </div>
+
+              <div className="relative group">
+                <input 
+                  autoFocus
+                  autoComplete="one-time-code"
+                  type="text" 
+                  value={formData.otp} 
+                  onChange={(e) => setFormData(prev => ({ ...prev, otp: e.target.value.replace(/\D/g, '').slice(0, 6) }))}
+                  placeholder="000000" 
+                  className="w-full text-center text-4xl font-black tracking-[0.5em] py-5 bg-slate-50 dark:bg-slate-950/50 border-2 border-slate-200 dark:border-slate-800 rounded-2xl focus:border-primary outline-none transition-all placeholder:text-slate-200" 
+                />
+                <div className="flex flex-col items-center mt-4 space-y-3">
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Web OTP Auto-Listener Active</p>
+                  <button 
+                    type="button"
+                    onClick={() => {
+                      toast.info('Simulating SMS Arrival...', { duration: 1500 });
+                      setTimeout(() => {
+                        setFormData(prev => ({ ...prev, otp: '123456' }));
+                        toast.success('Auto-Fill Success', { description: 'Code captured from virtual SMS.' });
+                      }, 1800);
+                    }}
+                    className="flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-primary/10 hover:text-primary rounded-full text-[9px] font-black uppercase tracking-widest transition-all"
+                  >
+                    <Mail className="w-3 h-3" /> Simulate Incoming SMS
+                  </button>
+                </div>
+              </div>
+
+              <button
+                onClick={handleFinalSubmit}
+                disabled={isLoading || formData.otp.length < 6}
+                className="w-full py-5 bg-primary text-white rounded-[1.5rem] font-black text-[13px] uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all flex justify-center items-center gap-2"
+              >
+                {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Apply Protocol'}
+              </button>
+              
+              <p className="text-[10px] text-slate-400 font-bold">Demo Verification: 123456</p>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
