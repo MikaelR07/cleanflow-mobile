@@ -35,12 +35,22 @@ export default function AvailableJobs() {
 
   const handleAccept = async (job) => {
     try {
-      await acceptJob(job.id);
-      setActiveTab('active'); // Switch to active tab so user sees the job move
-      toast.success(`Job accepted! 🚀`, {
-        description: `${job.location} — KSh ${job.pay.toLocaleString()}`,
-      });
+      const success = await acceptJob(job.id);
+      
+      if (success) {
+        setActiveTab('active'); // Switch to active tab so user sees the job move
+        toast.success(`Job accepted! 🚀`, {
+          description: `${job.location} — KSh ${job.pay.toLocaleString()}`,
+        });
+      } else {
+        toast.error("Could not claim job", {
+          description: "This mission might have been claimed by another agent or is no longer available."
+        });
+        // Refresh to get latest list
+        fetchAvailableJobs();
+      }
     } catch (err) {
+      console.error('[handleAccept] Error:', err);
       toast.error("Failed to accept job");
     }
   };
