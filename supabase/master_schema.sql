@@ -35,6 +35,7 @@ CREATE TABLE public.profiles (
   -- User Metrics
   wallet_balance NUMERIC(10,2) DEFAULT 0.00,
   reward_points  INTEGER DEFAULT 0,
+  rating         NUMERIC(3,2) DEFAULT 5.00,
   subscription_tier TEXT DEFAULT 'lite' CHECK (subscription_tier IN ('lite', 'standard', 'premium')),
   
   -- B2B Verification
@@ -136,6 +137,7 @@ CREATE POLICY "Anyone inserts notifications" ON public.notifications FOR INSERT 
 
 -- Enable Realtime
 ALTER PUBLICATION supabase_realtime ADD TABLE public.notifications;
+ALTER PUBLICATION supabase_realtime ADD TABLE public.profiles;
 
 -- ════════════════════════════════════════════════════════════════
 -- 5. BOOKINGS TABLE (Logistics & Agent Tracking)
@@ -159,6 +161,8 @@ CREATE TABLE public.bookings (
   distance_km     NUMERIC(10,2),
   logistics_fee   NUMERIC(10,2),
   total_price     NUMERIC(10,2),
+  agent_rating    INTEGER,
+  agent_feedback  TEXT,
   created_at      TIMESTAMPTZ DEFAULT NOW(),
   updated_at      TIMESTAMPTZ DEFAULT NOW()
 );
@@ -426,32 +430,33 @@ CREATE TABLE IF NOT EXISTS public.rewards_ledger (
 ALTER TABLE public.rewards_ledger ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Users can view own ledger" ON public.rewards_ledger FOR SELECT USING (auth.uid() = profile_id);
 
--- ── Automated Reward Trigger ────────────────────────────────────
+-- ── Automated Reward Trigger (Robust Version) ───────────────────
 CREATE OR REPLACE FUNCTION credit_user_rewards()
 RETURNS TRIGGER AS $$
 DECLARE
-  v_cashback_per_kg DECIMAL := 5.00;  -- Average cashback per KG
-  v_points_per_kg INTEGER := 5;      -- Average points per KG
-  v_earned_cashback DECIMAL;
-  v_earned_points INTEGER;
+  v_cashback_per_kg NUMERIC := 5.00;  -- Average cashback per KG
+  v_points_per_kg   NUMERIC := 5;     -- Average points per KG
+  v_earned_cashback NUMERIC;
+  v_earned_points   INTEGER;
 BEGIN
-  -- Logic: Trigger when status flips to 'completed'
-  IF NEW.status = 'completed' AND OLD.status != 'completed' THEN
+  -- Logic: Trigger when status becomes 'completed'
+  IF NEW.status = 'completed' AND (OLD.status IS NULL OR OLD.status != 'completed') THEN
+    -- Ensure we have a valid weight, even if 0
     v_earned_cashback := COALESCE(NEW.actual_weight_kg, 0) * v_cashback_per_kg;
-    v_earned_points := floor(COALESCE(NEW.actual_weight_kg, 0) * v_points_per_kg);
+    v_earned_points   := floor(COALESCE(NEW.actual_weight_kg, 0) * v_points_per_kg);
 
     -- 1. Update Profile (Wallet & Points)
     UPDATE public.profiles
     SET 
-      wallet_balance = wallet_balance + v_earned_cashback,
-      reward_points = reward_points + v_earned_points
+      wallet_balance = COALESCE(wallet_balance, 0) + v_earned_cashback,
+      reward_points  = COALESCE(reward_points, 0) + v_earned_points
     WHERE id = NEW.user_id;
 
-    -- 2. Log Transaction in Ledger
+    -- 2. Log Transaction in Ledger (Audit Trail)
     INSERT INTO public.rewards_ledger (profile_id, booking_id, amount_cashback, amount_points, transaction_type, description)
-    VALUES (NEW.user_id, NEW.id, v_earned_cashback, v_earned_points, 'earning', 'Recycling reward for ' || NEW.actual_weight_kg || 'kg pickup');
+    VALUES (NEW.user_id, NEW.id, v_earned_cashback, v_earned_points, 'earning', 'Recycling reward for ' || COALESCE(NEW.actual_weight_kg, 0) || 'kg pickup');
 
-    -- 3. Send Real-time Notification to Client
+    -- 3. Send Real-time Notification
     INSERT INTO public.notifications (target_user, target_role, type, title, body)
     VALUES (
       NEW.user_id, 
