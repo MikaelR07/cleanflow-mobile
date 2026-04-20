@@ -41,6 +41,7 @@ CREATE TABLE public.profiles (
   is_verified    BOOLEAN DEFAULT false,
   business_type  TEXT, -- 'Collector', 'Recycler', 'Manufacturer'
   nema_license   TEXT,
+  is_online      BOOLEAN DEFAULT false,
 
   created_at  TIMESTAMPTZ DEFAULT NOW(),
   updated_at  TIMESTAMPTZ DEFAULT NOW()

@@ -36,6 +36,7 @@ export default function AvailableJobs() {
   const handleAccept = async (job) => {
     try {
       await acceptJob(job.id);
+      setActiveTab('active'); // Switch to active tab so user sees the job move
       toast.success(`Job accepted! 🚀`, {
         description: `${job.location} — KSh ${job.pay.toLocaleString()}`,
       });
