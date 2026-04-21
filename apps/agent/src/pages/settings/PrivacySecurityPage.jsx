@@ -5,10 +5,11 @@ import { useAuthStore } from '@cleanflow/core';
 import { toast } from 'sonner';
 
 export default function PrivacySecurityPage() {
-  const { logout } = useAuthStore();
+  const { logout, changePin, deleteAccount } = useAuthStore();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [authStage, setAuthStage] = useState('view'); // 'view', 'pin'
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   const [pins, setPins] = useState({ current: '', new: '', confirm: '' });
 
@@ -18,19 +19,31 @@ export default function PrivacySecurityPage() {
       toast.error('PIN Mismatch', { description: 'Your new PINs do not match.' });
       return;
     }
+    
     setIsLoading(true);
-    await new Promise(r => setTimeout(r, 1000));
-    toast.success('PIN Updated', { description: 'Your security PIN was successfully changed.' });
-    setAuthStage('view');
-    setPins({ current: '', new: '', confirm: '' });
-    setIsLoading(false);
+    try {
+      await changePin(pins.current, pins.new);
+      toast.success('Security Updated', { description: 'Your access PIN has been successfully changed.' });
+      setAuthStage('view');
+      setPins({ current: '', new: '', confirm: '' });
+    } catch (err) {
+      toast.error('Update Failed', { description: err.message || 'Verification failed.' });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleDeactivate = () => {
-    const confirmed = window.confirm("Are you sure you want to continuously delete your CleanFlow account? This action cannot be reversed.");
-    if (confirmed) {
-      toast.error('Account Terminated', { description: 'Your account has been deleted.' });
-      logout();
+  const handleDeactivate = async () => {
+    setIsLoading(true);
+    try {
+      await deleteAccount();
+      toast.error('Agent Account Wiped', { description: 'Your profile and history have been permanently deleted.' });
+      navigate('/login', { replace: true });
+    } catch (err) {
+      toast.error('Error', { description: 'Could not complete deactivation. Try again.' });
+    } finally {
+      setIsLoading(false);
+      setShowDeleteModal(false);
     }
   };
 
@@ -45,7 +58,6 @@ export default function PrivacySecurityPage() {
 
       {authStage === 'view' ? (
         <div className="space-y-6">
-          
           <div className="card p-0 overflow-hidden divide-y divide-slate-100 dark:divide-slate-800">
              <button onClick={() => setAuthStage('pin')} className="w-full flex items-center justify-between p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors text-left">
                 <div className="flex items-center gap-3">
@@ -53,30 +65,22 @@ export default function PrivacySecurityPage() {
                      <Lock className="w-5 h-5" />
                    </div>
                    <div>
-                     <div className="text-sm font-bold text-slate-800 dark:text-white">Change Security PIN</div>
-                     <div className="text-xs text-slate-500">Update your 4-digit access code</div>
+                     <div className="text-sm font-bold text-slate-800 dark:text-white">Change Access PIN</div>
+                     <div className="text-xs text-slate-500">Update your security entrance code</div>
                    </div>
                 </div>
              </button>
           </div>
 
-          <div className="card p-5">
-             <h2 className="text-sm font-bold text-slate-800 dark:text-white mb-4 pb-2 border-b border-slate-100 dark:border-slate-800">Recent Activity</h2>
-             <div className="space-y-4">
-                <div className="flex items-start gap-3">
-                  <Smartphone className="w-5 h-5 text-slate-400 mt-0.5 flex-none" />
-                  <div>
-                    <div className="text-sm font-semibold text-slate-700 dark:text-slate-300">Android Application</div>
-                    <div className="text-xs text-slate-500">Nairobi, Kenya • Today, 14:30 PM</div>
-                    <div className="text-[10px] font-bold text-green-500 uppercase mt-1 tracking-wider">Active Session</div>
-                  </div>
-                </div>
-             </div>
-          </div>
-
           <div className="pt-8">
-             <button onClick={handleDeactivate} className="w-full py-4 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-xl font-bold flex items-center justify-center gap-2 transition-colors border border-rose-100 dark:border-rose-900/50">
-                <Trash2 className="w-4 h-4" /> Deactivate Account
+             <div className="text-center mb-4">
+                <h3 className="text-xs font-black text-rose-500 uppercase tracking-widest">Danger Zone</h3>
+             </div>
+             <button 
+               onClick={() => setShowDeleteModal(true)} 
+               className="w-full py-4 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-xl font-bold flex items-center justify-center gap-2 transition-colors border border-rose-100 dark:border-rose-900/50"
+             >
+                <Trash2 className="w-4 h-4" /> Delete Agent Account
              </button>
           </div>
         </div>
@@ -84,15 +88,15 @@ export default function PrivacySecurityPage() {
         <form onSubmit={handleChangePin} className="card p-5 space-y-5 animate-slide-up border-t-4 border-t-blue-500">
            <div>
               <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">Current PIN</label>
-              <input type="password" required maxLength={6} inputMode="numeric" value={pins.current} onChange={(e) => setPins({...pins, current: e.target.value})} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500/50 tracking-widest text-lg" />
+              <input type="password" required maxLength={8} value={pins.current} onChange={(e) => setPins({...pins, current: e.target.value})} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500/50 tracking-widest" placeholder="••••••••" />
            </div>
            <div>
               <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">New PIN</label>
-              <input type="password" required maxLength={6} inputMode="numeric" value={pins.new} onChange={(e) => setPins({...pins, new: e.target.value})} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500/50 tracking-widest text-lg" />
+              <input type="password" required maxLength={8} value={pins.new} onChange={(e) => setPins({...pins, new: e.target.value})} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500/50 tracking-widest" placeholder="Choose new code" />
            </div>
            <div>
               <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">Confirm New PIN</label>
-              <input type="password" required maxLength={6} inputMode="numeric" value={pins.confirm} onChange={(e) => setPins({...pins, confirm: e.target.value})} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500/50 tracking-widest text-lg" />
+              <input type="password" required maxLength={8} value={pins.confirm} onChange={(e) => setPins({...pins, confirm: e.target.value})} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500/50 tracking-widest" placeholder="Repeat new code" />
            </div>
 
            <button type="submit" disabled={isLoading} className="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold flex items-center justify-center gap-2 transition-colors disabled:opacity-70 mt-2">
@@ -101,6 +105,42 @@ export default function PrivacySecurityPage() {
         </form>
       )}
 
+      {/* ── DELETE MODAL ────────────────────────────────────────── */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-md p-6">
+          <div className="bg-white dark:bg-slate-900 w-full max-w-[320px] rounded-[28px] overflow-hidden shadow-2xl animate-scale-in border border-slate-100 dark:border-slate-800">
+            <div className="bg-rose-500 p-6 flex flex-col items-center gap-3 text-white">
+              <div className="w-14 h-14 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
+                <Trash2 className="w-7 h-7 text-white" />
+              </div>
+              <h2 className="text-lg font-black uppercase tracking-tighter text-center">Terminate Account?</h2>
+            </div>
+            <div className="p-6 space-y-4">
+              <p className="text-xs text-center text-slate-500 dark:text-slate-400 leading-relaxed">
+                This will <span className="font-bold text-rose-500 underline decoration-rose-500/30">wipe your agent credentials</span>, history, and earnings permanently.
+              </p>
+              
+              <div className="space-y-2">
+                <button 
+                  onClick={handleDeactivate}
+                  disabled={isLoading}
+                  className="w-full py-3.5 bg-rose-500 hover:bg-rose-600 active:scale-95 transition-all text-white rounded-xl font-black text-xs uppercase tracking-widest flex items-center justify-center gap-2"
+                >
+                  {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Confirm Deletion'}
+                </button>
+                <button 
+                  onClick={() => setShowDeleteModal(false)}
+                  disabled={isLoading}
+                  className="w-full py-3 text-slate-500 dark:text-slate-400 rounded-xl font-bold text-xs transition-all hover:bg-slate-100 active:scale-95"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
+}
 }
