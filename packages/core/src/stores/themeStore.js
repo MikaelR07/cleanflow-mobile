@@ -4,7 +4,7 @@ import { persist } from 'zustand/middleware';
 export const useThemeStore = create(
   persist(
     (set, get) => ({
-      isDarkMode: false,
+      isDarkMode: true,
       toggleTheme: () => {
         const newTheme = !get().isDarkMode;
         set({ isDarkMode: newTheme });
@@ -16,7 +16,7 @@ export const useThemeStore = create(
       }
     }),
     {
-      name: 'cleanflow-theme-state',
+      name: 'cleanflow-theme-state-v2',
       onRehydrateStorage: () => (state) => {
         if (state) state.initTheme();
       }
