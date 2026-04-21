@@ -33,7 +33,7 @@ export default function Register() {
   const [phoneAvailable, setPhoneAvailable] = useState(null);
 
   const navigate = useNavigate();
-  const { register, checkAvailability } = useAuthStore();
+  const { register, checkAvailability, sendOtp, verifyOtp } = useAuthStore();
 
   // ── WEB OTP AUTO-LISTENER ─────────────────────────────────────────
   useEffect(() => {
@@ -76,52 +76,48 @@ export default function Register() {
     e.preventDefault();
 
     const nameParts = formData.name.trim().split(/\s+/);
-    if (nameParts.length < 2) {
-      return toast.error('Incomplete Name', { description: 'Please provide a first and last name.' });
-    }
-    if (!formData.businessName.trim()) {
-      return toast.error('Missing Business Name', { description: 'Please enter your company or trading name.' });
-    }
-    if (!formData.businessType) {
-      return toast.error('Missing Business Type', { description: 'Please select your business category.' });
-    }
-    if (formData.phone.length !== 10) {
-      return toast.error('Format Error', { description: 'Phone must be exactly 10 digits.' });
-    }
-    if (phoneAvailable === false) {
-      return toast.error('Blocked', { description: 'This number is already registered.' });
-    }
-    if (formData.pin.length < 8) {
-      return toast.error('Security Risk', { description: 'Passcode must be at least 8 characters.' });
-    }
-    if (formData.pin !== formData.confirmPin) {
-      return toast.error('Match Error', { description: 'Passcodes do not match.' });
-    }
-    if (!formData.location?.estate) {
-      return toast.error('Field Missing', { description: 'Please select your business operation area.' });
-    }
+    if (nameParts.length < 2) return toast.error('Incomplete Name', { description: 'Please provide a first and last name.' });
+    if (!formData.businessName.trim()) return toast.error('Missing Business Name', { description: 'Please enter your company or trading name.' });
+    if (!formData.businessType) return toast.error('Missing Business Type', { description: 'Please select your business category.' });
+    if (formData.phone.length !== 10) return toast.error('Format Error', { description: 'Phone must be exactly 10 digits.' });
+    if (phoneAvailable === false) return toast.error('Blocked', { description: 'This number is already registered.' });
+    if (formData.pin.length < 8) return toast.error('Security Risk', { description: 'Passcode must be at least 8 characters.' });
+    if (formData.pin !== formData.confirmPin) return toast.error('Match Error', { description: 'Passcodes do not match.' });
+    if (!formData.location?.estate) return toast.error('Field Missing', { description: 'Please select your business operation area.' });
 
-    setIsVerifying(true);
-    toast.info('Verification Required', { description: `Simulated SMS dispatched to ${formData.phone}` });
+    // Send real OTP via Africa's Talking
+    setIsLoading(true);
+    sendOtp(formData.phone)
+      .then(() => {
+        setIsVerifying(true);
+        toast.success('Code Sent!', { description: `A 6-digit OTP has been sent to ${formData.phone}` });
+      })
+      .catch((err) => {
+        toast.error('SMS Failed', { description: err.message });
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
   };
 
   const handleFinalSubmit = async () => {
-    if (formData.otp !== '123456') {
-      return toast.error('Invalid OTP', { description: 'Incorrect code. Try 123456 for this demo.' });
-    }
     setIsLoading(true);
     try {
+      await verifyOtp(formData.phone, formData.otp);
       // Pass businessName & type inside the name field (or extend as needed)
       await register({
         ...formData,
         name: formData.name, // Contact person
-        // businessName and businessType can be stored in location JSONB or a separate field
       });
       toast.success('Business Activated', { description: 'Your marketplace account is live.' });
       navigate('/', { replace: true });
     } catch (err) {
-      toast.error('Registration Failed', { description: err.message });
-      setIsVerifying(false);
+      toast.error('Verification Failed', { description: err.message });
+      if (err.message.includes('Incorrect') || err.message.includes('expired')) {
+        setFormData(prev => ({ ...prev, otp: '' }));
+      } else {
+        setIsVerifying(false);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -338,19 +334,20 @@ export default function Register() {
                   className="w-full text-center text-4xl font-black tracking-[0.5em] py-5 bg-slate-50 dark:bg-slate-950/50 border-2 border-slate-200 dark:border-slate-800 rounded-2xl focus:border-indigo-500 outline-none transition-all placeholder:text-slate-200"
                 />
                 <div className="flex flex-col items-center mt-4 space-y-3">
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Web OTP Auto-Listener Active</p>
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Code sent via SMS to your phone</p>
                   <button
                     type="button"
-                    onClick={() => {
-                      toast.info('Simulating SMS...', { duration: 1500 });
-                      setTimeout(() => {
-                        setFormData(prev => ({ ...prev, otp: '123456' }));
-                        toast.success('Auto-Fill Success', { description: 'Demo code captured.' });
-                      }, 1800);
+                    onClick={async () => {
+                      try {
+                        await sendOtp(formData.phone);
+                        toast.success('Code Resent', { description: 'A new OTP has been sent to your phone.' });
+                      } catch (err) {
+                        toast.error('Resend Failed', { description: err.message });
+                      }
                     }}
                     className="flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 hover:text-indigo-600 rounded-full text-[9px] font-black uppercase tracking-widest transition-all"
                   >
-                    <Mail className="w-3 h-3" /> Simulate Incoming SMS
+                    Resend Code
                   </button>
                 </div>
               </div>
@@ -363,7 +360,6 @@ export default function Register() {
                 {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Activate Account'}
               </button>
 
-              <p className="text-[10px] text-slate-400 font-bold">Demo Verification Code: 123456</p>
             </div>
           </div>
         </div>

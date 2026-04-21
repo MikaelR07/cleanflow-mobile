@@ -535,5 +535,18 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- ═══════════════════════════════════════════════════════════════
+-- OTP Verification Temp Storage
+-- ═══════════════════════════════════════════════════════════════
+CREATE TABLE IF NOT EXISTS public.otp_verifications (
+  phone       TEXT PRIMARY KEY,
+  otp_code    TEXT NOT NULL,
+  expires_at  TIMESTAMPTZ NOT NULL,
+  created_at  TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Note: No RLS policies are needed for this table because it is 
+-- only interacted with securely backstage via Edge Functions (Service Role Key).
+
+-- ═══════════════════════════════════════════════════════════════
 -- Master Configuration Complete!
 -- ═══════════════════════════════════════════════════════════════
