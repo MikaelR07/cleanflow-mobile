@@ -347,7 +347,6 @@ export const useAuthStore = create(
         const { profile } = get();
         if (!profile) throw new Error('Not authenticated');
 
-        // Verify current pin indirectly by attempting to log in again
         const { error: verifyError } = await supabase.auth.signInWithPassword({
           email: phoneToEmail(profile.phone),
           password: currentPin
@@ -355,10 +354,28 @@ export const useAuthStore = create(
 
         if (verifyError) throw new Error('Current security password is incorrect');
 
-        // Update password
         const { error: updateError } = await supabase.auth.updateUser({ password: newPin });
         if (updateError) throw new Error(updateError.message);
 
+        return true;
+      },
+
+      // ── OTP PHONE VERIFICATION ────────────────────────────────────────
+      sendOtp: async (phone) => {
+        const { data, error } = await supabase.functions.invoke('send-otp', {
+          body: { phone },
+        });
+        if (error) throw new Error(error.message || 'Failed to send OTP.');
+        if (data && !data.success) throw new Error(data.error || 'Failed to send OTP.');
+        return true;
+      },
+
+      verifyOtp: async (phone, otp) => {
+        const { data, error } = await supabase.functions.invoke('verify-otp', {
+          body: { phone, otp },
+        });
+        if (error) throw new Error(error.message || 'Verification failed.');
+        if (data && !data.success) throw new Error(data.error || 'Incorrect OTP code.');
         return true;
       },
 

@@ -24,7 +24,7 @@ export default function Register() {
   const [phoneAvailable, setPhoneAvailable] = useState(null);
   
   const navigate = useNavigate();
-  const { register, checkAvailability } = useAuthStore();
+  const { register, checkAvailability, sendOtp, verifyOtp } = useAuthStore();
 
   // ── WEB OTP API LISTENER ──────────────────────────────────────────
   useEffect(() => {
@@ -72,39 +72,49 @@ export default function Register() {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const initiateRegistration = (e) => {
+  const initiateRegistration = async (e) => {
     e.preventDefault();
 
-    // ── TWO-WORD VALIDATION ──
+    // ── VALIDATION GATE ──
     const nameParts = formData.name.trim().split(/\s+/);
     if (nameParts.length < 2) {
       return toast.error('Incomplete Name', { description: 'Please provide at least a First and Last name.' });
     }
-    
     if (formData.phone.length !== 10) return toast.error('Format Error', { description: 'Phone must be exactly 10 digits.' });
     if (phoneAvailable === false) return toast.error('Blocked', { description: 'This number is already registered.' });
     if (formData.pin.length < 8) return toast.error('Security Risk', { description: 'Passcode must be at least 8 characters.' });
     if (formData.pin !== formData.confirmPin) return toast.error('Match Error', { description: 'Passcodes do not match.' });
     if (!formData.location?.estate) return toast.error('Field Missing', { description: 'Please select your estate location.' });
 
-    // Show Verification Modal
-    setIsVerifying(true);
-    toast.info('Verification Required', { description: 'A simulated SMS has been dispatched to ' + formData.phone });
+    // Send real OTP via Africa's Talking
+    setIsLoading(true);
+    try {
+      await sendOtp(formData.phone);
+      setIsVerifying(true);
+      toast.success('Code Sent!', { description: `A 6-digit OTP has been sent to ${formData.phone}` });
+    } catch (err) {
+      toast.error('SMS Failed', { description: err.message });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleFinalSubmit = async () => {
-    if (formData.otp !== '123456') {
-      return toast.error('Invalid OTP', { description: 'Incorrect code. Try 123456 for this demo.' });
-    }
-
     setIsLoading(true);
     try {
+      // 1. Verify the OTP with the database
+      await verifyOtp(formData.phone, formData.otp);
+      // 2. OTP passed — create the account
       await register(formData);
-      toast.success('Protocol Active', { description: 'Secure account created and verified.' });
+      toast.success('Welcome to CleanFlow!', { description: 'Your account has been verified and activated.' });
       navigate('/', { replace: true });
     } catch (err) {
-      toast.error('System Failure', { description: err.message });
-      setIsVerifying(false);
+      toast.error('Verification Failed', { description: err.message });
+      if (err.message.includes('Incorrect') || err.message.includes('expired')) {
+        setFormData(prev => ({ ...prev, otp: '' }));
+      } else {
+        setIsVerifying(false);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -279,26 +289,28 @@ export default function Register() {
                 <input 
                   autoFocus
                   autoComplete="one-time-code"
-                  type="text" 
+                  type="text"
+                  inputMode="numeric"
                   value={formData.otp} 
                   onChange={(e) => setFormData(prev => ({ ...prev, otp: e.target.value.replace(/\D/g, '').slice(0, 6) }))}
                   placeholder="000000" 
                   className="w-full text-center text-4xl font-black tracking-[0.5em] py-5 bg-slate-50 dark:bg-slate-950/50 border-2 border-slate-200 dark:border-slate-800 rounded-2xl focus:border-primary outline-none transition-all placeholder:text-slate-200" 
                 />
                 <div className="flex flex-col items-center mt-4 space-y-3">
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Web OTP Auto-Listener Active</p>
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Code sent via SMS to your phone</p>
                   <button 
                     type="button"
-                    onClick={() => {
-                      toast.info('Simulating SMS Arrival...', { duration: 1500 });
-                      setTimeout(() => {
-                        setFormData(prev => ({ ...prev, otp: '123456' }));
-                        toast.success('Auto-Fill Success', { description: 'Code captured from virtual SMS.' });
-                      }, 1800);
+                    onClick={async () => {
+                      try {
+                        await sendOtp(formData.phone);
+                        toast.success('Code Resent', { description: 'A new OTP has been sent to your phone.' });
+                      } catch (err) {
+                        toast.error('Resend Failed', { description: err.message });
+                      }
                     }}
                     className="flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-primary/10 hover:text-primary rounded-full text-[9px] font-black uppercase tracking-widest transition-all"
                   >
-                    <Mail className="w-3 h-3" /> Simulate Incoming SMS
+                    Resend Code
                   </button>
                 </div>
               </div>
@@ -311,7 +323,7 @@ export default function Register() {
                 {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Apply Protocol'}
               </button>
               
-              <p className="text-[10px] text-slate-400 font-bold">Demo Verification: 123456</p>
+
             </div>
           </div>
         </div>

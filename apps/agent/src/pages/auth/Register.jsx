@@ -20,7 +20,7 @@ export default function Register() {
   const [isVerifying, setIsVerifying] = useState(false);
   const [phoneAvailable, setPhoneAvailable] = useState(null);
   const navigate = useNavigate();
-  const { register, checkAvailability } = useAuthStore();
+  const { register, checkAvailability, sendOtp, verifyOtp } = useAuthStore();
 
   // ── WEB OTP API LISTENER ──────────────────────────────────────────
   useEffect(() => {
@@ -67,7 +67,7 @@ export default function Register() {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const initiateRegistration = (e) => {
+  const initiateRegistration = async (e) => {
     e.preventDefault();
 
     // ── STRICT VALIDATION GATE ──
@@ -80,24 +80,35 @@ export default function Register() {
     if (!formData.location?.estate) return toast.error('Field Missing', { description: 'Please select your operating location.' });
     if (formData.idNumber.length !== 8) return toast.error('Field Error', { description: 'National ID must be exactly 8 characters.' });
 
-    // Show Verification Modal
-    setIsVerifying(true);
-    toast.info('Verification Required', { description: 'A simulated SMS has been dispatched to ' + formData.phone });
+    // Send real OTP via Africa's Talking
+    setIsLoading(true);
+    try {
+      await sendOtp(formData.phone);
+      setIsVerifying(true);
+      toast.success('Code Sent!', { description: `A 6-digit OTP has been sent to ${formData.phone}` });
+    } catch (err) {
+      toast.error('SMS Failed', { description: err.message });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleFinalSubmit = async () => {
-    if (formData.otp !== '123456') {
-      return toast.error('Invalid OTP', { description: 'Incorrect code. Try 123456 for this demo.' });
-    }
-
     setIsLoading(true);
     try {
+      // 1. Verify the OTP
+      await verifyOtp(formData.phone, formData.otp);
+      // 2. OTP passed — create the agent account
       await register(formData);
-      toast.success('Registration Successful', { description: 'Secure Agent account created and verified.' });
+      toast.success('Agent Account Activated!', { description: 'Your identity has been verified. Welcome to the network.' });
       navigate('/', { replace: true });
     } catch (err) {
-      toast.error('System Failure', { description: err.message });
-      setIsVerifying(false);
+      toast.error('Verification Failed', { description: err.message });
+      if (err.message.includes('Incorrect') || err.message.includes('expired')) {
+        setFormData(prev => ({ ...prev, otp: '' }));
+      } else {
+        setIsVerifying(false);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -117,9 +128,11 @@ export default function Register() {
 
           <div className="space-y-6">
             <input 
-              type="text" 
+              type="text"
+              inputMode="numeric"
+              autoComplete="one-time-code"
               value={formData.otp} 
-              onChange={(e) => setFormData(e.target.value.replace(/\D/g, '').slice(0,6) ? { ...formData, otp: e.target.value.replace(/\D/g, '').slice(0,6) } : formData)} 
+              onChange={(e) => setFormData(prev => ({ ...prev, otp: e.target.value.replace(/\D/g, '').slice(0,6) }))} 
               placeholder="0 0 0 0 0 0" 
               className="w-full bg-slate-800/50 border border-slate-700 rounded-2xl py-5 text-center text-3xl font-black tracking-[0.5em] text-white focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all placeholder:text-slate-600" 
               autoFocus
@@ -132,8 +145,22 @@ export default function Register() {
             >
               {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <><ShieldCheck className="w-5 h-5" /> Verify & Access Portal</>}
             </button>
-            <button onClick={() => setIsVerifying(false)} className="w-full py-3 text-xs font-bold text-slate-400 hover:text-white transition-colors">
-              Cancel Verification
+            <button
+              type="button"
+              onClick={async () => {
+                try {
+                  await sendOtp(formData.phone);
+                  toast.success('Code Resent', { description: 'A new OTP has been sent to your phone.' });
+                } catch (err) {
+                  toast.error('Resend Failed', { description: err.message });
+                }
+              }}
+              className="w-full py-3 text-xs font-bold text-slate-400 hover:text-white transition-colors"
+            >
+              Resend OTP
+            </button>
+            <button onClick={() => setIsVerifying(false)} className="w-full py-2 text-xs font-bold text-slate-500 hover:text-white transition-colors">
+              Cancel
             </button>
           </div>
         </div>
