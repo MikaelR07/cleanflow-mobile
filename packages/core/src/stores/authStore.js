@@ -362,6 +362,24 @@ export const useAuthStore = create(
         return true;
       },
 
+      deleteAccount: async () => {
+        const { userId, logout } = get();
+        if (!userId) return;
+
+        try {
+          // Call Secure RPC to delete from auth.users (Cascades)
+          const { error } = await supabase.rpc('delete_own_user');
+          if (error) throw error;
+
+          // Cleanup local state
+          await logout();
+          return true;
+        } catch (error) {
+          console.error('[CleanFlow Auth] Deactivation Failed:', error);
+          throw new Error('Could not complete deactivation. Please try again or contact support.');
+        }
+      },
+
       // ── SUBSCRIPTIONS & REWARDS ───────────────────────────────────────
       updateSubscription: async (tier) => {
         const { userId, profile } = get();

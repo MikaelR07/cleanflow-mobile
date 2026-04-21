@@ -239,7 +239,7 @@ CREATE POLICY "Buyers create orders" ON public.marketplace_orders FOR INSERT WIT
 -- ════════════════════════════════════════════════════════════════
 CREATE TABLE public.iot_devices (
   id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  owner_id        UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
+  owner_id        UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
   name            TEXT NOT NULL,
   type            TEXT CHECK (type IN ('smart-bin', 'air-quality', 'wastewater')),
   fill_level      INTEGER DEFAULT 0,
@@ -524,6 +524,15 @@ CREATE TRIGGER on_rating_submitted
   AFTER UPDATE OF agent_rating ON public.bookings
   FOR EACH ROW
   EXECUTE FUNCTION sync_agent_rating();
+
+-- ── Secure Account Deactivation ────────────────────────────────
+CREATE OR REPLACE FUNCTION delete_own_user()
+RETURNS void AS $$
+BEGIN
+  -- Delete from auth.users (Cascades to profiles and all other linked data)
+  DELETE FROM auth.users WHERE id = auth.uid();
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- ═══════════════════════════════════════════════════════════════
 -- Master Configuration Complete!
