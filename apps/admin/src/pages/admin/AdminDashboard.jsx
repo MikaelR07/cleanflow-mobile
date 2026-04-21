@@ -195,8 +195,8 @@ export default function AdminDashboard() {
                 </div>
             </div>
 
-             <div className="h-[350px] w-full relative">
-                <ResponsiveContainer width="100%" height="100%">
+              <div className="h-[350px] w-full relative">
+                <ResponsiveContainer width="100%" height="100%" minWidth={0} debounce={50}>
                   <LineChart data={revenueTrends.length > 1 ? revenueTrends : [
                     { month: 'Start', revenue: 0 }, 
                     ...(revenueTrends.length === 1 ? revenueTrends : [{ month: 'Current', revenue: 0 }])
@@ -243,7 +243,7 @@ export default function AdminDashboard() {
              <div className="bg-white dark:bg-slate-900 p-8 rounded-[2rem] border border-slate-100 dark:border-slate-800 shadow-xl shadow-slate-100/50 dark:shadow-none">
                 <h3 className="text-sm font-black text-slate-900 dark:text-white mb-6 uppercase tracking-widest">Material Breakdown (Top 5)</h3>
                 <div className="h-[240px]">
-                  <ResponsiveContainer width="100%" height="100%">
+                  <ResponsiveContainer width="100%" height="100%" minWidth={0} debounce={50}>
                     <PieChart>
                       <Pie 
                         data={materialDistribution.length > 0 ? materialDistribution : [{name: 'Organic', value: 4500}, {name: 'Recyclables', value: 2000}]} 
