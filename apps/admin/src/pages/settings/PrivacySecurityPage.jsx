@@ -1,14 +1,15 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Loader2, Shield, Lock, Trash2 } from 'lucide-react';
+import { ArrowLeft, Loader2, Shield, Lock, Trash2, ShieldAlert } from 'lucide-react';
 import { useAuthStore } from '@cleanflow/core';
 import { toast } from 'sonner';
 
 export default function PrivacySecurityPage() {
-  const { logout, changePin } = useAuthStore();
+  const { logout, changePin, deleteAccount } = useAuthStore();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [authStage, setAuthStage] = useState('view'); // 'view', 'pin'
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   const [pins, setPins] = useState({ current: '', new: '', confirm: '' });
 
@@ -31,11 +32,17 @@ export default function PrivacySecurityPage() {
     }
   };
 
-  const handleDeactivate = () => {
-    const confirmed = window.confirm("Are you sure you want to continuously delete your CleanFlow account? This action cannot be reversed.");
-    if (confirmed) {
-      toast.error('Account Terminated', { description: 'Your account has been deleted.' });
-      logout();
+  const handleDeactivate = async () => {
+    setIsLoading(true);
+    try {
+      await deleteAccount();
+      toast.error('Admin Account Wiped', { description: 'Your admin privileges have been permanently revoked.' });
+      navigate('/login', { replace: true });
+    } catch (err) {
+      toast.error('Error', { description: 'Could not complete deletion. Try again.' });
+    } finally {
+      setIsLoading(false);
+      setShowDeleteModal(false);
     }
   };
 
@@ -50,7 +57,6 @@ export default function PrivacySecurityPage() {
 
       {authStage === 'view' ? (
         <div className="space-y-6">
-          
           <div className="card p-0 overflow-hidden divide-y divide-slate-100 dark:divide-slate-800">
              <button onClick={() => setAuthStage('pin')} className="w-full flex items-center justify-between p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors text-left">
                 <div className="flex items-center gap-3">
@@ -65,10 +71,14 @@ export default function PrivacySecurityPage() {
              </button>
           </div>
 
-
-
           <div className="pt-8">
-             <button onClick={handleDeactivate} className="w-full py-4 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-xl font-bold flex items-center justify-center gap-2 transition-colors border border-rose-100 dark:border-rose-900/50">
+             <div className="text-center mb-4">
+                <h3 className="text-xs font-black text-rose-500 uppercase tracking-widest">Danger Zone</h3>
+             </div>
+             <button 
+               onClick={() => setShowDeleteModal(true)} 
+               className="w-full py-4 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-xl font-bold flex items-center justify-center gap-2 transition-colors border border-rose-100 dark:border-rose-900/50"
+             >
                 <Trash2 className="w-4 h-4" /> Deactivate Account
              </button>
           </div>
@@ -77,15 +87,15 @@ export default function PrivacySecurityPage() {
         <form onSubmit={handleChangePin} className="card p-5 space-y-5 animate-slide-up border-t-4 border-t-blue-500">
            <div>
               <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">Current Password</label>
-              <input type="password" required minLength={8} value={pins.current} onChange={(e) => setPins({...pins, current: e.target.value})} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500/50 tracking-widest text-sm" />
+              <input type="password" required minLength={6} value={pins.current} onChange={(e) => setPins({...pins, current: e.target.value})} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500/50 tracking-widest text-sm" />
            </div>
            <div>
               <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">New Password</label>
-              <input type="password" required minLength={8} value={pins.new} onChange={(e) => setPins({...pins, new: e.target.value})} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500/50 tracking-widest text-sm" />
+              <input type="password" required minLength={6} value={pins.new} onChange={(e) => setPins({...pins, new: e.target.value})} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500/50 tracking-widest text-sm" />
            </div>
            <div>
               <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">Confirm New Password</label>
-              <input type="password" required minLength={8} value={pins.confirm} onChange={(e) => setPins({...pins, confirm: e.target.value})} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500/50 tracking-widest text-sm" />
+              <input type="password" required minLength={6} value={pins.confirm} onChange={(e) => setPins({...pins, confirm: e.target.value})} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500/50 tracking-widest text-sm" />
            </div>
 
            <button type="submit" disabled={isLoading} className="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold flex items-center justify-center gap-2 transition-colors disabled:opacity-70 mt-2">
@@ -94,6 +104,41 @@ export default function PrivacySecurityPage() {
         </form>
       )}
 
+      {/* ── DELETE MODAL ────────────────────────────────────────── */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/80 backdrop-blur-md p-6">
+          <div className="bg-slate-800 w-full max-w-[320px] rounded-[28px] overflow-hidden shadow-2xl animate-scale-in border border-rose-500/30">
+            <div className="bg-rose-500 p-6 flex flex-col items-center gap-3 text-white">
+              <div className="w-14 h-14 bg-rose-600 rounded-xl flex items-center justify-center">
+                <ShieldAlert className="w-7 h-7 text-white" />
+              </div>
+              <h2 className="text-lg font-black uppercase tracking-tighter text-center">Revoke Access?</h2>
+            </div>
+            <div className="p-6 space-y-4">
+              <p className="text-xs text-center text-slate-400 leading-relaxed">
+                This will <span className="font-bold text-rose-500">permanently delete</span> your administrative credentials from the server.
+              </p>
+              
+              <div className="space-y-2">
+                <button 
+                  onClick={handleDeactivate}
+                  disabled={isLoading}
+                  className="w-full py-3.5 bg-rose-600 hover:bg-rose-700 active:scale-95 transition-all text-white rounded-xl font-black text-xs uppercase tracking-widest flex items-center justify-center gap-2"
+                >
+                  {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Confirm Deletion'}
+                </button>
+                <button 
+                  onClick={() => setShowDeleteModal(false)}
+                  disabled={isLoading}
+                  className="w-full py-3 text-slate-400 rounded-xl font-bold text-xs transition-all hover:bg-slate-700 active:scale-95"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
