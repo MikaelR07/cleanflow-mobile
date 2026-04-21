@@ -3,7 +3,7 @@ import { Brain, Mic, Send, Lightbulb, MapPin, Loader2, StopCircle } from 'lucide
 import { useAuthStore, ROLES } from '@cleanflow/core';
 import { useHygenexStore } from '@cleanflow/core';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
-import 'leaflet/dist/leaflet.css';
+
 
 // Fix for leaflet marker icon missing locally usually
 import L from 'leaflet';

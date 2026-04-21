@@ -6,7 +6,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { MapPin, ArrowLeft, Phone, Navigation, CheckCircle, User, Zap, Clock } from 'lucide-react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
+
 import { useAgentStore, useAuthStore, useNotificationStore, NOTIFICATION_TYPES } from '@cleanflow/core';
 import { toast } from 'sonner';
 

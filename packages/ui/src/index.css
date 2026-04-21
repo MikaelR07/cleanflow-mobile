@@ -15,9 +15,10 @@
     /* Native App Feel Optimizations */
     padding-top: env(safe-area-inset-top);
     padding-bottom: env(safe-area-inset-bottom);
-    overscroll-behavior-y: none; /* Prevents pull-to-refresh effect unless components handle it */
+    overscroll-behavior-y: contain; /* Relaxed from 'none' to allow smoother scroll while preventing full body pull-to-refresh */
     -webkit-tap-highlight-color: transparent;
-    user-select: none; /* Native apps usually disable text selection except on inputs */
+    -webkit-overflow-scrolling: touch;
+    user-select: none;
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -39,6 +40,19 @@
 
   .btn-primary {
     @apply bg-primary hover:bg-primary/90 text-white font-bold py-3 px-6 rounded-2xl shadow-lg shadow-primary/20 transition-all active:scale-95;
+  }
+
+  /* Safe Area Utilities */
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  
+  .safe-top {
+    padding-top: env(safe-area-inset-top);
+  }
+
+  .pb-safe {
+    padding-bottom: calc(1rem + env(safe-area-inset-bottom));
   }
 }
 

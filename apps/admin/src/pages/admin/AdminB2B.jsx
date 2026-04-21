@@ -109,7 +109,7 @@ export default function AdminB2B() {
                   <h3 className="text-xl font-black text-slate-900 dark:text-white">Pending Verifications</h3>
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                    <input type="text" placeholder="Filter by NEMA ID..." className="pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800 border-none rounded-xl text-xs font-bold w-64 focus:ring-2 focus:ring-primary/20" />
+                    <input type="text" placeholder="Filter by NEMA ID..." className="pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800 border-none rounded-xl text-xs font-bold w-64 focus:ring-2 text-base focus:ring-primary/20" />
                   </div>
                 </div>
 

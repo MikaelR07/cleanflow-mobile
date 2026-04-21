@@ -134,7 +134,7 @@ export default function Register() {
               value={formData.otp} 
               onChange={(e) => setFormData(prev => ({ ...prev, otp: e.target.value.replace(/\D/g, '').slice(0,6) }))} 
               placeholder="0 0 0 0 0 0" 
-              className="w-full bg-slate-800/50 border border-slate-700 rounded-2xl py-5 text-center text-3xl font-black tracking-[0.5em] text-white focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all placeholder:text-slate-600" 
+              className="w-full bg-slate-800/50 border border-slate-700 rounded-2xl py-5 text-center text-3xl font-black tracking-[0.5em] text-white focus:ring-4 text-base focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all placeholder:text-slate-600" 
               autoFocus
             />
             
@@ -196,7 +196,7 @@ export default function Register() {
             <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5 uppercase tracking-wider">Full Legal Name</label>
             <div className="relative">
               <User className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
-              <input type="text" name="name" value={formData.name} onChange={handleInputChange} placeholder="First Last" className="w-full pl-11 pr-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50 text-sm" required />
+              <input type="text" name="name" value={formData.name} onChange={handleInputChange} placeholder="First Last" className="w-full pl-11 pr-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:ring-2 text-base focus:ring-primary/50 text-sm" required />
             </div>
           </div>
 
@@ -216,14 +216,14 @@ export default function Register() {
               <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5 uppercase tracking-wider">Create PIN</label>
               <div className="relative">
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
-                <input type="password" name="pin" value={formData.pin} onChange={handleInputChange} placeholder="••••••••" minLength={8} className="w-full pl-11 pr-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50 tracking-widest text-sm" required />
+                <input type="password" name="pin" value={formData.pin} onChange={handleInputChange} placeholder="••••••••" minLength={8} className="w-full pl-11 pr-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:ring-2 text-base focus:ring-primary/50 tracking-widest text-sm" required />
               </div>
             </div>
             <div>
               <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5 uppercase tracking-wider">Confirm PIN</label>
               <div className="relative">
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
-                <input type="password" name="confirmPin" value={formData.confirmPin} onChange={handleInputChange} placeholder="••••••••" minLength={8} className="w-full pl-11 pr-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50 tracking-widest text-sm" required />
+                <input type="password" name="confirmPin" value={formData.confirmPin} onChange={handleInputChange} placeholder="••••••••" minLength={8} className="w-full pl-11 pr-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:ring-2 text-base focus:ring-primary/50 tracking-widest text-sm" required />
               </div>
             </div>
           </div>
@@ -234,7 +234,7 @@ export default function Register() {
               <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5 uppercase tracking-wider">National ID Number</label>
               <div className="relative">
                 <Hash className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
-                <input type="text" name="idNumber" value={formData.idNumber} onChange={handleInputChange} placeholder="12345678" minLength={8} maxLength={8} className="w-full pl-11 pr-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-secondary/50 text-sm tracking-widest" required />
+                <input type="text" name="idNumber" value={formData.idNumber} onChange={handleInputChange} placeholder="12345678" minLength={8} maxLength={8} className="w-full pl-11 pr-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:ring-2 text-base focus:ring-secondary/50 text-sm tracking-widest" required />
               </div>
             </div>
           </div>

@@ -78,7 +78,7 @@ export default function Login() {
                     placeholder="07XX XXX XXX / 01XX..."
                     value={phone}
                     onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
-                    className="w-full pl-12 pr-4 py-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl text-slate-900 dark:text-white font-black tracking-widest focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all outline-none"
+                    className="w-full pl-12 pr-4 py-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl text-slate-900 dark:text-white font-black tracking-widest focus:ring-4 text-base focus:ring-indigo-500/10 focus:border-indigo-500 transition-all outline-none"
                     required
                   />
                 </div>
@@ -106,7 +106,7 @@ export default function Login() {
                     placeholder="8+ characters"
                     value={pin}
                     onChange={(e) => setPin(e.target.value)}
-                    className="w-full pl-12 pr-4 py-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl text-slate-900 dark:text-white font-medium focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all outline-none"
+                    className="w-full pl-12 pr-4 py-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl text-slate-900 dark:text-white font-medium focus:ring-4 text-base focus:ring-indigo-500/10 focus:border-indigo-500 transition-all outline-none"
                     required
                   />
                 </div>

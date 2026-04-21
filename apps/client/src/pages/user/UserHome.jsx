@@ -29,7 +29,7 @@ import { useNavigate } from 'react-router-dom';
 import { useBookingStore, useAuthStore, useIotStore, useAdminStore, useNotificationStore } from '@cleanflow/core';
 import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
+
 import { SkeletonCard } from '@cleanflow/ui/components/Skeletons';
 import { RatingModal } from '@cleanflow/ui';
 import { toast } from 'sonner';

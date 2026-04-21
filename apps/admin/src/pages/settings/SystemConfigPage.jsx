@@ -59,7 +59,7 @@ export default function SystemConfigPage() {
                    value={form.phone} 
                    onChange={(e) => setForm({...form, phone: e.target.value})} 
                    placeholder="e.g. +254113787588" 
-                   className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50 text-sm font-mono tracking-wider" 
+                   className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white focus:ring-2 text-base focus:ring-primary/50 text-sm font-mono tracking-wider" 
                  />
               </div>
 
@@ -73,7 +73,7 @@ export default function SystemConfigPage() {
                    value={form.whatsapp} 
                    onChange={(e) => setForm({...form, whatsapp: e.target.value})} 
                    placeholder="e.g. 254113787588" 
-                   className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-[#25D366]/50 text-sm font-mono tracking-wider" 
+                   className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white focus:ring-2 text-base focus:ring-[#25D366]/50 text-sm font-mono tracking-wider" 
                  />
                  <p className="text-[10px] text-slate-400 mt-1.5">For WhatsApp, exclude the '+' sign. Just country code and number.</p>
               </div>

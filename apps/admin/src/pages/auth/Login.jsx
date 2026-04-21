@@ -75,7 +75,7 @@ export default function Login() {
                   placeholder="07XX XXX XXX"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  className="w-full pl-11 pr-4 py-3.5 bg-slate-900/50 border border-white/10 rounded-xl text-white font-medium focus:ring-2 focus:ring-white/20 transition-all placeholder:text-slate-600"
+                  className="w-full pl-11 pr-4 py-3.5 bg-slate-900/50 border border-white/10 rounded-xl text-white font-medium focus:ring-2 text-base focus:ring-white/20 transition-all placeholder:text-slate-600"
                   required
                 />
               </div>
@@ -98,7 +98,7 @@ export default function Login() {
                   minLength={8}
                   value={pin}
                   onChange={(e) => setPin(e.target.value)}
-                  className="w-full pl-11 pr-4 py-3.5 bg-slate-900/50 border border-white/10 rounded-xl text-white font-medium focus:ring-2 focus:ring-white/20 transition-all tracking-[0.5em] placeholder:text-slate-600"
+                  className="w-full pl-11 pr-4 py-3.5 bg-slate-900/50 border border-white/10 rounded-xl text-white font-medium focus:ring-2 text-base focus:ring-white/20 transition-all tracking-[0.5em] placeholder:text-slate-600"
                   required
                 />
               </div>

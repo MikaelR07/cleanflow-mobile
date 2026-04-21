@@ -6,7 +6,7 @@ import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import { MapPin } from 'lucide-react';
 import { useAgentStore } from '@cleanflow/core';
 import { WASTE_TYPES } from '@cleanflow/core/src/data/mockData';
-import 'leaflet/dist/leaflet.css';
+
 import L from 'leaflet';
 
 /* Fix for default Leaflet markers */

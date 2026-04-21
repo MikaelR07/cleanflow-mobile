@@ -167,7 +167,7 @@ export default function Register() {
                   value={formData.name} 
                   onChange={handleInputChange} 
                   placeholder="Full Legal Name" 
-                  className="w-full pl-11 pr-4 py-3.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl text-sm font-medium focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all" 
+                  className="w-full pl-11 pr-4 py-3.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl text-sm font-medium focus:ring-4 text-base focus:ring-primary/10 focus:border-primary outline-none transition-all" 
                   required 
                 />
               </div>
@@ -210,7 +210,7 @@ export default function Register() {
                   value={formData.pin} 
                   onChange={handleInputChange} 
                   placeholder="Passcode" 
-                  className="w-full pl-11 pr-4 py-3.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl text-sm font-medium focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all" 
+                  className="w-full pl-11 pr-4 py-3.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl text-sm font-medium focus:ring-4 text-base focus:ring-primary/10 focus:border-primary outline-none transition-all" 
                   required 
                 />
               </div>
@@ -222,7 +222,7 @@ export default function Register() {
                   value={formData.confirmPin} 
                   onChange={handleInputChange} 
                   placeholder="Confirm" 
-                  className="w-full pl-11 pr-4 py-3.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl text-sm font-medium focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all" 
+                  className="w-full pl-11 pr-4 py-3.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl text-sm font-medium focus:ring-4 text-base focus:ring-primary/10 focus:border-primary outline-none transition-all" 
                   required 
                 />
               </div>

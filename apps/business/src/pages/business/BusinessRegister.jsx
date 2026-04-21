@@ -111,7 +111,7 @@ export default function BusinessRegister() {
                 value={formData.name} 
                 onChange={handleInputChange} 
                 placeholder="EcoRecycle Solutions" 
-                className="w-full pl-11 pr-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50 text-sm" 
+                className="w-full pl-11 pr-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:ring-2 text-base focus:ring-primary/50 text-sm" 
                 required 
               />
             </div>
@@ -126,7 +126,7 @@ export default function BusinessRegister() {
                 name="businessType" 
                 value={formData.businessType} 
                 onChange={handleInputChange} 
-                className="w-full pl-11 pr-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50 text-sm appearance-none" 
+                className="w-full pl-11 pr-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:ring-2 text-base focus:ring-primary/50 text-sm appearance-none" 
                 required
               >
                 <option value="" disabled>Select Business Type</option>
@@ -149,7 +149,7 @@ export default function BusinessRegister() {
                   value={formData.phone} 
                   onChange={handleInputChange} 
                   placeholder="07XX XXX XXX" 
-                  className="w-full pl-11 pr-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50 text-sm" 
+                  className="w-full pl-11 pr-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:ring-2 text-base focus:ring-primary/50 text-sm" 
                   required 
                 />
               </div>
@@ -165,7 +165,7 @@ export default function BusinessRegister() {
                   value={formData.email} 
                   onChange={handleInputChange} 
                   placeholder="biz@cleanflow.ke" 
-                  className="w-full pl-11 pr-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50 text-sm" 
+                  className="w-full pl-11 pr-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:ring-2 text-base focus:ring-primary/50 text-sm" 
                 />
               </div>
             </div>
@@ -186,7 +186,7 @@ export default function BusinessRegister() {
                   minLength={6} 
                   maxLength={6} 
                   inputMode="numeric" 
-                  className="w-full pl-11 pr-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50 tracking-widest text-sm" 
+                  className="w-full pl-11 pr-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:ring-2 text-base focus:ring-primary/50 tracking-widest text-sm" 
                   required 
                 />
               </div>
@@ -205,7 +205,7 @@ export default function BusinessRegister() {
                   minLength={6} 
                   maxLength={6} 
                   inputMode="numeric" 
-                  className="w-full pl-11 pr-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50 tracking-widest text-sm" 
+                  className="w-full pl-11 pr-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:ring-2 text-base focus:ring-primary/50 tracking-widest text-sm" 
                   required 
                 />
               </div>

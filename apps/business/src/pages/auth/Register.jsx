@@ -169,7 +169,7 @@ export default function Register() {
                 value={formData.businessName}
                 onChange={handleInputChange}
                 placeholder="Company / Trading Name"
-                className="w-full pl-11 pr-4 py-3.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl text-sm font-medium focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all dark:text-white"
+                className="w-full pl-11 pr-4 py-3.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl text-sm font-medium focus:ring-4 text-base focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all dark:text-white"
                 required
               />
             </div>
@@ -183,7 +183,7 @@ export default function Register() {
                 value={formData.name}
                 onChange={handleInputChange}
                 placeholder="Contact Person (Full Name)"
-                className="w-full pl-11 pr-4 py-3.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl text-sm font-medium focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all dark:text-white"
+                className="w-full pl-11 pr-4 py-3.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl text-sm font-medium focus:ring-4 text-base focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all dark:text-white"
                 required
               />
             </div>
@@ -248,7 +248,7 @@ export default function Register() {
                   value={formData.pin}
                   onChange={handleInputChange}
                   placeholder="Passcode"
-                  className="w-full pl-11 pr-4 py-3.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl text-sm font-medium focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all dark:text-white"
+                  className="w-full pl-11 pr-4 py-3.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl text-sm font-medium focus:ring-4 text-base focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all dark:text-white"
                   required
                 />
               </div>
@@ -260,7 +260,7 @@ export default function Register() {
                   value={formData.confirmPin}
                   onChange={handleInputChange}
                   placeholder="Confirm"
-                  className="w-full pl-11 pr-4 py-3.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl text-sm font-medium focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all dark:text-white"
+                  className="w-full pl-11 pr-4 py-3.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl text-sm font-medium focus:ring-4 text-base focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all dark:text-white"
                   required
                 />
               </div>

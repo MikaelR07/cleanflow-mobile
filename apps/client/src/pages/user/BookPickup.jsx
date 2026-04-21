@@ -6,7 +6,7 @@ import { Sparkles, Clock, Mic, Camera, Check, ChevronRight, ArrowLeft, MapPin, E
 import { useNavigate, useLocation } from 'react-router-dom';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
+
 import { toast } from 'sonner';
 import { useBookingStore, useAuthStore } from '@cleanflow/core';
 import { WASTE_TYPES, ESTATES, ESTATE_COORDINATES, AGENT_LOCATIONS, SUBSCRIPTION_TIERS } from '@cleanflow/core/src/data/mockData';

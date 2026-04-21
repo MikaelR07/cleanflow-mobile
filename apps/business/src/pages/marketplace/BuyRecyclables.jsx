@@ -229,7 +229,7 @@ export default function BuyRecyclables() {
                   value={orderQty}
                   onChange={(e) => setOrderQty(e.target.value)}
                   placeholder={`Enter ${orderModal.unit}...`}
-                  className="w-full py-3.5 px-4 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl font-black text-slate-900 dark:text-white text-lg text-center focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all"
+                  className="w-full py-3.5 px-4 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl font-black text-slate-900 dark:text-white text-lg text-center focus:ring-4 text-base focus:ring-primary/10 focus:border-primary outline-none transition-all"
                 />
               </div>
 
@@ -249,7 +249,7 @@ export default function BuyRecyclables() {
                   onChange={(e) => setOrderMsg(e.target.value)}
                   placeholder="Delivery instructions, pickup preferences..."
                   rows={2}
-                  className="w-full py-3 px-4 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-sm text-slate-800 dark:text-white outline-none resize-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all"
+                  className="w-full py-3 px-4 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-sm text-slate-800 dark:text-white outline-none resize-none focus:ring-4 text-base focus:ring-primary/10 focus:border-primary transition-all"
                 />
               </div>
 

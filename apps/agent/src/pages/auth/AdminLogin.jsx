@@ -61,7 +61,7 @@ export default function AdminLogin() {
                   placeholder="HQ Phone Number"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  className="w-full pl-11 pr-4 py-3.5 bg-slate-900 border border-slate-700 rounded-xl text-white font-medium focus:ring-2 focus:ring-rose-500/50 focus:border-rose-500 transition-colors placeholder:text-slate-500"
+                  className="w-full pl-11 pr-4 py-3.5 bg-slate-900 border border-slate-700 rounded-xl text-white font-medium focus:ring-2 text-base focus:ring-rose-500/50 focus:border-rose-500 transition-colors placeholder:text-slate-500"
                   required
                 />
               </div>
@@ -80,7 +80,7 @@ export default function AdminLogin() {
                   inputMode="numeric"
                   value={pin}
                   onChange={(e) => setPin(e.target.value)}
-                  className="w-full pl-11 pr-4 py-3.5 bg-slate-900 border border-slate-700 rounded-xl text-white font-medium focus:ring-2 focus:ring-rose-500/50 focus:border-rose-500 transition-colors tracking-widest placeholder:tracking-normal placeholder:text-slate-500"
+                  className="w-full pl-11 pr-4 py-3.5 bg-slate-900 border border-slate-700 rounded-xl text-white font-medium focus:ring-2 text-base focus:ring-rose-500/50 focus:border-rose-500 transition-colors tracking-widest placeholder:tracking-normal placeholder:text-slate-500"
                   required
                 />
               </div>

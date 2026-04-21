@@ -50,7 +50,7 @@ export default function ProfilePage() {
           <h2 className="text-sm font-bold text-slate-800 dark:text-white mb-2 pb-2 border-b border-slate-100 dark:border-slate-800">Basic Information</h2>
           <div>
             <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wider">Full Name</label>
-            <input type="text" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50 text-sm" required />
+            <input type="text" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white focus:ring-2 text-base focus:ring-primary/50 text-sm" required />
           </div>
           <div>
             <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wider">Phone Number <span className="lowercase text-[10px] text-slate-400">(Read-only)</span></label>
@@ -58,7 +58,7 @@ export default function ProfilePage() {
           </div>
           <div>
             <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wider">Email (Optional)</label>
-            <input type="email" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} placeholder="you@example.com" className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50 text-sm" />
+            <input type="email" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} placeholder="you@example.com" className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white focus:ring-2 text-base focus:ring-primary/50 text-sm" />
           </div>
         </div>
 
@@ -78,7 +78,7 @@ export default function ProfilePage() {
                     location: { ...prev.location, estate: e.target.value } 
                   }))}
                   placeholder="e.g. South B, Kilimani"
-                  className="bg-transparent border-none p-0 focus:ring-0 w-full"
+                  className="bg-transparent border-none p-0 text-base focus:ring-0 w-full"
                 />
               </div>
             </div>
@@ -96,7 +96,7 @@ export default function ProfilePage() {
             </div>
              <div>
               <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wider">Vehicle Details</label>
-              <input type="text" value={formData.vehicle} onChange={(e) => setFormData({...formData, vehicle: e.target.value})} placeholder="KAA 123A" className="w-full px-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-secondary/50 text-sm" />
+              <input type="text" value={formData.vehicle} onChange={(e) => setFormData({...formData, vehicle: e.target.value})} placeholder="KAA 123A" className="w-full px-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white focus:ring-2 text-base focus:ring-secondary/50 text-sm" />
             </div>
           </div>
         )}

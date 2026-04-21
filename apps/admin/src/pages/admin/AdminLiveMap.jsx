@@ -1,7 +1,7 @@
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import { useAdminStore } from '@cleanflow/core';
 import { useEffect } from 'react';
-import 'leaflet/dist/leaflet.css';
+
 import L from 'leaflet';
 import { Network, Clock, User } from 'lucide-react';
 

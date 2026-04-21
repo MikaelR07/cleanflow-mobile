@@ -98,7 +98,7 @@ export default function AdminRegister() {
             <label className="block text-xs font-semibold text-slate-400 mb-1.5 uppercase tracking-wider">Full Name</label>
             <div className="relative">
               <User className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-500" />
-              <input type="text" name="name" value={formData.name} onChange={handleInputChange} placeholder="Admin Name" className="w-full pl-11 pr-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-white focus:ring-2 focus:ring-rose-500/50 text-sm" required />
+              <input type="text" name="name" value={formData.name} onChange={handleInputChange} placeholder="Admin Name" className="w-full pl-11 pr-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-white focus:ring-2 text-base focus:ring-rose-500/50 text-sm" required />
             </div>
           </div>
 
@@ -106,7 +106,7 @@ export default function AdminRegister() {
             <label className="block text-xs font-semibold text-slate-400 mb-1.5 uppercase tracking-wider">Phone Number</label>
             <div className="relative">
               <Phone className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-500" />
-              <input type="tel" name="phone" value={formData.phone} onChange={handleInputChange} placeholder="07XX XXX XXX" className="w-full pl-11 pr-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-white focus:ring-2 focus:ring-rose-500/50 text-sm" required />
+              <input type="tel" name="phone" value={formData.phone} onChange={handleInputChange} placeholder="07XX XXX XXX" className="w-full pl-11 pr-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-white focus:ring-2 text-base focus:ring-rose-500/50 text-sm" required />
             </div>
           </div>
 
@@ -114,7 +114,7 @@ export default function AdminRegister() {
             <label className="block text-xs font-semibold text-slate-400 mb-1.5 uppercase tracking-wider">Email (Optional)</label>
             <div className="relative">
               <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-500" />
-              <input type="email" name="email" value={formData.email} onChange={handleInputChange} placeholder="admin@cleanflow.app" className="w-full pl-11 pr-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-white focus:ring-2 focus:ring-rose-500/50 text-sm" />
+              <input type="email" name="email" value={formData.email} onChange={handleInputChange} placeholder="admin@cleanflow.app" className="w-full pl-11 pr-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-white focus:ring-2 text-base focus:ring-rose-500/50 text-sm" />
             </div>
           </div>
 
@@ -123,14 +123,14 @@ export default function AdminRegister() {
               <label className="block text-xs font-semibold text-slate-400 mb-1.5 uppercase tracking-wider">6-Digit PIN</label>
               <div className="relative">
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-500" />
-                <input type="password" name="pin" value={formData.pin} onChange={handleInputChange} placeholder="••••••" maxLength={6} inputMode="numeric" className="w-full pl-11 pr-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-white focus:ring-2 focus:ring-rose-500/50 tracking-widest text-sm" required />
+                <input type="password" name="pin" value={formData.pin} onChange={handleInputChange} placeholder="••••••" maxLength={6} inputMode="numeric" className="w-full pl-11 pr-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-white focus:ring-2 text-base focus:ring-rose-500/50 tracking-widest text-sm" required />
               </div>
             </div>
             <div>
               <label className="block text-xs font-semibold text-slate-400 mb-1.5 uppercase tracking-wider">Confirm PIN</label>
               <div className="relative">
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-500" />
-                <input type="password" name="confirmPin" value={formData.confirmPin} onChange={handleInputChange} placeholder="••••••" maxLength={6} inputMode="numeric" className="w-full pl-11 pr-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-white focus:ring-2 focus:ring-rose-500/50 tracking-widest text-sm" required />
+                <input type="password" name="confirmPin" value={formData.confirmPin} onChange={handleInputChange} placeholder="••••••" maxLength={6} inputMode="numeric" className="w-full pl-11 pr-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-white focus:ring-2 text-base focus:ring-rose-500/50 tracking-widest text-sm" required />
               </div>
             </div>
           </div>
@@ -139,7 +139,7 @@ export default function AdminRegister() {
             <label className="block text-xs font-bold text-rose-400 mb-1.5 uppercase tracking-wider">Admin Secret Key</label>
             <div className="relative">
               <KeyRound className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-rose-500" />
-              <input type="password" name="secretKey" value={formData.secretKey} onChange={handleInputChange} placeholder="Required System Key" className="w-full pl-11 pr-4 py-3 bg-slate-900 border border-rose-500/30 rounded-xl text-white focus:ring-2 focus:ring-rose-500 focus:border-rose-500 text-sm placeholder:text-rose-500/30" required />
+              <input type="password" name="secretKey" value={formData.secretKey} onChange={handleInputChange} placeholder="Required System Key" className="w-full pl-11 pr-4 py-3 bg-slate-900 border border-rose-500/30 rounded-xl text-white focus:ring-2 text-base focus:ring-rose-500 focus:border-rose-500 text-sm placeholder:text-rose-500/30" required />
             </div>
           </div>
 

@@ -99,7 +99,7 @@ export default function Register() {
             <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5 uppercase tracking-wider">Full Name</label>
             <div className="relative">
               <User className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
-              <input type="text" name="name" value={formData.name} onChange={handleInputChange} placeholder="John Doe" className="w-full pl-11 pr-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50 text-sm" required />
+              <input type="text" name="name" value={formData.name} onChange={handleInputChange} placeholder="John Doe" className="w-full pl-11 pr-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:ring-2 text-base focus:ring-primary/50 text-sm" required />
             </div>
           </div>
 
@@ -107,7 +107,7 @@ export default function Register() {
             <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5 uppercase tracking-wider">Phone Number</label>
             <div className="relative">
               <Phone className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
-              <input type="tel" name="phone" value={formData.phone} onChange={handleInputChange} placeholder="07XX XXX XXX" className="w-full pl-11 pr-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50 text-sm" required />
+              <input type="tel" name="phone" value={formData.phone} onChange={handleInputChange} placeholder="07XX XXX XXX" className="w-full pl-11 pr-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:ring-2 text-base focus:ring-primary/50 text-sm" required />
             </div>
           </div>
 
@@ -116,14 +116,14 @@ export default function Register() {
               <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5 uppercase tracking-wider">Create Password</label>
               <div className="relative">
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
-                <input type="password" name="pin" value={formData.pin} onChange={handleInputChange} placeholder="••••••••" minLength={8} className="w-full pl-11 pr-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50 tracking-widest text-sm" required />
+                <input type="password" name="pin" value={formData.pin} onChange={handleInputChange} placeholder="••••••••" minLength={8} className="w-full pl-11 pr-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:ring-2 text-base focus:ring-primary/50 tracking-widest text-sm" required />
               </div>
             </div>
             <div>
               <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5 uppercase tracking-wider">Confirm Password</label>
               <div className="relative">
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
-                <input type="password" name="confirmPin" value={formData.confirmPin} onChange={handleInputChange} placeholder="••••••••" minLength={8} className="w-full pl-11 pr-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50 tracking-widest text-sm" required />
+                <input type="password" name="confirmPin" value={formData.confirmPin} onChange={handleInputChange} placeholder="••••••••" minLength={8} className="w-full pl-11 pr-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:ring-2 text-base focus:ring-primary/50 tracking-widest text-sm" required />
               </div>
             </div>
           </div>
@@ -147,7 +147,7 @@ export default function Register() {
                 value={formData.accessKey} 
                 onChange={handleInputChange} 
                 placeholder="Required Secret Key" 
-                className="w-full pl-11 pr-4 py-3 bg-rose-500/5 dark:bg-rose-500/10 border border-rose-500/20 rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-rose-500/50 text-sm font-mono tracking-widest" 
+                className="w-full pl-11 pr-4 py-3 bg-rose-500/5 dark:bg-rose-500/10 border border-rose-500/20 rounded-xl text-slate-900 dark:text-white focus:ring-2 text-base focus:ring-rose-500/50 text-sm font-mono tracking-widest" 
                 required 
               />
             </div>
