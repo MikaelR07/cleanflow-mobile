@@ -47,7 +47,12 @@ Deno.serve(async (req) => {
       message: `Your CleanFlow verification code is: ${otp}. Valid for 10 minutes. Do not share this code.`,
     });
 
-    const atRes = await fetch('https://api.africastalking.com/version1/messaging', {
+    // Route to correct environment endpoint
+    const endpoint = AT_USERNAME === 'sandbox'
+      ? 'https://api.sandbox.africastalking.com/version1/messaging'
+      : 'https://api.africastalking.com/version1/messaging';
+
+    const atRes = await fetch(endpoint, {
       method: 'POST',
       headers: {
         'apiKey': AT_API_KEY,
@@ -57,8 +62,15 @@ Deno.serve(async (req) => {
       body: body.toString(),
     });
 
-    const atData = await atRes.json();
-    console.log('[CleanFlow OTP] AT Response:', JSON.stringify(atData));
+    const atText = await atRes.text();
+    console.log('[CleanFlow OTP] AT Raw Response:', atText);
+
+    let atData;
+    try {
+      atData = JSON.parse(atText);
+    } catch (e) {
+      throw new Error(`Africa's Talking API Error: ${atText}`);
+    }
 
     const status = atData?.SMSMessageData?.Recipients?.[0]?.status;
     if (status && status !== 'Success') {
