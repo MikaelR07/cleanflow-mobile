@@ -10,6 +10,54 @@ import {
 import { motion } from 'framer-motion';
 import { useThemeStore } from '@cleanflow/core';
 
+const GlassMockup = ({ color = "emerald", icon: Icon, isDarkMode }) => {
+  const colorMap = {
+    emerald: { bg: 'bg-emerald-500', shadow: 'shadow-emerald-500/40', glow: 'from-emerald-500/20', border: 'border-emerald-500/20' },
+    blue: { bg: 'bg-blue-500', shadow: 'shadow-blue-500/40', glow: 'from-blue-500/20', border: 'border-blue-500/20' },
+    purple: { bg: 'bg-purple-500', shadow: 'shadow-purple-500/40', glow: 'from-purple-500/20', border: 'border-purple-500/20' },
+    rose: { bg: 'bg-rose-500', shadow: 'shadow-rose-500/40', glow: 'from-rose-500/20', border: 'border-rose-500/20' },
+  };
+  const theme = colorMap[color];
+
+  return (
+    <div className={`aspect-square rounded-[3rem] border ${isDarkMode ? 'border-white/5 bg-slate-800/20' : 'border-slate-200 bg-white/50'} relative overflow-hidden shadow-2xl backdrop-blur-sm group`}>
+      <div className={`absolute inset-0 bg-gradient-to-br ${theme.glow} to-transparent opacity-50`} />
+      
+      {/* Dynamic Background Elements */}
+      <motion.div 
+        animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3] }}
+        transition={{ duration: 8, repeat: Infinity }}
+        className={`absolute -top-20 -right-20 w-64 h-64 rounded-full blur-[80px] ${theme.bg} opacity-20`}
+      />
+
+      <div className="absolute inset-0 flex items-center justify-center z-10">
+        <motion.div
+          animate={{ y: [0, -15, 0] }}
+          transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+          className={`w-32 h-32 rounded-[2rem] ${theme.bg} flex items-center justify-center text-white shadow-2xl ${theme.shadow} transform group-hover:scale-110 transition-transform duration-700`}
+        >
+          <Icon className="w-16 h-16" />
+        </motion.div>
+      </div>
+
+      {/* Floating Glass Panels */}
+      <motion.div 
+        animate={{ x: [0, 15, 0], y: [0, 10, 0], rotate: [0, 5, 0] }}
+        transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+        className={`absolute top-12 right-12 w-24 h-24 rounded-2xl border ${isDarkMode ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-white/30'} backdrop-blur-md shadow-lg`} 
+      />
+      <motion.div 
+        animate={{ x: [0, -20, 0], y: [0, -5, 0], rotate: [0, -5, 0] }}
+        transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
+        className={`absolute bottom-12 left-12 w-32 h-32 rounded-3xl border ${isDarkMode ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-white/30'} backdrop-blur-md shadow-lg`} 
+      />
+      
+      {/* Decorative Dots/Grid */}
+      <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, currentColor 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
+    </div>
+  );
+};
+
 export default function LandingPage() {
   const [scrolled, setScrolled] = useState(false);
   const { isDarkMode, toggleTheme } = useThemeStore();
@@ -56,6 +104,7 @@ export default function LandingPage() {
           
           <div className="hidden md:flex items-center gap-8 text-sm font-bold">
             <a href="#ecosystem" className={`${isDarkMode ? 'text-slate-400 hover:text-white' : 'text-slate-500 hover:text-slate-900'} transition-colors`}>Ecosystem</a>
+            <a href="#vision" className={`${isDarkMode ? 'text-slate-400 hover:text-white' : 'text-slate-500 hover:text-slate-900'} transition-colors`}>Vision</a>
             <a href="#portals" className={`${isDarkMode ? 'text-slate-400 hover:text-white' : 'text-slate-500 hover:text-slate-900'} transition-colors`}>Portals</a>
             
             <button onClick={toggleTheme} className={`p-2.5 rounded-full transition-colors ${isDarkMode ? 'bg-slate-800 text-yellow-400 hover:bg-slate-700' : 'bg-slate-200 text-slate-700 hover:bg-slate-300'}`}>
@@ -67,9 +116,35 @@ export default function LandingPage() {
       </nav>
 
       {/* ── HERO SECTION ─────────────────────────────────────────── */}
-      <section className="relative pt-48 pb-32 px-6">
-        <div className={`absolute top-0 left-1/2 -translate-x-1/2 w-full h-[600px] blur-[120px] rounded-full pointer-events-none transition-colors duration-1000 ${isDarkMode ? 'bg-emerald-500/10' : 'bg-emerald-300/20'}`} />
-        
+      <section className="relative pt-48 pb-32 px-6 flex items-center min-h-[750px]">
+        {/* Background Image Layer */}
+        {/* CSS-Only Hero Visual Layer */}
+        <div className="absolute inset-0 z-0 overflow-hidden">
+          <div className={`absolute inset-0 bg-gradient-to-br transition-colors duration-1000 ${isDarkMode ? 'from-emerald-950/40 via-slate-900 to-slate-900' : 'from-emerald-500/10 via-slate-50 to-slate-50'}`} />
+          
+          {/* Animated Background Blobs */}
+          <motion.div 
+            animate={{ 
+              scale: [1, 1.2, 1],
+              rotate: [0, 90, 0],
+              x: [0, 50, 0],
+            }}
+            transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
+            className={`absolute -top-[10%] -right-[5%] w-[60%] h-[60%] rounded-full blur-[120px] ${isDarkMode ? 'bg-emerald-500/10' : 'bg-emerald-500/5'}`}
+          />
+          <motion.div 
+            animate={{ 
+              scale: [1, 1.1, 1],
+              x: [0, -30, 0],
+              y: [0, 40, 0],
+            }}
+            transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+            className={`absolute -bottom-[5%] -left-[5%] w-[50%] h-[50%] rounded-full blur-[100px] ${isDarkMode ? 'bg-teal-500/10' : 'bg-teal-500/5'}`}
+          />
+          
+          {/* Subtle Grid Overlay */}
+          <div className={`absolute inset-0 opacity-[0.05] ${isDarkMode ? 'text-white' : 'text-emerald-900'}`} style={{ backgroundImage: 'linear-gradient(currentColor 1px, transparent 1px), linear-gradient(to right, currentColor 1px, transparent 1px)', backgroundSize: '60px 60px' }} />
+        </div>
         <div className="max-w-7xl mx-auto text-center relative z-10">
           <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full border mb-8 ${isDarkMode ? 'bg-emerald-500/10 border-emerald-500/20' : 'bg-emerald-100 border-emerald-200'}`}>
             <Zap className="w-3 h-3 text-emerald-500" />
@@ -116,6 +191,61 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* ── STRATEGIC VISION ────────────────────────────────────── */}
+      <section id="vision" className={`py-32 px-6 relative overflow-hidden transition-colors ${isDarkMode ? 'bg-slate-900 border-b border-white/5' : 'bg-white border-b border-slate-200'}`}>
+        {/* Decorative background glow */}
+        <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[300px] blur-[150px] rounded-full ${isDarkMode ? 'bg-emerald-500/5' : 'bg-emerald-500/5'} pointer-events-none`} />
+
+        <div className="max-w-7xl mx-auto relative z-10">
+          <div className="grid lg:grid-cols-2 gap-20 items-center">
+            <motion.div initial={{ opacity: 0, x: -30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}>
+              <h2 className="text-sm font-black uppercase tracking-widest text-emerald-500 mb-6 font-mono">The Thesis</h2>
+              <h3 className={`text-4xl md:text-6xl font-black mb-8 tracking-tighter ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+                A Future Where <br />
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 to-teal-400 italic">Waste is Wealth.</span>
+              </h3>
+              <p className={`text-lg font-medium leading-relaxed mb-10 ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>
+                CleanFlow is more than a software suite—it is the digital foundation for a circular society. By integrating real-time telemetry, automated rewards, and industrial marketplaces, we are transforming waste into a high-value digital asset.
+              </p>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                {[
+                  { label: "Traceability", val: "100%", sub: "Source to Recycler" },
+                  { label: "Rewards", val: "Instant", sub: "Digital Payouts" },
+                  { label: "AI Ops", val: "24/7", sub: "Predictive Analytics" }
+                ].map((stat, i) => (
+                  <div key={i} className={`p-6 rounded-2xl border ${isDarkMode ? 'bg-white/5 border-white/5' : 'bg-slate-50 border-slate-200'}`}>
+                    <div className="text-2xl font-black text-emerald-500 mb-1">{stat.val}</div>
+                    <div className={`text-xs font-bold uppercase tracking-widest mb-1 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{stat.label}</div>
+                    <div className="text-[10px] text-slate-500 font-medium">{stat.sub}</div>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9 }} 
+              whileInView={{ opacity: 1, scale: 1 }} 
+              viewport={{ once: true }}
+              className="relative"
+            >
+              <div className={`aspect-square rounded-[4rem] border ${isDarkMode ? 'border-white/5 bg-slate-800/20' : 'border-slate-200 bg-white/50'} backdrop-blur-xl relative overflow-hidden shadow-3xl`}>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="relative w-64 h-64">
+                    <motion.div animate={{ rotate: 360 }} transition={{ duration: 40, repeat: Infinity, ease: "linear" }} className="absolute inset-0 border-2 border-emerald-500/20 rounded-full border-dashed" />
+                    <motion.div animate={{ rotate: -360 }} transition={{ duration: 25, repeat: Infinity, ease: "linear" }} className="absolute inset-4 border border-teal-500/10 rounded-full border-dashed" />
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="w-32 h-32 rounded-full bg-emerald-500/10 flex items-center justify-center blur-xl" />
+                      <Globe className="w-20 h-20 text-emerald-500 relative z-10" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
       {/* ── DEEP DIVES ─────────────────────────────────────────── */}
       <section className="py-12">
         
@@ -123,10 +253,7 @@ export default function LandingPage() {
         <div className={`py-24 px-6 ${isDarkMode ? 'hover:bg-slate-800/20' : 'hover:bg-slate-100/50'} transition-colors`}>
           <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
             <motion.div initial={{ opacity: 0, x: -50 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}>
-              <div className="aspect-square rounded-[3rem] bg-gradient-to-br from-emerald-500/20 to-emerald-900/20 border border-emerald-500/10 flex items-center justify-center p-12 relative overflow-hidden">
-                <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
-                <User className="w-48 h-48 text-emerald-500 drop-shadow-2xl" />
-              </div>
+              <GlassMockup color="emerald" icon={User} isDarkMode={isDarkMode} />
             </motion.div>
             <motion.div initial={{ opacity: 0, x: 50 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}>
               <div className="inline-flex items-center gap-2 text-emerald-500 font-bold mb-4 uppercase tracking-widest text-xs">Platform One</div>
@@ -177,9 +304,7 @@ export default function LandingPage() {
               </ul>
             </motion.div>
             <motion.div initial={{ opacity: 0, x: 50 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} className="order-1 lg:order-2">
-              <div className="aspect-square rounded-[3rem] bg-gradient-to-br from-blue-500/20 to-blue-900/20 border border-blue-500/10 flex items-center justify-center p-12 relative overflow-hidden">
-                <Truck className="w-48 h-48 text-blue-500 drop-shadow-2xl" />
-              </div>
+              <GlassMockup color="blue" icon={Truck} isDarkMode={isDarkMode} />
             </motion.div>
           </div>
         </div>
@@ -188,9 +313,7 @@ export default function LandingPage() {
         <div className={`py-24 px-6 ${isDarkMode ? 'hover:bg-slate-800/20' : 'hover:bg-slate-100/50'} transition-colors`}>
           <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
             <motion.div initial={{ opacity: 0, x: -50 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}>
-              <div className="aspect-square rounded-[3rem] bg-gradient-to-br from-purple-500/20 to-pink-900/20 border border-purple-500/10 flex items-center justify-center p-12 relative overflow-hidden">
-                <Building2 className="w-48 h-48 text-purple-500 drop-shadow-2xl" />
-              </div>
+              <GlassMockup color="purple" icon={Building2} isDarkMode={isDarkMode} />
             </motion.div>
             <motion.div initial={{ opacity: 0, x: 50 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}>
               <div className="inline-flex items-center gap-2 text-purple-500 font-bold mb-4 uppercase tracking-widest text-xs">Platform Three</div>
@@ -241,9 +364,7 @@ export default function LandingPage() {
               </ul>
             </motion.div>
             <motion.div initial={{ opacity: 0, x: 50 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} className="order-1 lg:order-2">
-              <div className="aspect-square rounded-[3rem] bg-gradient-to-br from-rose-500/20 to-orange-900/20 border border-rose-500/10 flex items-center justify-center p-12 relative overflow-hidden">
-                <ShieldCheck className="w-48 h-48 text-rose-500 drop-shadow-2xl" />
-              </div>
+              <GlassMockup color="rose" icon={ShieldCheck} isDarkMode={isDarkMode} />
             </motion.div>
           </div>
         </div>
@@ -299,9 +420,9 @@ export default function LandingPage() {
             <div>
               <h5 className={`text-sm font-black uppercase tracking-widest mb-6 ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>Platforms</h5>
               <ul className="space-y-4 text-sm font-bold text-slate-500 italic">
-                <li><a href="#portals" className="hover:text-emerald-500 transition-colors">Client Edge</a></li>
-                <li><a href="#portals" className="hover:text-emerald-500 transition-colors">Agent Field Ops</a></li>
-                <li><a href="#portals" className="hover:text-emerald-500 transition-colors">Business Market</a></li>
+                <li><a href="#ecosystem" className="hover:text-emerald-500 transition-colors">Ecosystem</a></li>
+                <li><a href="#vision" className="hover:text-emerald-500 transition-colors">Strategic Vision</a></li>
+                <li><a href="#portals" className="hover:text-emerald-500 transition-colors">Portals</a></li>
               </ul>
             </div>
 
