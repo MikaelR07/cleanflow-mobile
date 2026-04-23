@@ -3,11 +3,12 @@
  */
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { MapPin, ArrowLeft, Phone, Navigation, CheckCircle, User, Zap, Clock } from 'lucide-react';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import { MapPin, ArrowLeft, ArrowRight, Phone, Navigation, CheckCircle, User, Zap, Clock } from 'lucide-react';
+import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet';
 import L from 'leaflet';
 
-import { useAgentStore, useAuthStore, useNotificationStore, NOTIFICATION_TYPES } from '@cleanflow/core';
+import { useAgentStore, useAuthStore, useNotificationStore, NOTIFICATION_TYPES, useAssetStore } from '@cleanflow/core';
+import { AIScannerModal } from '@cleanflow/ui';
 import { toast } from 'sonner';
 
 // Custom Icons
@@ -25,18 +26,36 @@ const clientIcon = L.divIcon({
   iconAnchor: [16, 16]
 });
 
+function MapBounds({ bounds }) {
+  const map = useMap();
+  useEffect(() => {
+    if (bounds && bounds.length > 0) {
+      map.fitBounds(bounds, { padding: [40, 40] });
+    }
+  }, [bounds, map]);
+  return null;
+}
+
 export default function NavigateJobPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { profile } = useAuthStore();
-  const { activeJobs, fetchActiveJobs } = useAgentStore();
+  const { activeJobs, fetchActiveJobs, arrivedJobIds, setJobArrived } = useAgentStore();
   const { addNotification } = useNotificationStore();
   
   const job = activeJobs.find(j => j.id === id);
+  const { verifyAsset } = useAssetStore();
+  const [isScannerOpen, setIsScannerOpen] = useState(false);
+  const [hasArrived, setHasArrived] = useState(false);
 
   useEffect(() => {
     if (activeJobs.length === 0) fetchActiveJobs();
-  }, [fetchActiveJobs, activeJobs.length]);
+    
+    // Sync local arrival state with global store
+    if (id && arrivedJobIds.includes(id)) {
+      setHasArrived(true);
+    }
+  }, [fetchActiveJobs, activeJobs.length, id, arrivedJobIds]);
 
   if (!job) {
     return (
@@ -85,6 +104,18 @@ export default function NavigateJobPage() {
         >
           <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
           
+          <MapBounds bounds={[agentPos, clientPos]} />
+
+          {/* Draw a dashed route between agent and client */}
+          <Polyline 
+            positions={[agentPos, clientPos]} 
+            color="#00A651" 
+            weight={4} 
+            dashArray="10, 15" 
+            opacity={0.8}
+            lineCap="round"
+          />
+          
           <Marker position={agentPos} icon={agentIcon}>
             <Popup>You are here</Popup>
           </Marker>
@@ -131,26 +162,68 @@ export default function NavigateJobPage() {
            </div>
         </div>
 
-        <button 
-          onClick={() => {
-            // Send notification to the user
-            addNotification(
-              "Agent Arrived! 🚚",
-              `${profile.name} has arrived at your location. Please meet them to begin the pickup.`,
-              NOTIFICATION_TYPES.SUCCESS,
-              'client',
-              job.user_id || job.userId
-            );
+        {!hasArrived ? (
+          <button 
+            onClick={() => {
+              // Send notification to the user
+              addNotification(
+                "Agent Arrived! 🚚",
+                `${profile.name} has arrived at your location. Please meet them to begin the pickup.`,
+                NOTIFICATION_TYPES.SUCCESS,
+                'client',
+                job.user_id || job.userId
+              );
+              
+              setHasArrived(true);
+              setJobArrived(job.id);
+              toast.success("Welcome to Mission Site!", { description: "Please weigh the waste to complete pickup." });
+            }}
+            className="w-full py-4 bg-primary text-white font-black text-sm rounded-2xl shadow-xl shadow-primary/20 flex items-center justify-center gap-3 active:scale-95 transition-all group"
+          >
+            <CheckCircle className="w-5 h-5 group-hover:scale-110 transition-transform" />
+            I HAVE ARRIVED AT LOCATION
+          </button>
+        ) : (
+          <div className="flex flex-col gap-3">
+            <button 
+              onClick={() => setIsScannerOpen(true)}
+              className="w-full py-4 bg-accent text-white font-black text-sm rounded-2xl shadow-xl shadow-accent/20 flex items-center justify-center gap-3 active:scale-95 transition-all group"
+            >
+              <Zap className="w-5 h-5 animate-pulse" />
+              VERIFY ASSET (AI GRADING)
+            </button>
             
-            navigate('/jobs');
-            toast.success("Welcome to Mission Site!", { description: "Please weigh the waste to complete pickup." });
-          }}
-          className="w-full py-4 bg-primary text-white font-black text-sm rounded-2xl shadow-xl shadow-primary/20 flex items-center justify-center gap-3 active:scale-95 transition-all group"
-        >
-          <CheckCircle className="w-5 h-5 group-hover:scale-110 transition-transform" />
-          I HAVE ARRIVED AT LOCATION
-        </button>
+            <button 
+              onClick={() => {
+                toast.dismiss();
+                navigate('/jobs', { state: { tab: 'active' } });
+              }}
+              className="w-full py-4 bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white font-black text-sm rounded-2xl flex items-center justify-center gap-3 active:scale-95 transition-all"
+            >
+              <ArrowRight className="w-5 h-5 rotate-180" />
+              RETURN TO MISSION LIST
+            </button>
+          </div>
+        )}
       </div>
+
+      <AIScannerModal 
+        isOpen={isScannerOpen}
+        onClose={() => setIsScannerOpen(false)}
+        booking={job}
+        onVerify={async (data) => {
+          try {
+            await verifyAsset(job.id, {
+              ...data,
+              ownerId: job.userId || job.user_id
+            });
+            toast.success("Asset Verified!", { description: "Moving to next mission." });
+            navigate('/jobs');
+          } catch (err) {
+            toast.error("Verification failed. Please retry.");
+          }
+        }}
+      />
     </div>
   );
 }

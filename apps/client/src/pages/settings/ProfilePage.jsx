@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Loader2, Save, MapPin } from 'lucide-react';
+import { ArrowLeft, Loader2, Save } from 'lucide-react';
 import { useAuthStore, ROLES } from '@cleanflow/core';
 import { toast } from 'sonner';
 import LocationSelector from '@cleanflow/ui/components/LocationSelector';
@@ -14,7 +14,7 @@ export default function ProfilePage() {
     name: profile?.name || '',
     email: profile?.email || '',
     phone: profile?.phone || '',
-    location: profile?.location || null,
+    location: profile?.location || { estate: '', latitude: null, longitude: null },
     idNumber: profile?.idNumber || '',
     vehicle: profile?.vehicle || ''
   });
@@ -62,28 +62,16 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        {/* Application Location (Non-Map) */}
+        {/* High-Precision Location Picker */}
         <div className="card p-5 space-y-4">
-          <h2 className="text-sm font-bold text-slate-800 dark:text-white mb-2 pb-2 border-b border-slate-100 dark:border-slate-800">Operational Sector</h2>
-          <div>
-            <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wider">Estate / Neighborhood</label>
-            <div className="flex items-center gap-3">
-              <div className="flex-1 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-4 py-3 rounded-xl text-sm text-slate-900 dark:text-white flex items-center gap-2">
-                <MapPin className="w-4 h-4 text-slate-400" />
-                <input 
-                  type="text" 
-                  value={formData.location?.estate || ''} 
-                  onChange={(e) => setFormData(prev => ({ 
-                    ...prev, 
-                    location: { ...prev.location, estate: e.target.value } 
-                  }))}
-                  placeholder="e.g. South B, Kilimani"
-                  className="bg-transparent border-none p-0 text-base focus:ring-0 w-full"
-                />
-              </div>
-            </div>
-            <p className="text-[10px] text-slate-400 mt-2 italic">* Map precision is handled during registration. Profile updates focus on sector nomenclature.</p>
-          </div>
+          <h2 className="text-sm font-bold text-slate-800 dark:text-white mb-2 pb-2 border-b border-slate-100 dark:border-slate-800">Operational Location</h2>
+          <LocationSelector 
+            value={formData.location} 
+            onChange={(newLoc) => setFormData(prev => ({ ...prev, location: newLoc }))} 
+          />
+          <p className="text-[10px] text-slate-400 mt-2 italic leading-relaxed">
+            CleanFlow uses your GPS pin for pinpoint accuracy. Agents will navigate directly to this marker for your waste collection.
+          </p>
         </div>
 
         {/* Agent Details */}
@@ -104,9 +92,9 @@ export default function ProfilePage() {
         <button
           type="submit"
           disabled={isLoading}
-          className="w-full py-4 bg-primary hover:bg-primary-dark text-white rounded-xl font-bold flex items-center justify-center gap-2 transition-colors disabled:opacity-70"
+          className="w-full py-4 bg-primary hover:bg-primary-dark text-white rounded-[2rem] font-black text-sm uppercase tracking-widest shadow-xl shadow-primary/20 flex items-center justify-center gap-2 transition-all active:scale-95 disabled:opacity-70"
         >
-          {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />} Save Changes
+          {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />} Update My Data
         </button>
 
       </form>

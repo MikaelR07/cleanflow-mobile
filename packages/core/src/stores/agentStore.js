@@ -13,7 +13,12 @@ import { ROLES } from '@cleanflow/constants';
 export const useAgentStore = create((set, get) => ({
   availableJobs: [],
   activeJobs: [],
+  jobHistory: [],
   rejectedJobIds: [],
+  arrivedJobIds: [], 
+  setJobArrived: (jobId) => set((s) => ({ 
+    arrivedJobIds: s.arrivedJobIds.includes(jobId) ? s.arrivedJobIds : [...s.arrivedJobIds, jobId] 
+  })),
   earnings: {
     today: 0,
     todayGoal: 3000,
@@ -38,40 +43,87 @@ export const useAgentStore = create((set, get) => ({
   coachInsights: AI_COACH_INSIGHTS,
   isLoadingJobs: false,
   currentInsightIndex: 0,
+  jobSubscription: null,
 
-  /** Fetch jobs from Supabase Bookings table */
+  // ── Realtime Job Listener ───────────────────────────
+  subscribeToJobs: () => {
+    if (get().jobSubscription) return;
+    
+    // Listen for ANY new bookings or updates to bookings in the 'pending' status
+    const sub = supabase
+      .channel('public:agent-bookings')
+      .on('postgres_changes', 
+        { event: '*', schema: 'public', table: 'bookings', filter: "status=eq.pending" }, 
+        (payload) => {
+          console.log('[Agent Store] Realtime Booking Update Detected:', payload);
+          // Play a sound if it's a new job (INSERT)
+          if (payload.eventType === 'INSERT') {
+             useNotificationStore.getState().playNotificationSound();
+          }
+          // Refresh the jobs list
+          get().fetchAvailableJobs();
+        }
+      )
+      .subscribe();
+      
+    set({ jobSubscription: sub });
+  },
+
+  cleanupJobs: () => {
+    if (get().jobSubscription) {
+      get().jobSubscription.unsubscribe();
+      set({ jobSubscription: null });
+    }
+  },
+
+  /** Fetch jobs from Supabase Bookings table — filtered by agent type */
   fetchAvailableJobs: async () => {
-    const { userId } = useAuthStore.getState();
+    const { userId, profile } = useAuthStore.getState();
     const { rejectedJobIds } = get();
     if (!userId) return;
 
     set({ isLoadingJobs: true });
 
-    // Fetch pending bookings that don't have an agent assigned yet
-    // Fetch pending bookings that are either:
-    // 1. Open to everyone (agent_id IS NULL)
-    // 2. Targeted specifically to this agent (agent_id = userId)
+    const isStaff = profile?.isStaff === true || profile?.is_staff === true;
+
+    // Fetch bookings via Security Definer RPC to bypass stubborn RLS policies
     const { data, error } = await supabase
-      .from('bookings')
-      .select('*')
-      .eq('status', 'pending')
-      .or(`agent_id.is.null,agent_id.eq.${userId}`)
-      .order('created_at', { ascending: false });
+      .rpc('get_available_bookings', { agent_uuid: userId });
+
+    if (error) console.error('[fetchAvailableJobs] RPC Error:', error);
 
     if (!error && data) {
-      const mapped = data
+      // 1. Filter jobs based on agent routing rules
+      const filteredJobs = data
         .filter(b => !rejectedJobIds.includes(b.id))
-        .map(b => ({
+        .filter(b => {
+          const type = b.booking_type || 'any';
+          if (type === 'any') return true;
+          if (isStaff) return true; 
+          if (!isStaff && type === 'freelance') return true;
+          return false;
+        });
+
+      // 2. Fetch customer names manually to avoid ambiguity 
+      const userIds = [...new Set(filteredJobs.map(b => b.user_id).filter(Boolean))];
+      const { data: profilesData } = userIds.length > 0 
+        ? await supabase.from('profiles').select('id, name').in('id', userIds)
+        : { data: [] };
+      const profileMap = Object.fromEntries(profilesData?.map(p => [p.id, p]) || []);
+
+      // 3. Map final job list
+      const mapped = filteredJobs.map(b => ({
           id: b.id,
           material: b.waste_type,
           bags: b.bags,
-          pay: (b.fee || 0) * 0.7, // Agent commission (70% of fee)
           location: b.estate,
           time: b.time_slot,
           status: b.status,
           agent_id: b.agent_id,
           user_id: b.user_id,
-          customer: 'Client',
+          customer: profileMap[b.user_id]?.name || 'Resident',
+          bookingType: b.booking_type || 'any',
+          pay: Number(b.fee) || Number(b.total_price) || 0,
         }));
       set({ availableJobs: mapped, isLoadingJobs: false });
     } else {
@@ -84,20 +136,21 @@ export const useAgentStore = create((set, get) => ({
     const { userId } = useAuthStore.getState();
     if (!userId) return;
 
-    // 1. Fetch bookings
+    // 1. Fetch bookings via Security Definer RPC to bypass stubborn RLS policies
     const { data: bookingsData, error: bookingsError } = await supabase
-      .from('bookings')
-      .select('*')
-      .eq('agent_id', userId)
-      .in('status', ['confirmed', 'in-progress'])
-      .order('updated_at', { ascending: false });
+      .rpc('get_active_agent_jobs', { agent_uuid: userId });
 
-    if (bookingsError) return;
+    console.log('[fetchActiveJobs] Fetched data:', bookingsData, 'Error:', bookingsError);
+
+    if (bookingsError) {
+      console.error('[fetchActiveJobs] RLS or DB error:', bookingsError);
+      return;
+    }
 
     // 2. Fetch associated profiles manually to avoid 400 ambiguity error
     const userIds = [...new Set(bookingsData.map(b => b.user_id).filter(Boolean))];
     const { data: profilesData } = userIds.length > 0 
-      ? await supabase.from('profiles').select('id, name, avatar_url').in('id', userIds)
+      ? await supabase.from('profiles').select('id, name').in('id', userIds)
       : { data: [] };
 
     const profileMap = Object.fromEntries(profilesData?.map(p => [p.id, p]) || []);
@@ -107,7 +160,7 @@ export const useAgentStore = create((set, get) => ({
       id: b.id,
       material: b.waste_type,
       bags: b.bags,
-      pay: (b.fee || 0) * 0.7,
+      pay: (b.fee || 0) * 0.85,
       location: b.estate,
       time: b.time_slot,
       status: b.status,
@@ -115,8 +168,7 @@ export const useAgentStore = create((set, get) => ({
       longitude: b.longitude,
       phone: b.phone,
       user_id: b.user_id,
-      customerName: profileMap[b.user_id]?.name || 'Customer',
-      customerAvatar: profileMap[b.user_id]?.avatar_url
+      customerName: profileMap[b.user_id]?.name || 'Customer'
     }));
 
     set({ activeJobs: mapped });
@@ -130,9 +182,11 @@ export const useAgentStore = create((set, get) => ({
     // Get all completed jobs for this agent
     const { data, error } = await supabase
       .from('bookings')
-      .select('fee, updated_at, status')
+      .select('id, fee, updated_at, status, waste_type, estate')
       .eq('agent_id', userId)
-      .eq('status', 'completed');
+      .in('status', ['completed', 'cancelled'])
+      .order('updated_at', { ascending: false })
+      .limit(20);
 
     if (!error && data) {
       const now = new Date();
@@ -170,7 +224,7 @@ export const useAgentStore = create((set, get) => ({
       data.forEach(b => {
         const d = new Date(b.updated_at);
         const dayStr = b.updated_at.split('T')[0];
-        const agentPay = (b.fee || 0) * 0.7; // Agent commission is 70%
+        const agentPay = (b.fee || 0) * 0.85; // Agent commission is 85% (Founder Rate)
 
         // Today
         if (dayStr === todayStr) {
@@ -208,6 +262,14 @@ export const useAgentStore = create((set, get) => ({
       ];
 
       set((s) => ({
+        jobHistory: data.map(b => ({
+          id: b.id,
+          wasteType: b.waste_type,
+          location: b.estate,
+          date: new Date(b.updated_at).toLocaleDateString(),
+          status: b.status,
+          price: (b.fee || 0) * 0.85
+        })),
         earnings: {
           ...s.earnings,
           today: todayEarnings,
@@ -215,7 +277,7 @@ export const useAgentStore = create((set, get) => ({
           lastWeek: lastWeekEarnings,
           thisMonth: thisMonthEarnings,
           completedToday,
-          totalJobs: data.length,
+          totalJobs: data.filter(b => b.status === 'completed').length,
           rating: useAuthStore.getState().profile?.rating || 5.0,
           weeklyData
         }
@@ -272,45 +334,38 @@ export const useAgentStore = create((set, get) => ({
       const { userId, profile } = useAuthStore.getState();
       if (!userId) return false;
 
-      // 1. Update Booking with exact count verification
-      const { error: updateError, count } = await supabase
-        .from('bookings')
-        .update({ 
-          agent_id: userId, 
-          status: 'confirmed',
-          updated_at: new Date().toISOString()
-        }, { count: 'exact' })
-        .eq('id', jobId)
-        .eq('status', 'pending'); // Ensure we only claim jobs that are still pending
+      // 1. Bypass RLS using our Security Definer RPC, explicitly passing the agent ID
+      const { error: updateError } = await supabase
+        .rpc('accept_booking', { 
+          target_booking_id: jobId,
+          assigned_agent_id: userId
+        });
 
       if (updateError) {
         console.error('[CleanFlow Agent] Accept Job Error:', updateError);
         throw new Error(updateError.message || 'Failed to claim job');
       }
 
-      if (count === 0) {
-        console.warn('[CleanFlow Agent] Claim failed: Row count is 0. Likely RLS block or race condition.');
-        throw new Error('This job was already claimed or is no longer available.');
-      }
+      // DIAGNOSTIC: Check the actual row immediately using admin bypass to see what happened
+      const { data: checkData } = await supabase
+        .rpc('get_active_agent_jobs', { agent_uuid: userId });
+      console.log(`[Diagnostic] Right after accept_booking on ${jobId}, get_active_agent_jobs returned:`, checkData);
 
       // 2. Refresh State
       await get().fetchAvailableJobs();
       await get().fetchActiveJobs();
 
       // 3. Notify Customer
-      const { data: booking } = await supabase
-        .from('bookings')
-        .select('user_id')
-        .eq('id', jobId)
-        .single();
+      const activeList = get().activeJobs;
+      const acceptedJob = activeList.find(j => j.id === jobId);
 
-      if (booking?.user_id) {
+      if (acceptedJob && acceptedJob.user_id) {
         await useNotificationStore.getState().addNotification(
           'Agent is coming! 🚛',
           `HygeneX Agent ${profile.name} has accepted your request and is on the way.`,
           'success',
           ROLES.USER,
-          booking.user_id
+          acceptedJob.user_id
         );
       }
       return true;
@@ -370,31 +425,76 @@ export const useAgentStore = create((set, get) => ({
     }));
   },
 
-  /** Mark a job as completed with weighing */
+  /** Mark a job as completed with weighing (Auto-creates Asset for Weaver) */
   completeJob: async (jobId, weightKg) => {
     const { fetchActiveJobs, fetchEarnings } = get();
+    const { userId } = useAuthStore.getState();
     
     console.log(`[CleanFlow Agent] Completing job ${jobId} with weight: ${weightKg}kg`);
     
-    const { error: updateError } = await supabase
-      .from('bookings')
-      .update({ 
-        status: 'completed', 
-        actual_weight_kg: weightKg,
-        updated_at: new Date().toISOString() 
-      })
-      .eq('id', jobId);
+    try {
+      // 1. Get job data from local store first (faster/more reliable)
+      const localJob = get().activeJobs.find(j => j.id === jobId);
+      
+      // 2. Fetch current booking to get waste type if not in local store
+      const { data: booking } = !localJob ? await supabase
+        .from('bookings')
+        .select('*')
+        .eq('id', jobId)
+        .single() : { data: localJob };
 
-    if (updateError) {
-      console.error('[CleanFlow Agent] Completion error:', updateError);
-      throw updateError;
+      // 3. Create Asset Record (So Weaver can see it)
+      const wasteType = localJob?.material || booking?.waste_type || 'general';
+      const materialType = wasteType;
+      const estimatedValue = weightKg * 40; // Default B2B value placeholder
+
+      const { error: assetError } = await supabase
+        .from('assets')
+        .insert({
+          booking_id: jobId,
+          verifier_id: userId,
+          material_type: materialType,
+          weight_kg: weightKg,
+          estimated_value: estimatedValue,
+          status: 'verified',
+          grade: 'B'
+        });
+
+      if (assetError) console.warn('[CleanFlow Agent] Asset creation failed during completion:', assetError);
+
+      // 4. Fetch current market rate from dynamic categories
+      const categorySlug = wasteType.toLowerCase();
+      const { data: category } = await supabase
+        .from('waste_categories')
+        .select('price_per_unit, unit')
+        .eq('slug', categorySlug)
+        .single();
+
+      const rate = category?.price_per_unit || 20.00; // Fallback price per KG
+      const baseFee = 100.00; // Base Logistics
+      const totalFee = baseFee + (weightKg * rate);
+
+      // 4. Update Booking via Secure RPC (Bypass RLS)
+      console.log('[AssetStore] Triggering handover modal via Secure RPC...');
+      const { error: updateError } = await supabase.rpc('complete_booking_secure', {
+        p_booking_uuid: jobId,
+        p_agent_uuid: userId,
+        p_weight_kg: weightKg,
+        p_final_fee: totalFee
+      });
+
+      if (updateError) throw updateError;
+      console.log('[AgentStore] Secure Completion SUCCESS');
+
+      console.log('[CleanFlow Agent] Job status updated and Asset created.');
+
+      // Refresh Agent UI
+      fetchActiveJobs();
+      fetchEarnings();
+    } catch (err) {
+      console.error('[CleanFlow Agent] Completion error:', err);
+      throw err;
     }
-
-    console.log('[CleanFlow Agent] Job status updated successfully in DB');
-
-    // Refresh Agent UI to reflect earnings and remove job from active list
-    fetchActiveJobs();
-    fetchEarnings();
   },
 
   /** Cycle through AI coach insights */

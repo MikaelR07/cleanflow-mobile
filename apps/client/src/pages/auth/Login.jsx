@@ -49,8 +49,9 @@ export default function Login() {
         
         {/* Branding */}
         <div className="text-center mb-10">
-          <div className="w-20 h-20 rounded-[2rem] bg-gradient-to-br from-primary to-green-600 flex items-center justify-center mx-auto mb-6 shadow-2xl shadow-primary/30 text-white transform rotate-3 hover:rotate-0 transition-transform duration-500">
-            <Recycle className="w-10 h-10" />
+          <img src="/logo.png" className="w-56 h-auto mx-auto mb-8 shadow-2xl rounded-3xl" alt="Logo" />
+          <div className="hidden">
+            
           </div>
           <h1 className="text-3xl font-black text-slate-900 dark:text-white tracking-tighter">
             Clean<span className="text-primary italic">Flow</span>

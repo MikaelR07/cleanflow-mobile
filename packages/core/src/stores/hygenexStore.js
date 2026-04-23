@@ -56,22 +56,21 @@ export const useHygenexStore = create((set, get) => ({
 
     // 3. Realtime listener for incoming AI responses
     const channel = supabase
-      .channel(`hygenex_realtime_${userId}_${Date.now()}`)
+      .channel(`hygenex_realtime_${userId}`)
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'hygenex_messages', filter: `user_id=eq.${userId}` },
         (payload) => {
           const row = payload.new;
-          // Only add AI messages from the stream. 
-          // User messages are already added optimistically by the sendMessage function.
           if (row.role === 'ai') {
-            const exists = get().messages.find((m) => m.id === row.id);
-            if (!exists) {
-              set((s) => ({
+            set((s) => {
+              const exists = s.messages.find((m) => m.id === row.id);
+              if (exists) return s;
+              return {
                 messages: [...s.messages, { id: row.id, role: row.role, text: row.text, timestamp: row.created_at }],
                 isTyping: false
-              }));
-            }
+              };
+            });
           }
         }
       )
@@ -88,17 +87,17 @@ export const useHygenexStore = create((set, get) => ({
     }
   },
 
-  // ── SEND: Save message + call Edge Function directly ────────────
+  // ── SEND: Save message + call Edge Function ───────────────────
   sendMessage: async (text) => {
     const { userId } = useAuthStore.getState();
-    if (!userId) return;
+    if (!userId || !text.trim()) return;
 
-    // 1. Optimistic Update (UI speed)
+    // 1. Optimistic Update
     const tempId = crypto.randomUUID();
     const userMsg = { id: tempId, role: 'user', text, timestamp: new Date().toISOString() };
     set((s) => ({ messages: [...s.messages, userMsg], isTyping: true }));
 
-    // 2. Persist user message to DB (for history)
+    // 2. Persist user message
     const { error: insertError } = await supabase.from('hygenex_messages').insert({
       user_id: userId,
       role: 'user',
@@ -111,11 +110,10 @@ export const useHygenexStore = create((set, get) => ({
       return;
     }
 
-    // 3. Call Edge Function DIRECTLY (no webhook dependency)
+    // 3. Call Edge Function
     try {
       const session = await supabase.auth.getSession();
       const token = session?.data?.session?.access_token;
-      const chatHistory = get().messages.slice(-6).map((m) => ({ role: m.role, text: m.text }));
 
       const res = await fetch(EDGE_FUNCTION_URL, {
         method: 'POST',
@@ -127,34 +125,21 @@ export const useHygenexStore = create((set, get) => ({
         body: JSON.stringify({
           type: 'user_message',
           userId,
-          payload: { message: text, chatHistory }
+          payload: { message: text }
         }),
       });
 
       if (!res.ok) {
-        const errBody = await res.json().catch(() => ({ error: res.statusText }));
-        console.error('[HygeneX] AI Error:', errBody);
-        set({ isTyping: false });
-        return;
+        throw new Error('AI Response Failed');
       }
 
-      // The Edge Function inserts the AI response into the DB,
-      // and the Realtime listener above will pick it up automatically.
-      // But we also read the response here as a fallback.
-      const data = await res.json();
-      if (data?.text) {
-        const exists = get().messages.find((m) => m.text === data.text && m.role === 'ai');
-        if (!exists) {
-          set((s) => ({
-            messages: [...s.messages, { id: crypto.randomUUID(), role: 'ai', text: data.text, timestamp: new Date().toISOString() }],
-            isTyping: false,
-          }));
-        } else {
-          set({ isTyping: false });
-        }
-      }
+      // We don't need to manually add the AI response here because the Realtime listener
+      // will pick up the row inserted by the Edge Function.
+      // But we set a timeout to stop typing if it takes too long.
+      setTimeout(() => set({ isTyping: false }), 5000);
+
     } catch (err) {
-      console.error('[HygeneX] Network error:', err);
+      console.error('[HygeneX] AI Error:', err);
       set({ isTyping: false });
     }
   },

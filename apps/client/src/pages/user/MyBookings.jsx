@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import { useBookingStore } from '@cleanflow/core';
 import { WASTE_TYPES } from '@cleanflow/core/src/data/mockData';
 import EmptyState from '@cleanflow/ui/components/EmptyState';
+import { AssetJourney, AssetBadge } from '@cleanflow/ui';
 import { toast } from 'sonner';
 
 const statusConfig = {
@@ -144,7 +145,10 @@ export default function MyBookings() {
                       {waste?.icon || '📦'}
                     </div>
                     <div>
-                      <p className="font-bold text-sm dark:text-white leading-tight">{waste?.label || 'General Waste'}</p>
+                      <div className="flex items-center gap-2">
+                        <p className="font-bold text-sm dark:text-white leading-tight">{waste?.label || 'General Waste'}</p>
+                        {b.grade && <AssetBadge grade={b.grade} showLabel={false} />}
+                      </div>
                       <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider mt-0.5">{b.id} · {b.date}</p>
                     </div>
                   </div>
@@ -183,6 +187,13 @@ export default function MyBookings() {
                         <span className="font-black text-[10px] text-yellow-600 dark:text-yellow-500">{b.rating}</span>
                       </div>
                     )}
+                  </div>
+                )}
+
+                {/* Asset Lifecycle (New Feature) */}
+                {b.status === 'completed' && (
+                  <div className="mt-4 pt-4 border-t border-slate-50 dark:border-slate-800">
+                    <AssetJourney currentStatus={b.weaverId ? 'matched' : 'completed'} />
                   </div>
                 )}
 

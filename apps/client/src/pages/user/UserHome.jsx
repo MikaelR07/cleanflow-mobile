@@ -9,10 +9,8 @@ import {
   Wallet, 
   Clock, 
   Trash2, 
-  Trash, 
   Plus, 
   Sparkles, 
-  Lightbulb, 
   History, 
   Leaf, 
   TrendingUp,
@@ -21,21 +19,27 @@ import {
   ArrowRight,
   Mic,
   Star,
-  TrendingDown,
-  Navigation,
-  X
+  ChevronRight,
+  Trophy,
+  Scan,
+  CalendarDays
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useBookingStore, useAuthStore, useIotStore, useAdminStore, useNotificationStore } from '@cleanflow/core';
-import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from 'react-leaflet';
-import L from 'leaflet';
-
+import { useBookingStore, useAuthStore, useIotStore, useAdminStore, useNotificationStore, supabase } from '@cleanflow/core';
 import { SkeletonCard } from '@cleanflow/ui/components/Skeletons';
-import { RatingModal } from '@cleanflow/ui';
+import { RatingModal, TopUpModal } from '@cleanflow/ui';
+import ReleaseFundsModal from '../../components/user/ReleaseFundsModal';
 import { toast } from 'sonner';
 
 export default function UserHome() {
-  const { profile, withdrawRewards, role, subscribeToProfileChanges } = useAuthStore();
+  const { 
+    profile, 
+    withdrawRewards, 
+    role, 
+    subscribeToProfileChanges,
+    topUpBalance 
+  } = useAuthStore();
+  
   const { 
     bookings, 
     fetchBookings, 
@@ -43,40 +47,35 @@ export default function UserHome() {
     isLoadingAI, 
     refreshAISuggestions, 
     openVoiceModal, 
-    liveAgents, 
-    fetchNearbyAgents,
-    subscribeToAgents,
-    fetchNotifications,
     submitAgentRating,
-    clearBookingHistory
+    clearBookingHistory,
+    subscribeToBookings,
+    cleanupBookings,
+    setActiveReleaseBooking,
+    confirmPayment
   } = useBookingStore();
-  const { smartBins, initDevices } = useIotStore();
-  const { openNemaModal } = useAdminStore();
+
+  const { subscribeToRealtime, cleanup: cleanupNotifications } = useNotificationStore();
+  const { initDevices } = useIotStore();
   const { getUnreadCount } = useNotificationStore();
   const navigate = useNavigate();
 
   const unreadCount = getUnreadCount();
+  const [isToppingUp, setIsToppingUp] = useState(false);
+  const [isWithdrawing, setIsWithdrawing] = useState(false);
 
-  const getGFPMetrics = () => {
-    const points = profile?.rewardPoints || 0;
-    const threshold = 500;
-    const progress = (points % threshold) / threshold * 100;
-    const tier = points < 500 ? 'Seedling' : points < 1500 ? 'Sapling' : 'Evergreen';
-    const nextTier = points < 500 ? 'Sapling' : 'Evergreen';
-    const icon = points < 500 ? '🌱' : points < 1500 ? '🌿' : '🌳';
-    return { points, threshold, progress, tier, nextTier, icon };
-  };
+  const pendingPayment = bookings.find(b => b.paymentStatus === 'authorized');
 
   useEffect(() => {
     fetchBookings();
     initDevices();
-    fetchNearbyAgents();
-    subscribeToAgents();
     
     if (profile?.id) {
       const { fetchNotifications: fetchNots } = useNotificationStore.getState();
       fetchNots(profile.id, role);
       subscribeToProfileChanges(profile.id);
+      subscribeToBookings(profile.id);
+      subscribeToRealtime(profile.id, role);
 
       window.onCleanFlowProfileUpdate = (data) => {
         toast.success("Sync Success! 🌿", { 
@@ -87,12 +86,40 @@ export default function UserHome() {
 
     return () => {
       window.onCleanFlowProfileUpdate = null;
+      cleanupBookings();
+      cleanupNotifications();
     };
-  }, [profile?.id, role, subscribeToProfileChanges]);
+  }, [profile?.id, role, subscribeToProfileChanges, subscribeToBookings, cleanupBookings, subscribeToRealtime, cleanupNotifications]);
 
-  const [isWithdrawing, setIsWithdrawing] = useState(false);
+  useEffect(() => {
+    // GHOST HUNTER: Find only RECENT pickups (last 24 hours)
+    const now = new Date();
+    const existingAuth = bookings.find(b => {
+      const isPending = (b.paymentStatus === 'authorized' || b.payment_status === 'authorized') && b.status === 'picked_up';
+      if (!isPending) return false;
+
+      // Only show if it happened in the last 24 hours to avoid ghosting old jobs
+      const updateTime = new Date(b.updated_at || b.date);
+      const hoursSinceUpdate = (now - updateTime) / (1000 * 60 * 60);
+      return hoursSinceUpdate < 24;
+    });
+    
+    if (existingAuth) {
+      console.log('[GhostHunter] Found active handover:', existingAuth.id, 'Status:', existingAuth.status);
+      // Map back to DB format for the modal
+      setActiveReleaseBooking({
+        id: existingAuth.id,
+        waste_type: existingAuth.wasteType || existingAuth.waste_type,
+        weight_kg: existingAuth.actualWeightKg || existingAuth.actual_weight_kg || 0,
+        fee: existingAuth.fee,
+        totalPrice: existingAuth.totalPrice || existingAuth.total_price
+      });
+    }
+  }, [bookings, setActiveReleaseBooking]);
+
   const [ratingBooking, setRatingBooking] = useState(null);
   const [dismissedRatingIds, setDismissedRatingIds] = useState([]);
+  const [showTopUpModal, setShowTopUpModal] = useState(false);
 
   useEffect(() => {
     if (bookings.length > 0) {
@@ -112,19 +139,43 @@ export default function UserHome() {
     }
   }, [bookings, dismissedRatingIds]);
 
-  // Metrics derived from profile rewards (never affected by history clearing)
-  const kgRecovered = Math.floor((profile?.rewardPoints || 0) / 5); // 5 GFP per kg
-  const co2Saved = (kgRecovered * 0.0054).toFixed(3); // ~5.4g CO₂ per kg recycled
-  const completedBookings = bookings.filter(b => b.status === 'completed');
-  const totalPickups = completedBookings.length;
+  const handleClearHistory = async () => {
+    if (!profile?.id) return;
+    
+    try {
+      console.log('[Clearance] Attempting to clear history for:', profile.id);
+      const { data, error } = await supabase
+        .from('profiles')
+        .update({ completedClearedAt: new Date().toISOString() })
+        .eq('id', profile.id)
+        .select()
+        .single();
 
-  const topSuggestions = aiSuggestions.filter((s) => s.isAI).slice(0, 4);
+      if (error) {
+        console.error('[Clearance] DATABASE ERROR:', error);
+        throw error;
+      }
+      
+      toast.success("History cleared! 🧹");
+    } catch (err) {
+      console.error('[Clearance] CATCH ERROR:', err);
+      toast.error("Failed to clear history");
+    }
+  };
+
+  const kgRecovered = Math.floor((profile?.rewardPoints || 0) / 5);
+  const co2Saved = (kgRecovered * 0.0054).toFixed(3);
+  const totalPickups = bookings.filter(b => b.status === 'completed').length;
+
+  const topSuggestion = aiSuggestions.find((s) => s.isAI);
   const recentBookings = [...bookings]
-    .sort((a, b) => {
-      const timeA = new Date(a.lastUpdated || a.date).getTime();
-      const timeB = new Date(b.lastUpdated || b.date).getTime();
-      return timeB - timeA;
+    .filter(b => {
+      if (b.status === 'completed' && profile?.completedClearedAt) {
+        return new Date(b.createdAt || b.date) > new Date(profile.completedClearedAt);
+      }
+      return true;
     })
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
     .slice(0, 3);
 
   const handleWithdraw = async () => {
@@ -143,364 +194,277 @@ export default function UserHome() {
         description: `KSh ${balance.toLocaleString()} has been sent to ${profile?.phone}.` 
       });
     } catch (err) {
-      toast.error("Withdrawal Failed", { description: "Please check your network." });
+      toast.error("Withdrawal Failed");
     } finally {
       setIsWithdrawing(false);
     }
   };
 
-  const handleClearHistory = async () => {
+  const handleConfirmTopUp = async (amount) => {
+    setIsToppingUp(true);
     try {
-      await clearBookingHistory('all');
-      toast.success("History Cleared", { description: "Your completed and cancelled bookings are now hidden." });
+      const success = await topUpBalance(amount);
+      if (success) {
+        toast.success("STK Push Success! 💸", {
+          description: `KSh ${Number(amount).toLocaleString()} added to your wallet.`
+        });
+      }
     } catch (err) {
-      toast.error("Failed to clear history");
+      toast.error("Top Up Failed");
+    } finally {
+      setIsToppingUp(false);
     }
   };
 
   return (
-    <div className="space-y-4 animate-fade-in">
-      <div className="flex items-center justify-between">
+    <div className="space-y-6 animate-fade-in pb-10">
+      
+      {/* ── HEADER ── */}
+      <div className="flex items-center justify-between px-1">
         <div>
-          <h1 className="text-xl font-bold">Hello, {profile?.name?.split(' ')[0]}! 👋</h1>
-          <div className="flex items-center gap-2 mt-0.5">
-            <div className="flex items-center gap-1 text-[10px] text-primary font-black uppercase tracking-widest bg-primary/5 px-2 py-0.5 rounded-full border border-primary/10">
-              <MapPin className="w-2.5 h-2.5" /> {profile?.location?.estate || 'Nairobi Sector'}
+          <h1 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white leading-none">Hello, {profile?.name?.split(' ')[0]}! 👋</h1>
+          <div className="flex items-center gap-2 mt-2">
+            <div className="flex items-center gap-1.5 text-[10px] text-primary font-black uppercase tracking-widest bg-primary/5 px-2.5 py-1 rounded-full border border-primary/10">
+              <MapPin className="w-3 h-3" /> {profile?.location?.estate || 'Nairobi Sector'}
             </div>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        
+        <div className="flex items-center gap-3">
+          {/* GFP Badge */}
           <button 
             onClick={() => navigate('/impact-hub')}
-            className="flex flex-col items-end group"
+            className={`flex items-center gap-1.5 bg-amber-500 text-white px-3 py-1.5 rounded-xl shadow-lg shadow-amber-200 dark:shadow-none active:scale-95 transition-all
+              ${profile?.rewardPoints > 0 ? 'animate-pulse-soft border-2 border-white/50' : ''}`}
           >
-            <div className={`flex items-center gap-1.5 bg-amber-500 text-white px-3 py-1.5 rounded-xl shadow-lg shadow-amber-200 dark:shadow-none active:scale-95 transition-all
-              ${profile?.rewardPoints > 0 ? 'animate-pulse-soft border-2 border-white/50' : ''}`}>
-              <Leaf className="w-3.5 h-3.5 fill-white" />
-              <span className="text-xs font-black uppercase tracking-tighter mr-0.5">GFP</span>
-              <span className="text-sm font-black tracking-tight">{profile?.rewardPoints || 0}</span>
-            </div>
+            <Leaf className="w-3.5 h-3.5 fill-white" />
+            <span className="text-xs font-black uppercase tracking-tighter mr-0.5">GFP</span>
+            <span className="text-sm font-black tracking-tight">{profile?.rewardPoints || 0}</span>
           </button>
 
           <button 
             onClick={() => navigate('/settings/notifications')}
-            className="relative w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center shadow-sm active:scale-95 transition-all group"
+            className="relative w-12 h-12 rounded-2xl bg-slate-100/50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center shadow-sm hover:shadow-md transition-all active:scale-95 group"
           >
-            <Bell className="w-5 h-5 text-slate-400 group-hover:text-primary transition-colors" />
+            <Bell className="w-6 h-6 text-slate-400 group-hover:text-primary transition-colors" />
             {unreadCount > 0 && (
-              <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 bg-red-600 text-white text-[10px] font-black rounded-full flex items-center justify-center ring-2 ring-white dark:ring-slate-900 shadow-sm animate-in zoom-in">
+              <span className="absolute -top-1.5 -right-1.5 min-w-[20px] h-[20px] px-1 bg-red-600 text-white text-[10px] font-black rounded-full flex items-center justify-center ring-2 ring-slate-50 dark:ring-slate-950 shadow-md animate-in zoom-in">
                 {unreadCount}
               </span>
             )}
           </button>
         </div>
       </div>
- 
-      {/* Recycling Wallet */}
-      <div className="card bg-slate-50 dark:bg-slate-800/50 p-4 flex items-center justify-between border-dashed border-2 border-slate-200 dark:border-slate-700 animate-slide-up">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center shadow-sm">
-            <Wallet className="w-5 h-5 text-amber-600 dark:text-amber-400" />
-          </div>
-          <div>
-            <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest leading-none mb-1">Recycling Wallet</p>
-            <p className="text-lg font-black text-slate-900 dark:text-white leading-none">KSh {profile?.walletBalance?.toLocaleString() || 0}</p>
+
+      {/* ── IMPACT HERO CARD ── */}
+      <div className="relative group perspective-1000">
+        <div className="absolute -inset-1 bg-gradient-to-r from-primary to-emerald-500 rounded-[2.5rem] blur opacity-10 group-hover:opacity-20 transition duration-1000"></div>
+        <div className="relative bg-slate-100/30 dark:bg-slate-900 rounded-[2.5rem] border border-slate-200/50 dark:border-slate-800 p-8 shadow-xl overflow-hidden backdrop-blur-xl">
+          <div className="absolute -top-10 -right-10 w-40 h-40 bg-primary/5 rounded-full blur-3xl" />
+          
+          <div className="flex flex-col gap-6 relative z-10">
+            <div className="flex items-end justify-between">
+              <div>
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 flex items-center gap-1.5">
+                  <Wallet className="w-3 h-3" /> Recycling Wallet
+                </p>
+                <h2 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter leading-none">
+                  KSh {(profile?.balance || profile?.walletBalance || 0).toLocaleString()}
+                </h2>
+              </div>
+              <div className="flex flex-col gap-2">
+                <button 
+                  onClick={() => setShowTopUpModal(true)}
+                  disabled={isToppingUp}
+                  className="bg-white/50 dark:bg-white/10 text-slate-900 dark:text-white px-5 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest border border-slate-200 dark:border-white/10 active:scale-95 transition-all disabled:opacity-50"
+                >
+                  {isToppingUp ? 'Pushing...' : 'Top Up'}
+                </button>
+                <button 
+                  onClick={handleWithdraw}
+                  disabled={isWithdrawing}
+                  className="bg-primary text-white px-5 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl shadow-primary/20 active:scale-95 transition-all disabled:opacity-50"
+                >
+                  {isWithdrawing ? 'Syncing...' : 'Withdraw'}
+                </button>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-3 gap-4 pt-6 border-t border-slate-200/50 dark:border-slate-800/50">
+              <div className="text-center">
+                <p className="text-[9px] font-black text-blue-600 uppercase tracking-widest mb-1">Pickups</p>
+                <p className="text-xl font-black text-slate-900 dark:text-white leading-none flex items-center justify-center gap-1">
+                  <Truck className="w-4 h-4 text-blue-500" /> {totalPickups}
+                </p>
+              </div>
+              <div className="text-center">
+                <p className="text-[9px] font-black text-emerald-600 uppercase tracking-widest mb-1">Recovered</p>
+                <p className="text-xl font-black text-slate-900 dark:text-white leading-none">{kgRecovered}kg</p>
+              </div>
+              <div className="text-center">
+                <p className="text-[9px] font-black text-primary uppercase tracking-widest mb-1">Nature Saved</p>
+                <p className="text-xl font-black text-slate-900 dark:text-white leading-none">{co2Saved}t</p>
+              </div>
+            </div>
           </div>
         </div>
-        <button 
-          onClick={handleWithdraw}
-          disabled={isWithdrawing}
-          className="bg-primary text-white px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-primary/20 active:scale-95 transition-all disabled:opacity-50"
-        >
-          {isWithdrawing ? 'Processing...' : 'Withdraw'}
-        </button>
       </div>
 
-      {/* Mission Upgrade Banner (Impact-First nudge) */}
+      {/* ── MISSION UPGRADE BANNER ── */}
       <button 
         onClick={() => navigate('/settings/subscriptions')}
-        className={`w-full p-4 rounded-2xl flex items-center justify-between transition-all active:scale-[0.98] relative overflow-hidden group ${
-          profile?.subscriptionTier === 'premium' 
-            ? 'bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700' 
-            : 'bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800/30'
-        }`}
+        className="w-full p-5 rounded-[2rem] bg-amber-100/30 dark:bg-amber-900/10 border border-amber-200/50 dark:border-amber-800/30 flex items-center justify-between group transition-all active:scale-[0.98] overflow-hidden relative"
       >
-        <div className="flex items-center gap-3 relative z-10">
-          <div className={`w-9 h-9 rounded-xl flex items-center justify-center shadow-sm ${
-            profile?.subscriptionTier === 'premium' ? 'bg-slate-200 dark:bg-slate-700' : 'bg-amber-100 dark:bg-amber-900/30'
-          }`}>
-            <Star className={`w-5 h-5 ${profile?.subscriptionTier === 'premium' ? 'text-slate-600 dark:text-slate-400' : 'text-amber-600'}`} />
+        <div className="absolute -right-4 -top-4 w-20 h-20 bg-amber-400/10 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700" />
+        <div className="flex items-center gap-4 relative z-10">
+          <div className="w-11 h-11 bg-amber-100/50 dark:bg-amber-900/40 rounded-2xl flex items-center justify-center shadow-inner">
+            <Star className="w-6 h-6 text-amber-600 dark:text-amber-500 fill-amber-500" />
           </div>
           <div className="text-left">
-            <p className="text-[10px] font-black text-amber-700 dark:text-amber-500 uppercase tracking-widest leading-none mb-1">
-              {profile?.subscriptionTier === 'lite' || !profile?.subscriptionTier ? 'Mission Upgrade' : 'Impact Level'}
-            </p>
-            <p className="text-xs font-bold text-slate-900 dark:text-white leading-tight">
-              {profile?.subscriptionTier === 'lite' || !profile?.subscriptionTier 
-                ? 'Join Community Impact & Earn 2x Rewards' 
-                : profile?.subscriptionTier === 'standard' 
-                ? 'Become an Environmental Leader' 
-                : 'Share your Zero-Waste progress'}
+            <p className="text-[10px] font-black text-amber-700 dark:text-amber-500 uppercase tracking-widest leading-none mb-1">Impact Level</p>
+            <p className="text-sm font-bold text-slate-900 dark:text-white leading-tight">
+              Join community impact to earn 2X rewards
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-1.5 relative z-10">
-          <span className="text-[10px] font-black uppercase tracking-widest text-amber-600">View</span>
-          <ArrowRight className="w-3.5 h-3.5 text-amber-600" />
-        </div>
-        
-        {/* Subtle decorative background pulse */}
-        <div className="absolute -right-4 -top-4 w-20 h-20 bg-amber-200/20 dark:bg-amber-400/5 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700" />
+        <ChevronRight className="w-5 h-5 text-amber-600 group-hover:translate-x-1 transition-transform" />
       </button>
 
-      {/* Quick Action */}
-      <button
-        id="piga-pickup"
-        onClick={() => navigate('/book-pickup')}
-        className="w-full bg-gradient-to-r from-primary to-emerald-700 text-white rounded-2xl p-4 flex items-center justify-between group transition-all hover:shadow-xl hover:shadow-primary/20"
-      >
-        <div className="flex items-center gap-3">
-          <div className="w-11 h-11 bg-white/20 rounded-xl flex items-center justify-center shadow-inner">
-            <Truck className="w-6 h-6" />
-          </div>
-          <div className="text-left">
-            <p className="font-extrabold text-lg">Call for Pickup</p>
-            <p className="text-[11px] text-white/80 font-medium tracking-tight">Book waste collection in 60s</p>
-          </div>
-        </div>
-        <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-      </button>
-
-      {/* Impact Cards */}
-      <div className="grid grid-cols-3 gap-3">
-        <div className="card flex flex-col items-center justify-center p-3 active:scale-95 transition-transform cursor-pointer">
-          <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center mb-1.5">
-            <Leaf className="w-4 h-4 text-primary" />
-          </div>
-          <p className="text-lg font-black dark:text-white">{kgRecovered}</p>
-          <p className="text-[8px] uppercase tracking-tighter font-bold text-slate-400">Kg Recovered</p>
-        </div>
-        <div className="card flex flex-col items-center justify-center p-3 active:scale-95 transition-transform cursor-pointer">
-          <div className="w-8 h-8 rounded-full bg-blue-500/10 flex items-center justify-center mb-1.5">
-            <Recycle className="w-4 h-4 text-blue-500" />
-          </div>
-          <p className="text-lg font-black dark:text-white">{totalPickups}</p>
-          <p className="text-[8px] uppercase tracking-tighter font-bold text-slate-400">Pickups</p>
-        </div>
-        <div className="card flex flex-col items-center justify-center p-3 active:scale-95 transition-transform cursor-pointer">
-          <div className="w-8 h-8 rounded-full bg-amber-500/10 flex items-center justify-center mb-1.5">
-            <TrendingDown className="w-4 h-4 text-amber-500" />
-          </div>
-          <p className="text-lg font-black dark:text-white">{co2Saved}</p>
-          <p className="text-[8px] uppercase tracking-tighter font-bold text-slate-400 font-mono">t CO₂ Saved</p>
-        </div>
-      </div>
-
-      {/* AI Smart Pickup Scheduler */}
-      <div className="card p-4">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-primary" />
-            <h2 className="font-bold text-sm text-slate-900 dark:text-white">Smart Pickup Scheduler</h2>
-          </div>
-          <button
-            onClick={() => refreshAISuggestions(smartBins)}
-            className="text-xs text-primary font-bold hover:underline"
-          >
-            Refresh
-          </button>
-        </div>
-
-        {isLoadingAI ? (
-          <div className="space-y-3">
-            <SkeletonCard />
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {topSuggestions.map((s, i) => (
-              <button
-                key={i}
-                onClick={() => navigate('/book-pickup')}
-                className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 rounded-2xl p-4 text-left hover:border-primary/30 transition-all group"
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-2">
-                    <Clock className="w-4 h-4 text-primary" />
-                    <span className="font-bold text-sm text-slate-800 dark:text-slate-100">{s.time}</span>
-                  </div>
-                  <div className="flex flex-col items-end gap-1">
-                    <span className={`flex items-center gap-1 text-[9px] font-black px-2 py-0.5 rounded-full ${
-                      s.type === 'urgency' ? 'bg-rose-100 text-rose-600' :
-                      s.type === 'traffic' ? 'bg-amber-100 text-amber-600' :
-                      s.type === 'cluster' ? 'bg-blue-100 text-blue-600' :
-                      'bg-primary/10 text-primary'
-                    }`}>
-                      <Sparkles className="w-2.5 h-2.5" /> 
-                      {s.type === 'urgency' ? 'URGENT PICKUP' : 
-                       s.type === 'traffic' ? 'TRAFFIC OPTIMIZED' :
-                       s.type === 'cluster' ? 'COMMUNITY CLUSTER' : 'AI RECOMMENDED'}
-                    </span>
-                    {s.isUrgent && (
-                      <span className="text-[8px] font-bold text-rose-500 flex items-center gap-0.5 uppercase tracking-tighter animate-pulse text-right">
-                        <TrendingDown className="w-2 h-2 rotate-180" /> Action Required
-                      </span>
-                    )}
-                  </div>
-                </div>
-                <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mb-2">{s.reason}</p>
-                
-                <div className="flex items-center gap-3 border-t border-slate-100 dark:border-slate-800 pt-2">
-                  <div className="flex items-center gap-1">
-                    <Zap className="w-3 h-3 text-amber-500" />
-                    <span className="text-[10px] font-bold text-slate-600 dark:text-slate-400">{s.discount}% Save</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Leaf className="w-3 h-3 text-emerald-500" />
-                    <span className="text-[10px] font-bold text-slate-600 dark:text-slate-400">{s.co2Saved}kg CO₂ Offset</span>
-                  </div>
-                  {s.groupingCount > 0 && (
-                    <div className="flex items-center gap-1 ml-auto">
-                      <Recycle className="w-3 h-3 text-blue-500" />
-                      <span className="text-[10px] font-bold text-blue-600">+{s.groupingCount} Neighbors</span>
-                    </div>
-                  )}
-                </div>
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Voice Booking CTA */}
-      <button
-        id="voice-booking-btn"
-        onClick={openVoiceModal}
-        className="w-full bg-gradient-to-r from-blue-600 to-blue-800 text-white rounded-2xl p-4 flex items-center gap-3 hover:shadow-xl hover:shadow-blue-500/20 transition-all active:scale-95 shadow-lg shadow-blue-500/10"
-      >
-        <div className="w-11 h-11 bg-white/20 rounded-xl flex items-center justify-center animate-pulse-soft shadow-inner">
-          <Mic className="w-6 h-6" />
-        </div>
-        <div className="text-left">
-          <p className="font-extrabold text-base">Speak to Book Pickup</p>
-          <p className="text-[11px] text-white/80 font-medium tracking-tight">Sema kwa Kiswahili au English</p>
-        </div>
-      </button>
-
-
-      {/* 🗺️ Interactive Sector Map (Moved to Bottom) */}
-      <div className="relative h-44 w-full rounded-[2.5rem] overflow-hidden border-4 border-white dark:border-slate-800 shadow-xl z-0 animate-slide-up">
-        {profile?.location?.latitude ? (
-          <MapContainer 
-            center={[profile.location.latitude, profile.location.longitude]} 
-            zoom={15} 
-            zoomControl={false}
-            attributionControl={false}
-            style={{ height: '100%', width: '100%' }}
-          >
-            <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-            
-            {/* User Domicile */}
-            <Marker 
-              position={[profile.location.latitude, profile.location.longitude]} 
-              icon={L.divIcon({
-                className: 'custom-div-icon',
-                html: `<div class="w-8 h-8 bg-primary rounded-2xl border-4 border-white shadow-lg flex items-center justify-center text-white">👤</div>`,
-                iconSize: [32, 32],
-                iconAnchor: [16, 16]
-              })}
-            />
-
-            {/* Live Agents Tracking */}
-            {liveAgents.map((agent) => (
-              agent.location?.latitude && (
-                <Marker 
-                  key={agent.id}
-                  position={[agent.location.latitude, agent.location.longitude]} 
-                  icon={L.divIcon({
-                    className: 'custom-div-icon',
-                    html: `<div class="w-6 h-6 bg-blue-600 rounded-xl border-2 border-white shadow-md flex items-center justify-center text-[10px] animate-bounce">⚡</div>`,
-                    iconSize: [24, 24]
-                  })}
-                >
-                  <Popup className="rounded-xl overflow-hidden">
-                    <div className="p-2 min-w-[120px]">
-                      <p className="font-bold text-xs text-slate-900">{agent.name}</p>
-                      <p className="text-[9px] text-emerald-600 font-black uppercase tracking-widest mt-0.5">Online Agent</p>
-                    </div>
-                  </Popup>
-                </Marker>
-              )
-            ))}
-          </MapContainer>
-        ) : (
-          <div className="w-full h-full bg-slate-100 dark:bg-slate-800 flex flex-col items-center justify-center text-slate-400 gap-2">
-            <MapPin className="w-8 h-8 opacity-20" />
-            <p className="text-[10px] font-black uppercase tracking-widest">Map Signal Offline</p>
-          </div>
-        )}
-
-        {/* Map Overlay Removed as requested */}
-
-        <button 
+      {/* ── QUICK ACTIONS (SIMPLE CARDS) ── */}
+      <div className="grid grid-cols-2 gap-4">
+        <button
           onClick={() => navigate('/book-pickup')}
-          className="absolute bottom-4 right-4 z-[400] bg-primary text-white p-3 rounded-2xl shadow-xl active:scale-95 transition-all outline-none"
+          className="bg-slate-100/50 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800 rounded-[2rem] p-5 flex items-center gap-4 hover:shadow-md transition-all active:scale-[0.98] group"
         >
-          <Navigation className="w-5 h-5" />
+          <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all">
+            <CalendarDays className="w-6 h-6" />
+          </div>
+          <div className="text-left">
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Booking</p>
+            <p className="text-sm font-black text-slate-900 dark:text-white leading-tight">Book Pickup</p>
+          </div>
+        </button>
+
+        <button
+          onClick={() => toast.info('AI Scanner launching...', { description: 'Get ready to scan your recyclables.' })}
+          className="bg-slate-100/50 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800 rounded-[2rem] p-5 flex items-center gap-4 hover:shadow-md transition-all active:scale-[0.98] group"
+        >
+          <div className="w-12 h-12 bg-slate-200/50 dark:bg-slate-800 rounded-2xl flex items-center justify-center text-slate-500 group-hover:bg-slate-900 dark:group-hover:bg-slate-700 group-hover:text-white transition-all">
+            <Scan className="w-6 h-6" />
+          </div>
+          <div className="text-left">
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">HygeneX</p>
+            <p className="text-sm font-black text-slate-900 dark:text-white leading-tight">Scan Recyclable</p>
+          </div>
         </button>
       </div>
 
-      {/* Recent Activity */}
-      <div className="card p-4">
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="font-bold text-sm">Recent Activity</h3>
-          {recentBookings.some(b => b.status === 'completed' || b.status === 'cancelled') && (
+      {/* ── HYGENEX SMART WINDOW ── */}
+      {topSuggestion && (
+        <div className="bg-gradient-to-br from-indigo-600 to-blue-700 rounded-[2.5rem] p-6 text-white relative overflow-hidden shadow-xl shadow-blue-500/10">
+          <div className="absolute top-0 right-0 p-4 opacity-10">
+            <Sparkles className="w-20 h-20" />
+          </div>
+          <div className="relative z-10">
+            <div className="flex items-center gap-2 mb-4">
+              <span className="bg-white/20 px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-widest">HygeneX Suggestion</span>
+              <p className="text-[10px] font-bold text-white/80 uppercase tracking-widest">Profit Optimized</p>
+            </div>
+            <h3 className="text-xl font-black mb-1">Next Best Pickup: {topSuggestion.time}</h3>
+            <p className="text-xs font-medium text-white/80 leading-relaxed mb-6">
+              Book this slot to earn **{topSuggestion.discount}% more rewards** due to high neighborhood demand.
+            </p>
             <button 
-              onClick={handleClearHistory}
-              className="text-[10px] font-black uppercase text-slate-400 hover:text-rose-500 transition-colors"
+              onClick={() => navigate('/book-pickup')}
+              className="w-full py-4 bg-white text-indigo-700 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center justify-center gap-2 shadow-lg active:scale-[0.98] transition-all"
             >
-              Clear History
+              Secure This Slot <ArrowRight className="w-4 h-4" />
             </button>
-          )}
+          </div>
         </div>
-        <div className="space-y-3">
-          {recentBookings.map((item, i) => {
-            const statusColor = 
-              item.status === 'completed' ? 'text-green-600' :
-              item.status === 'cancelled' ? 'text-rose-600' :
-              item.status === 'in-progress' ? 'text-blue-600' : 'text-amber-600';
-            
-            return (
-              <div key={i} className="flex items-center justify-between py-2 border-b border-slate-50 last:border-0 dark:border-slate-800">
-                <div>
-                  <p className="text-sm font-medium capitalize">{item.wasteType} pickup</p>
-                  <p className="text-xs text-slate-400 font-medium">{item.date}</p>
+      )}
+
+      {/* ── VOICE BOOKING CTA (MOVED UP) ── */}
+      <button
+        onClick={openVoiceModal}
+        className="w-full bg-slate-100/50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-[2rem] p-5 flex items-center gap-4 hover:shadow-md transition-all active:scale-[0.98] group"
+      >
+        <div className="w-12 h-12 bg-blue-600 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/20 group-hover:scale-110 transition-transform">
+          <Mic className="w-6 h-6 text-white" />
+        </div>
+        <div className="text-left">
+          <p className="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest mb-0.5">Voice Command</p>
+          <p className="text-sm font-bold text-slate-900 dark:text-white leading-tight">"Book my plastic pickup for tomorrow"</p>
+          <p className="text-[10px] text-slate-400 font-medium mt-1">Sema kwa Kiswahili au English</p>
+        </div>
+      </button>
+
+      {/* ── COMMUNITY & RANKING ── */}
+      <div className="bg-slate-100/50 dark:bg-slate-900 rounded-[2rem] p-6 border border-slate-200/50 dark:border-slate-800 flex items-center justify-between backdrop-blur-sm">
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 bg-amber-100 dark:bg-amber-900/30 rounded-2xl flex items-center justify-center">
+            <Trophy className="w-6 h-6 text-amber-600" />
+          </div>
+          <div>
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Estate Ranking</p>
+            <p className="text-sm font-black text-slate-900 dark:text-white uppercase">{profile?.location?.estate || 'South B'} is #2</p>
+          </div>
+        </div>
+        <button onClick={() => navigate('/impact-hub')} className="p-2 bg-slate-200/50 dark:bg-slate-800 rounded-xl transition-colors">
+          <ChevronRight className="w-5 h-5 text-slate-400" />
+        </button>
+      </div>
+
+      {/* ── RECENT ACTIVITY ── */}
+      <div className="bg-slate-100/30 dark:bg-slate-900 rounded-[2rem] p-6 border border-slate-200/50 dark:border-slate-800">
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="font-black text-xs uppercase tracking-widest text-slate-400 px-1">Recent Activity</h3>
+          <div className="flex items-center gap-3">
+            {recentBookings.length > 0 && (
+              <button 
+                onClick={handleClearHistory}
+                className="text-[10px] font-black text-slate-400 hover:text-red-500 uppercase tracking-widest transition-colors"
+              >
+                Clear
+              </button>
+            )}
+            <History className="w-4 h-4 text-slate-300" />
+          </div>
+        </div>
+        
+        <div className="space-y-6">
+          {recentBookings.map((item, i) => (
+            <div key={i} className="flex items-center justify-between group px-1">
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 rounded-xl bg-slate-200/50 dark:bg-slate-800 flex items-center justify-center text-lg">
+                  {item.wasteType === 'general' ? '🗑️' : item.wasteType === 'recyclable' ? '♻️' : '🥬'}
                 </div>
-                <div className="flex items-center gap-3">
-                  {(item.status === 'completed' && !item.agent_rating && !item.agentRating) && (
-                    <button 
-                      onClick={() => setRatingBooking(item)}
-                      className="text-[10px] font-black uppercase text-emerald-500 bg-emerald-50 dark:bg-emerald-500/10 px-2 py-1 rounded-md border border-emerald-100 dark:border-emerald-500/20"
-                    >
-                      Rate Agent 🌟
-                    </button>
-                  )}
-                  <span className={`text-xs font-bold ${statusColor} capitalize`}>
-                    {item.status.replace('-', ' ')}
-                  </span>
+                <div>
+                  <p className="text-xs font-black text-slate-900 dark:text-white capitalize">{item.wasteType} Pickup</p>
+                  <p className="text-[10px] font-bold text-slate-400">{item.date}</p>
                 </div>
               </div>
-            );
-          })}
+              <div className="text-right">
+                <p className={`text-[10px] font-black uppercase tracking-widest ${
+                  item.status === 'completed' ? 'text-emerald-600' : 'text-amber-600'
+                }`}>
+                  {item.status}
+                </p>
+                {item.status === 'completed' && (
+                  <p className="text-[9px] font-bold text-slate-400 mt-0.5">Verified</p>
+                )}
+              </div>
+            </div>
+          ))}
+          
           {recentBookings.length === 0 && (
-            <div className="text-center py-6 px-4">
-              <p className="text-xs text-slate-400 font-medium mb-2">No bookings found yet.</p>
-              <p className="text-[10px] text-slate-300">Your sustainable waste journey starts with your first pickup booking!</p>
+            <div className="text-center py-4">
+              <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">No Activity Yet</p>
             </div>
           )}
         </div>
       </div>
 
-      {/* Agent Rating Modal */}
       <RatingModal
         isOpen={!!ratingBooking}
         onClose={() => setRatingBooking(null)}
@@ -510,16 +474,19 @@ export default function UserHome() {
             await submitAgentRating(ratingBooking.id, val, comment);
             toast.success('Thank you! 💖', { description: 'Your rating has been submitted.' });
           } catch (e) {
-            console.error('Rating error:', e);
             toast.error('Could not save rating');
           }
         } }
-        onSkip={() => {
-          if (ratingBooking) {
-            setDismissedRatingIds(prev => [...prev, ratingBooking.id]);
-          }
-          setRatingBooking(null);
-        } } 
+        onSkip={() => setRatingBooking(null)} 
+      />
+
+      <ReleaseFundsModal />
+
+      <TopUpModal 
+        isOpen={showTopUpModal} 
+        onClose={() => setShowTopUpModal(false)}
+        onConfirm={handleConfirmTopUp}
+        balance={profile?.walletBalance || 0}
       />
     </div>
   );

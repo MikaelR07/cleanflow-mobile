@@ -66,7 +66,7 @@ export default function AdminDashboard() {
       color: 'indigo'
     },
     { 
-      label: 'Gross Revenue', 
+      label: 'Total Sales', 
       value: stats?.totalRevenue || 0, 
       unit: 'KSh', 
       icon: TrendingUp,
@@ -101,7 +101,7 @@ export default function AdminDashboard() {
       color: 'blue'
     },
     { 
-      label: 'Rewards Liability', 
+      label: 'User Balances', 
       value: stats?.rewardsLiabilities || 0, 
       unit: 'KSh', 
       icon: Wallet,
@@ -115,13 +115,13 @@ export default function AdminDashboard() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="text-3xl font-black tracking-tight text-slate-900 dark:text-white">Ops Control</h1>
+            <h1 className="text-3xl font-black tracking-tight text-slate-900 dark:text-white">Business Overview</h1>
             <div className="flex items-center gap-1.5 px-2.5 py-1 bg-emerald-500/10 rounded-full border border-emerald-500/20">
               <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
-              <span className="text-[10px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest">System Live</span>
+              <span className="text-[10px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest">Active</span>
             </div>
           </div>
-          <p className="text-sm text-slate-500 font-medium">CleanFlow Global Operations & Real-time Metrics</p>
+          <p className="text-sm text-slate-500 font-medium">Real-time status of your waste network</p>
         </div>
         
         <div className="flex items-center gap-2">
@@ -246,7 +246,7 @@ export default function AdminDashboard() {
                   <ResponsiveContainer width="100%" height="100%" minWidth={0} debounce={50}>
                     <PieChart>
                       <Pie 
-                        data={materialDistribution.length > 0 ? materialDistribution : [{name: 'Organic', value: 4500}, {name: 'Recyclables', value: 2000}]} 
+                        data={materialDistribution} 
                         innerRadius={60} 
                         outerRadius={80} 
                         paddingAngle={5} 
@@ -296,7 +296,7 @@ export default function AdminDashboard() {
 
               <div className="flex items-center justify-between mb-8 relative z-10">
                 <h3 className="font-black uppercase tracking-widest text-[10px] flex items-center gap-2 text-slate-500">
-                  <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_#10b981]" /> System Pulse
+                  <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_#10b981]" /> Live Updates
                 </h3>
                 <span className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded-md text-[9px] font-black uppercase tracking-widest text-slate-400">
                   Live

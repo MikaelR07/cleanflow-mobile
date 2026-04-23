@@ -1,4 +1,4 @@
-import { User, Bell, Shield, HelpCircle, LogOut, ChevronRight, Phone, MessageCircle } from 'lucide-react';
+import { User, Bell, Shield, LogOut, ChevronRight, Phone, MessageCircle, Truck, BadgeCheck, Clock } from 'lucide-react';
 import { useAuthStore } from '@cleanflow/core';
 import { useNavigate } from 'react-router-dom';
 import { ThemeToggleRow } from '@cleanflow/ui';
@@ -7,6 +7,12 @@ import { toast } from 'sonner';
 export default function SettingsMenu() {
   const { profile, logout } = useAuthStore();
   const navigate = useNavigate();
+
+  // Derive status directly — no stale state
+  const isStaff = profile?.isStaff === true || profile?.is_staff === true;
+  const hasFleetId = !!(profile?.fleetId || profile?.fleet_id);
+  const isVerified = isStaff || hasFleetId;
+  const isPending = !isVerified && (profile?.notes || '').includes('staff_application_pending');
 
   const menuItems = [
     { icon: User, label: 'My Profile', subtitle: 'Edit your information', path: '/settings/profile' },
@@ -17,39 +23,64 @@ export default function SettingsMenu() {
   ];
 
   return (
-    <div className="space-y-5 animate-fade-in">
-      <h1 className="text-xl font-bold dark:text-white">Settings & Profile</h1>
+    <div className="space-y-5 animate-fade-in pb-20">
+      <h1 className="text-xl font-black dark:text-white tracking-tight">Settings & Profile</h1>
 
       {/* Profile Card */}
       <button 
         onClick={() => navigate('/settings/profile')}
-        className="w-full card flex items-center gap-4 p-5 text-left group"
+        className="w-full card flex items-center gap-4 p-5 text-left group bg-white dark:bg-slate-900 border border-slate-100 dark:border-white/5 rounded-[2rem] shadow-sm"
       >
         <div className="w-16 h-16 rounded-2xl bg-primary/10 dark:bg-primary/20 flex items-center justify-center text-3xl shadow-sm">
           {profile?.avatar || '👤'}
         </div>
         <div className="flex-1">
-          <p className="font-bold text-lg dark:text-white group-hover:text-primary transition-colors">{profile?.name || 'User'}</p>
-          <p className="text-sm text-slate-500 font-medium">{profile?.phone}</p>
-          <p className="text-xs text-slate-400 mt-1">📍 {profile?.estate || 'Kenya'}</p>
+          <p className="font-black text-lg dark:text-white group-hover:text-primary transition-colors flex items-center gap-2">
+            {profile?.name || 'Agent'}
+            {isVerified && <BadgeCheck className="w-5 h-5 text-primary fill-primary/10" />}
+          </p>
+          <p className="text-sm text-slate-500 font-bold font-mono">{profile?.phone}</p>
         </div>
         <ChevronRight className="w-5 h-5 text-slate-400 group-hover:text-primary transition-colors" />
       </button>
 
+      {/* Staff Application / Status Card */}
+      <button 
+        onClick={() => navigate('/settings/staff-application')}
+        className={`w-full p-6 rounded-[2.5rem] flex items-center gap-4 text-left transition-all active:scale-95 shadow-xl 
+          ${isVerified ? 'bg-slate-900 text-white' : 
+            isPending ? 'bg-orange-500 text-white shadow-orange-500/20' : 
+            'bg-primary text-white shadow-primary/20'}`}
+      >
+        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center 
+          ${isVerified || isPending ? 'bg-white/10' : 'bg-white/20'}`}>
+          {isPending ? <Clock className="w-6 h-6 text-white" /> : <Truck className="w-6 h-6 text-white" />}
+        </div>
+        <div className="flex-1">
+          <h4 className="text-xs font-black uppercase tracking-widest text-white/70 leading-none mb-1">
+            {isVerified ? 'CleanFlow Staff' : isPending ? 'Application Sent' : 'Join CleanFlow Team'}
+          </h4>
+          <p className="text-lg font-black tracking-tight leading-tight">
+            {isVerified ? profile?.fleetId || profile?.fleet_id || 'Verified Member' : isPending ? 'Tap to Check Status' : 'Apply to Work With Us'}
+          </p>
+        </div>
+        <ChevronRight className="w-4 h-4 text-white" />
+      </button>
+
       {/* Menu Options */}
-      <div className="card p-0 divide-y divide-slate-50 dark:divide-slate-800 overflow-hidden shadow-none">
+      <div className="card p-0 bg-white dark:bg-slate-900 border border-slate-100 dark:border-white/5 rounded-[2.5rem] divide-y divide-slate-50 dark:divide-slate-800 overflow-hidden shadow-sm">
         {menuItems.map((item, i) => (
           <button 
             key={i} 
             onClick={() => navigate(item.path)}
-            className="w-full flex items-center gap-4 p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group"
+            className="w-full flex items-center gap-4 p-5 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group"
           >
-            <div className="w-10 h-10 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 flex items-center justify-center group-hover:border-primary/30 transition-colors shadow-sm">
+            <div className="w-11 h-11 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-white/5 flex items-center justify-center group-hover:border-primary/30 transition-colors shadow-sm">
               <item.icon className="w-5 h-5 text-slate-500 dark:text-slate-400 group-hover:text-primary transition-colors" />
             </div>
             <div className="flex-1 text-left">
-              <p className="text-sm font-semibold dark:text-slate-200">{item.label}</p>
-              <p className="text-xs text-slate-400 dark:text-slate-500">{item.subtitle}</p>
+              <p className="text-sm font-black dark:text-slate-200">{item.label}</p>
+              <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">{item.subtitle}</p>
             </div>
             <ChevronRight className="w-4 h-4 text-slate-300 dark:text-slate-600 group-hover:text-primary" />
           </button>
@@ -64,12 +95,12 @@ export default function SettingsMenu() {
           toast.success('Logged Out', { description: 'You have been securely signed out.' });
           navigate('/login', { replace: true });
         }}
-        className="w-full flex items-center justify-center gap-2 text-rose-500 font-bold text-[15px] py-4 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 shadow-sm hover:border-rose-200 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-2xl transition-all"
+        className="w-full flex items-center justify-center gap-2 text-rose-500 font-black text-sm py-5 bg-white dark:bg-slate-900 border border-slate-100 dark:border-white/5 shadow-sm hover:border-rose-200 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-[2rem] transition-all"
       >
-        <LogOut className="w-5 h-5" /> Secure Sign Out
+        <LogOut className="w-5 h-5" /> SECURE SIGN OUT
       </button>
 
-      <p className="text-center text-xs text-slate-400 font-medium pb-20 pt-4">CleanFlow KE v2.1 · Made in Kenya 🇰🇪</p>
+      <p className="text-center text-[10px] font-black text-slate-400 uppercase tracking-widest pt-4">CleanFlow KE v2.1 · Nairobi 🇰🇪</p>
     </div>
   );
 }

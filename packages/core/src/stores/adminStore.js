@@ -103,12 +103,6 @@ export const useAdminStore = create((set, get) => ({
     
     // Initial fetch
     get().refreshDashboardStats();
-    
-    // Seed initial events for UI "fullness"
-    set({ systemEvents: [
-      { id: Date.now(), msg: 'Admin Dashboard Synchronized', type: 'info', time: new Date() },
-      { id: Date.now()-1, msg: 'Real-time Analytics Layer Active', type: 'success', time: new Date() }
-    ]});
   },
 
   addSystemEvent: (msg, type = 'info') => {

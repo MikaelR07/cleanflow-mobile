@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import {
   Store, User, Phone, Lock, Loader2, ArrowLeft,
   ShieldCheck, Shield, Sparkles, Building2, X, Mail
@@ -9,6 +9,7 @@ import { useAuthStore, ROLES } from '@cleanflow/core';
 import LocationSelector from '@cleanflow/ui/components/LocationSelector';
 
 const BUSINESS_TYPES = [
+  { id: 'weaver', label: '🧺 Informal Weaver' },
   { id: 'recycler', label: '♻️ Recycling Firm' },
   { id: 'manufacturer', label: '🏭 Manufacturer' },
   { id: 'retailer', label: '🛒 Retailer / Importer' },
@@ -17,10 +18,13 @@ const BUSINESS_TYPES = [
 ];
 
 export default function Register() {
+  const [searchParams] = useSearchParams();
+  const initialType = searchParams.get('role') || '';
+
   const [formData, setFormData] = useState({
     name: '',           // Contact person name
     businessName: '',   // Company name
-    businessType: '',   // Type of business
+    businessType: initialType,   // Type of business
     phone: '',
     otp: '',
     pin: '',
@@ -107,7 +111,10 @@ export default function Register() {
       // Pass businessName & type inside the name field (or extend as needed)
       await register({
         ...formData,
+        role: ROLES.BUSINESS,
         name: formData.name, // Contact person
+        businessType: formData.businessType, // Weaver vs Industrial
+        specializations: formData.specializations || []
       });
       toast.success('Business Activated', { description: 'Your marketplace account is live.' });
       navigate('/', { replace: true });
@@ -132,16 +139,13 @@ export default function Register() {
       <div className="max-w-md w-full mx-auto relative z-10 animate-fade-in">
 
         {/* Header */}
-        <div className="flex items-center justify-between mb-10">
-          <Link to="/login" className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-indigo-600 transition-colors">
-            <ArrowLeft className="w-4 h-4" /> Back to Sign In
-          </Link>
-          <div className="flex items-center gap-2">
-            <span className="text-xl font-black text-slate-900 dark:text-white">Clean<span className="text-indigo-600">Business</span></span>
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-600 to-violet-600 flex items-center justify-center text-white shadow-lg shadow-indigo-500/20">
-              <Store className="w-4 h-4" />
-            </div>
+        <div className="flex flex-col items-center mb-10">
+          <div className="w-full flex items-center justify-between mb-6">
+            <Link to="/login" className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-indigo-600 transition-colors">
+              <ArrowLeft className="w-4 h-4" /> Back to Sign In
+            </Link>
           </div>
+          <img src="/logo.png" className="w-56 h-auto shadow-2xl rounded-3xl" alt="Business Logo" />
         </div>
 
         <div className="mb-10">
@@ -196,7 +200,7 @@ export default function Register() {
                   <button
                     key={type.id}
                     type="button"
-                    onClick={() => setFormData(prev => ({ ...prev, businessType: type.id }))}
+                    onClick={() => setFormData(prev => ({ ...prev, businessType: type.id, specializations: [] }))}
                     className={`px-3 py-2.5 rounded-xl text-[11px] font-black text-left transition-all border ${
                       formData.businessType === type.id
                         ? 'bg-indigo-600 text-white border-indigo-600 shadow-lg shadow-indigo-500/20'
@@ -208,6 +212,35 @@ export default function Register() {
                 ))}
               </div>
             </div>
+
+            {/* Weaver Specializations (Conditional) */}
+            {formData.businessType === 'weaver' && (
+              <div className="animate-in slide-in-from-top-4 duration-300 space-y-3 pt-2">
+                <p className="text-[9px] font-black uppercase tracking-widest text-indigo-500">Weaver Specializations</p>
+                <div className="flex flex-wrap gap-2">
+                  {['PET', 'HDPE', 'Metal', 'Paper', 'Glass', 'E-Waste'].map(spec => (
+                    <button
+                      key={spec}
+                      type="button"
+                      onClick={() => {
+                        const current = formData.specializations || [];
+                        const next = current.includes(spec) 
+                          ? current.filter(s => s !== spec) 
+                          : [...current, spec];
+                        setFormData(prev => ({ ...prev, specializations: next }));
+                      }}
+                      className={`px-3 py-1.5 rounded-full text-[10px] font-bold border transition-all ${
+                        formData.specializations?.includes(spec)
+                          ? 'bg-emerald-500 border-emerald-500 text-white'
+                          : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500'
+                      }`}
+                    >
+                      {spec}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* ── SECTION 2: Contact Details ─────────────────────────── */}
@@ -310,7 +343,7 @@ export default function Register() {
             </button>
 
             <div className="text-center space-y-6">
-              <div className="w-20 h-20 bg-indigo-500/10 rounded-[2rem] flex items-center justify-center mx-auto text-indigo-600">
+              <div className="w-56 h-auto bg-indigo-500/10 rounded-[2rem] flex items-center justify-center mx-auto text-indigo-600">
                 <ShieldCheck className="w-10 h-10" />
               </div>
 

@@ -129,16 +129,13 @@ export default function Register() {
       <div className="max-w-md w-full mx-auto relative z-10 animate-fade-in">
         
         {/* Header */}
-        <div className="flex items-center justify-between mb-10">
-          <Link to="/login" className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-primary transition-colors">
-            <ArrowLeft className="w-4 h-4" /> Back to Sign In
-          </Link>
-          <div className="flex items-center gap-2">
-            <span className="text-xl font-black text-slate-900 dark:text-white leading-none">Clean<span className="text-primary">Flow</span></span>
-            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-white shadow-lg shadow-primary/20">
-              <Recycle className="w-4 h-4" />
-            </div>
+        <div className="flex flex-col items-center mb-10">
+          <div className="w-full flex items-center justify-between mb-6">
+            <Link to="/login" className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-primary transition-colors">
+              <ArrowLeft className="w-4 h-4" /> Back to Sign In
+            </Link>
           </div>
+          <img src="/logo.png" className="w-56 h-auto shadow-2xl rounded-3xl" alt="Logo" />
         </div>
 
         <div className="mb-10 text-center sm:text-left">
@@ -273,7 +270,7 @@ export default function Register() {
             </button>
 
             <div className="text-center space-y-6">
-              <div className="w-20 h-20 bg-primary/10 rounded-[2rem] flex items-center justify-center mx-auto mb-2 text-primary">
+              <div className="w-56 h-auto bg-primary/10 rounded-[2rem] flex items-center justify-center mx-auto mb-2 text-primary">
                 <ShieldCheck className="w-10 h-10" />
               </div>
               

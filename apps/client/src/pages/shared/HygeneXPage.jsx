@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
-import { Brain, Mic, Send, Lightbulb, MapPin, Loader2, StopCircle } from 'lucide-react';
+import { Brain, Mic, Send, Lightbulb, MapPin, Loader2, StopCircle, ShieldCheck, Activity, User } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { useAuthStore, ROLES } from '@cleanflow/core';
 import { useHygenexStore } from '@cleanflow/core';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
@@ -29,7 +30,7 @@ function useVoiceRecognition() {
   const startListening = (onResult) => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
-      // Mock fallback
+      // Mock fallback for browsers without speech recognition
       setIsListening(true);
       setTimeout(() => {
         onResult("Predict my waste for next week");
@@ -57,6 +58,33 @@ function useVoiceRecognition() {
   return { isListening, startListening, stopListening };
 }
 
+// Premium Waveform Component
+const Waveform = ({ isListening, isTyping }) => {
+  return (
+    <div className="flex items-center gap-1.5 h-12 px-4">
+      {[...Array(12)].map((_, i) => (
+        <motion.div
+          key={i}
+          animate={isListening || isTyping ? {
+            height: [8, 24, 8, 32, 8],
+            opacity: [0.3, 1, 0.3],
+          } : {
+            height: 4,
+            opacity: 0.1,
+          }}
+          transition={{
+            duration: 0.8,
+            repeat: Infinity,
+            delay: i * 0.1,
+            ease: "easeInOut"
+          }}
+          className="w-1.5 rounded-full bg-emerald-500"
+        />
+      ))}
+    </div>
+  );
+};
+
 export default function HygeneXPage() {
   const { role } = useAuthStore();
   const { messages, isTyping, metrics, initChat, stopChat, sendMessage } = useHygenexStore();
@@ -71,7 +99,6 @@ export default function HygeneXPage() {
   }, [initChat, stopChat]);
 
   useEffect(() => {
-    // Auto scroll
     chatBottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isTyping]);
 
@@ -88,167 +115,120 @@ export default function HygeneXPage() {
     }
   };
 
-  const submitPrompt = (prompt) => {
-    sendMessage(prompt);
-  };
-
   const toggleMic = () => {
     if (isListening) stopListening();
     else startListening((text) => setInputText(text));
   };
 
-  const userPrompts = [
-    "Predict my waste for next week", 
-    "Give me tips to reduce odour", 
-    "Show my rewards",
-    "How do I recycle batteries?"
-  ];
-
-  const adminPrompts = [
-    "Generate NEMA report for all estates", 
-    "Show high-risk areas today", 
-    "Analyze compliance trends",
-    "Suggest interventions for Block 7"
-  ];
-
-  const prompts = role === ROLES.ADMIN ? adminPrompts : userPrompts;
-
-  // Render Left Sidebar for Admin
-  const renderOversightDashboard = () => (
-    <div className="hidden lg:flex flex-col w-1/3 min-w-[320px] max-w-sm border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-y-auto">
-      <div className="p-6 border-b border-slate-200 dark:border-slate-800">
-        <h2 className="text-sm font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-4">HygeneX AI Ecosystem</h2>
-        
-        <div className="space-y-4">
-          <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-800">
-            <div className="text-2xl font-bold text-slate-800 dark:text-slate-100 mb-1">{metrics.estates} <span className="text-sm text-slate-500 dark:text-slate-400 font-medium">Estates</span></div>
-            <p className="text-xs text-slate-500 dark:text-slate-400">Actively monitored right now.</p>
-          </div>
+  return (
+    <div className={`flex flex-col lg:flex-row absolute inset-0 bg-slate-950 text-white ${role === ROLES.ADMIN ? 'lg:static lg:h-[calc(100dvh-56px)]' : 'lg:static lg:h-[calc(100dvh-56px-70px)]'}`}>
+      
+      {/* 1. OVERSIGHT PANEL (LEFT) */}
+      <div className="hidden lg:flex flex-col w-80 border-r border-white/5 bg-slate-900/50 backdrop-blur-xl">
+        <div className="p-8">
+          <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-emerald-500 mb-8">AI Neural Metrics</h2>
           
-          <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-800">
-            <div className="text-2xl font-bold text-primary dark:text-primary-light mb-1">{metrics.activeAgents} <span className="text-sm text-slate-500 dark:text-slate-400 font-medium">Agents</span></div>
-            <p className="text-xs text-slate-500 dark:text-slate-400">Green Agents deployed across zones.</p>
-          </div>
-
-          <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-800">
-            <div className="flex items-center gap-3">
-              <div className="relative w-12 h-12">
-                <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
-                  <circle cx="50" cy="50" r="45" className="stroke-slate-200 dark:stroke-slate-700" strokeWidth="10" fill="none" />
-                  <circle 
-                    cx="50" cy="50" r="45" 
-                    className="stroke-primary" strokeWidth="10" fill="none" 
-                    strokeDasharray={`${2 * Math.PI * 45}`} 
-                    strokeDashoffset={`${2 * Math.PI * 45 * (1 - metrics.segregationRate / 100)}`} 
+          <div className="space-y-6">
+            {[
+              { label: "Estates Monitored", val: metrics.estates, icon: MapPin, color: "emerald" },
+              { label: "Active Verifiers", val: metrics.activeAgents, icon: ShieldCheck, color: "blue" },
+              { label: "Segregation Rate", val: `${metrics.segregationRate}%`, icon: Activity, color: "amber" },
+            ].map((m, i) => (
+              <div key={i} className="group cursor-default">
+                <div className="flex justify-between items-end mb-2">
+                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{m.label}</span>
+                  <span className={`text-xl font-black text-${m.color}-500 group-hover:scale-110 transition-transform`}>{m.val}</span>
+                </div>
+                <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
+                  <motion.div 
+                    initial={{ width: 0 }}
+                    animate={{ width: "70%" }}
+                    className={`h-full bg-${m.color}-500`}
                   />
-                </svg>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="mt-auto p-8 border-t border-white/5">
+           <div className="flex items-center gap-4 p-4 rounded-3xl bg-white/5 border border-white/5 mb-4">
+              <div className="w-10 h-10 rounded-2xl bg-emerald-500/20 flex items-center justify-center text-emerald-500">
+                <Brain className="w-5 h-5" />
               </div>
               <div>
-                <div className="text-xl font-bold text-slate-800 dark:text-slate-100">{metrics.segregationRate}%</div>
-                <div className="text-xs text-slate-500 dark:text-slate-400 font-medium">Avg Segregation Rate</div>
+                <div className="text-[10px] font-black uppercase tracking-widest text-emerald-500">Neural Status</div>
+                <div className="text-xs font-bold text-white">Active & Learning</div>
               </div>
-            </div>
-          </div>
+           </div>
         </div>
       </div>
-      
-      <div className="flex-1 p-6 flex flex-col">
-        <h2 className="text-sm font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-4 flex-none">Risk Map</h2>
-        <div className="flex-1 min-h-[250px] relative rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 z-0">
-          <MapContainer center={[-1.2921, 36.8219]} zoom={12} className="w-full h-full" zoomControl={false}>
-            <TileLayer url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png" />
-            <Marker position={[-1.2921, 36.8219]}>
-              <Popup>Block 7 - High Flow Risk</Popup>
-            </Marker>
-            <Marker position={[-1.2851, 36.8299]}>
-              <Popup>Zone 2 - Missed pickups</Popup>
-            </Marker>
-          </MapContainer>
-        </div>
-      </div>
-    </div>
-  );
 
-  return (
-    <div className={`flex flex-col lg:flex-row absolute inset-0 ${role === ROLES.ADMIN ? 'lg:static lg:h-[calc(100dvh-56px)]' : 'lg:static lg:h-[calc(100dvh-56px-70px)]'}`}>
-      
-      {/* Sidebar for Admin */}
-      {role === ROLES.ADMIN && renderOversightDashboard()}
-
-      {/* Main Chat Interface */}
-      <div className="flex-1 flex flex-col bg-white dark:bg-slate-950 max-h-full overflow-hidden">
+      {/* 2. CHAT ENGINE (CENTER) */}
+      <div className="flex-1 flex flex-col relative overflow-hidden bg-slate-950">
+        <div className="absolute inset-0 opacity-20 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, rgba(255,255,255,0.05) 1px, transparent 0)', backgroundSize: '40px 40px' }} />
         
-        {/* Chat Header */}
-        <header className="px-6 py-4 border-b border-slate-100 dark:border-slate-800/80 bg-white/80 dark:bg-slate-950/80 backdrop-blur flex justify-between flex-none z-10 z-0">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-primary/10 dark:bg-primary/20 flex items-center justify-center relative">
-              <Brain className="w-5 h-5 text-primary" />
-              <div className="absolute top-1 right-1 w-2 h-2 rounded-full bg-green-500 ring-2 ring-white dark:ring-slate-950 animate-pulse"></div>
+        {/* Header */}
+        <header className="px-8 py-6 border-b border-white/5 flex justify-between items-center z-10">
+          <div className="flex items-center gap-4">
+            <div className="relative">
+              <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20">
+                <Brain className="w-6 h-6 text-emerald-500" />
+              </div>
+              <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-green-500 border-4 border-slate-950 animate-pulse" />
             </div>
             <div>
-              <h1 className="font-bold text-slate-900 dark:text-white leading-tight">HygeneX</h1>
-              <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Your Waste Intelligence Assistant</p>
+              <h1 className="text-lg font-black tracking-tighter text-white">HygeneX <span className="text-emerald-500">v2.0</span></h1>
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">CleanFlow Operations Manager</p>
             </div>
           </div>
-          {role === ROLES.ADMIN && (
-             <span className="hidden sm:inline-flex items-center px-2 py-1 bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 text-xs font-semibold rounded-full border border-blue-100 dark:border-blue-500/20">
-               Optimizing 12 Estates
-             </span>
-          )}
+
+          <div className="flex items-center gap-4">
+            <Waveform isListening={isListening} isTyping={isTyping} />
+          </div>
         </header>
 
-        {/* Chat Area */}
-        <div className="flex-1 overflow-y-auto px-4 py-6 sm:px-6 md:px-8 space-y-6">
-          {messages.length === 1 && (
-             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-8 w-full max-w-3xl mx-auto">
-               {prompts.map((p, i) => (
-                 <button 
-                  key={i} 
-                  onClick={() => submitPrompt(p)}
-                  className="flex items-start gap-3 p-4 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-primary dark:hover:border-primary rounded-2xl text-left transition-colors text-sm text-slate-700 dark:text-slate-300 group"
-                 >
-                   <Lightbulb className="w-5 h-5 text-slate-400 dark:text-slate-500 group-hover:text-primary transition-colors flex-none" />
-                   <span>{p}</span>
-                 </button>
-               ))}
-             </div>
-          )}
-
-          <div className="w-full max-w-3xl mx-auto space-y-8">
+        {/* Messages */}
+        <div className="flex-1 overflow-y-auto px-6 py-10 space-y-10">
+          <div className="max-w-3xl mx-auto space-y-10">
             {messages.map((msg) => {
               const isAi = msg.role === 'ai';
               return (
-                <div key={msg.id} className={`flex gap-4 ${isAi ? '' : 'justify-end'}`}>
-                  {isAi && (
-                    <div className="w-8 h-8 rounded-full bg-primary/10 dark:bg-primary/20 flex items-center justify-center flex-none mt-1 shadow-sm border border-primary/20">
-                      <Brain className="w-4 h-4 text-primary" />
-                    </div>
-                  )}
-                  <div className={`max-w-[85%] rounded-2xl p-4 text-sm leading-relaxed ${
+                <motion.div 
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  key={msg.id} 
+                  className={`flex gap-6 ${isAi ? '' : 'flex-row-reverse'}`}
+                >
+                  <div className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 border ${
+                    isAi ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500' : 'bg-white/5 border-white/10 text-slate-400'
+                  }`}>
+                    {isAi ? <Brain className="w-5 h-5" /> : <User className="w-5 h-5" />}
+                  </div>
+                  
+                  <div className={`relative p-6 rounded-[2rem] text-sm leading-relaxed max-w-[80%] border ${
                     isAi 
-                     ? 'bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 text-slate-800 dark:text-slate-200 rounded-tl-sm' 
-                     : 'bg-primary text-white rounded-tr-sm shadow-md shadow-primary/20'
+                      ? 'bg-white/[0.03] border-white/5 text-slate-200 rounded-tl-none' 
+                      : 'bg-emerald-500 border-emerald-400 text-white font-medium rounded-tr-none shadow-xl shadow-emerald-500/20'
                   }`}>
                     {msg.text}
-                  </div>
-                  {!isAi && (
-                    <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center flex-none mt-1 shadow-sm text-slate-500 dark:text-slate-400 text-xs font-bold uppercase">
-                      {role === ROLES.ADMIN ? 'AD' : 'ME'}
+                    <div className={`absolute bottom-2 ${isAi ? 'right-4' : 'left-4'} text-[8px] font-black uppercase opacity-30`}>
+                      {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </div>
-                  )}
-                </div>
+                  </div>
+                </motion.div>
               );
             })}
-
+            
             {isTyping && (
-              <div className="flex gap-4">
-                 <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-none shadow-sm">
-                  <Brain className="w-4 h-4 text-primary" />
+              <div className="flex gap-6">
+                <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-500">
+                  <Brain className="w-5 h-5" />
                 </div>
-                <div className="bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl rounded-tl-sm p-4 flex items-center gap-1.5 w-16">
-                  <div className="w-1.5 h-1.5 rounded-full bg-slate-400 dark:bg-slate-600 animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                  <div className="w-1.5 h-1.5 rounded-full bg-slate-400 dark:bg-slate-600 animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                  <div className="w-1.5 h-1.5 rounded-full bg-slate-400 dark:bg-slate-600 animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                <div className="flex items-center gap-1.5 p-6 bg-white/[0.03] border border-white/5 rounded-[2rem] rounded-tl-none">
+                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-bounce" style={{ animationDelay: '0ms' }} />
+                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-bounce" style={{ animationDelay: '150ms' }} />
+                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-bounce" style={{ animationDelay: '300ms' }} />
                 </div>
               </div>
             )}
@@ -256,45 +236,41 @@ export default function HygeneXPage() {
           </div>
         </div>
 
-        {/* Input Area */}
-        <div className="p-4 sm:px-6 bg-white dark:bg-slate-950 border-t border-slate-100 dark:border-slate-800/80 flex-none pb-safe">
-          <div className="max-w-3xl mx-auto relative flex items-end gap-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-1.5 focus-within:ring-2 focus-within:ring-primary/50 focus-within:border-primary transition-all shadow-sm">
-            
-            <button 
-              onClick={toggleMic}
-              className={`p-3 rounded-full flex-none transition-colors ${
-                isListening 
-                  ? 'bg-rose-100 dark:bg-rose-500/20 text-rose-500 animate-pulse' 
-                  : 'bg-transparent text-slate-400 dark:text-slate-500 hover:text-primary dark:hover:text-primary'
-              }`}
-              title="Speak to HygeneX"
-            >
-              {isListening ? <StopCircle className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
-            </button>
+        {/* Input Control */}
+        <div className="p-8 border-t border-white/5 bg-slate-900/30 backdrop-blur-3xl">
+          <div className="max-w-3xl mx-auto">
+            <div className="relative group">
+              <textarea
+                value={inputText}
+                onChange={(e) => setInputText(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder={isListening ? "I'm listening..." : "Ask HygeneX about the ecosystem..."}
+                className="w-full bg-white/[0.03] border border-white/10 rounded-[2.5rem] py-6 px-16 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-emerald-500/50 focus:bg-white/[0.05] transition-all resize-none min-h-[72px]"
+                rows={1}
+              />
+              
+              <button 
+                onClick={toggleMic}
+                className={`absolute left-4 top-1/2 -translate-y-1/2 p-3 rounded-2xl transition-all ${
+                  isListening ? 'bg-emerald-500 text-white animate-pulse shadow-lg shadow-emerald-500/20' : 'text-slate-500 hover:text-white'
+                }`}
+              >
+                {isListening ? <StopCircle className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
+              </button>
 
-            <textarea
-              value={inputText}
-              onChange={(e) => setInputText(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder={isListening ? "Listening..." : "Message HygeneX..."}
-              className="flex-1 bg-transparent border-none focus:ring-0 resize-none py-3.5 px-2 text-sm text-slate-800 dark:text-slate-200 placeholder:text-slate-400 dark:placeholder:text-slate-500 max-h-32 min-h-[44px]"
-              rows={1}
-            />
-
-            <button 
-              onClick={handleSend}
-              disabled={!inputText.trim()}
-              className={`p-3 rounded-full flex-none transition-all ${
-                inputText.trim() 
-                  ? 'bg-primary text-white shadow-md shadow-primary/30 hover:bg-primary-dark translate-y-0 opacity-100' 
-                  : 'bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-600 opacity-50 scale-95 pointer-events-none'
-              }`}
-            >
-              <Send className="w-4 h-4 ml-0.5" />
-            </button>
-          </div>
-          <div className="text-center mt-3 text-[10px] text-slate-400 dark:text-slate-600 font-medium pb-8 lg:pb-0">
-            HygeneX can make mistakes. Consider verifying important metrics.
+              <button 
+                onClick={handleSend}
+                disabled={!inputText.trim()}
+                className={`absolute right-4 top-1/2 -translate-y-1/2 p-3 rounded-2xl transition-all ${
+                  inputText.trim() ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/40' : 'text-slate-700 pointer-events-none'
+                }`}
+              >
+                <Send className="w-5 h-5" />
+              </button>
+            </div>
+            <p className="text-center mt-4 text-[9px] font-black uppercase tracking-[0.2em] text-slate-600">
+              HygeneX Neural Interface • Encrypted & Autonomous
+            </p>
           </div>
         </div>
       </div>

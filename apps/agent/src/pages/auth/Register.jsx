@@ -119,9 +119,7 @@ export default function Register() {
       <div className="min-h-dvh flex flex-col justify-center bg-slate-900 px-4 py-8 animate-in fade-in">
         <div className="max-w-md w-full mx-auto relative z-10 glass p-8 rounded-3xl border border-slate-700 shadow-2xl">
           <div className="text-center mb-8">
-            <div className="w-16 h-16 rounded-full bg-blue-500/20 flex items-center justify-center mx-auto mb-4">
-              <ShieldCheck className="w-8 h-8 text-blue-400" />
-            </div>
+            <img src="/logo.png" className="w-56 h-auto mx-auto mb-8 shadow-2xl rounded-3xl" alt="Logo" />
             <h2 className="text-2xl font-black text-white tracking-widest uppercase">Identity Verification</h2>
             <p className="text-sm text-slate-400 mt-2">Enter the secure PIN sent to <br/><span className="text-white font-bold">{formData.phone}</span></p>
           </div>
@@ -173,14 +171,14 @@ export default function Register() {
       <div className="max-w-md w-full mx-auto animate-slide-up">
         
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <Link to="/login" className="p-2 -ml-2 rounded-full hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-500 transition-colors">
-            <ArrowLeft className="w-5 h-5" />
-          </Link>
-          <div className="w-10 h-10 rounded-xl bg-secondary flex items-center justify-center text-white">
-            <Recycle className="w-5 h-5" />
+        <div className="flex flex-col items-center mb-8">
+          <div className="w-full flex items-center justify-between mb-6">
+            <Link to="/login" className="p-2 -ml-2 rounded-full hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-500 transition-colors">
+              <ArrowLeft className="w-5 h-5" />
+            </Link>
+            <div className="w-9" /> {/* Spacer */}
           </div>
-          <div className="w-9" /> {/* Spacer */}
+          <img src="/logo.png" className="w-56 h-auto mx-auto mb-8 shadow-2xl rounded-3xl" alt="Logo" />
         </div>
 
         <div>

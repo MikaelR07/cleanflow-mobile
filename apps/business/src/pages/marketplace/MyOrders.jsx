@@ -5,13 +5,18 @@ import { useMarketplaceStore } from '@cleanflow/core';
 
 const STATUS_CONFIG = {
   pending:   { label: 'Pending',   color: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',   icon: Clock },
-  confirmed: { label: 'Confirmed', color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',           icon: Package },
+  held_in_escrow: { label: 'In Escrow', color: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400', icon: Package },
+  funds_released: { label: 'Released', color: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400', icon: CheckCircle2 },
+  disputed:  { label: 'Disputed',  color: 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400',           icon: XCircle },
   completed: { label: 'Completed', color: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400', icon: CheckCircle2 },
   cancelled: { label: 'Cancelled', color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',               icon: XCircle },
 };
 
 export default function MyOrders() {
-  const { myOrders, fetchMyActivity, cancelOrder, requestTransport, isLoading } = useMarketplaceStore();
+  const { 
+    myOrders, fetchMyActivity, cancelOrder, 
+    requestTransport, releaseEscrow, disputeOrder, isLoading 
+  } = useMarketplaceStore();
   const [activeTab, setActiveTab] = useState('pending');
   const navigate = useNavigate();
 
@@ -19,8 +24,12 @@ export default function MyOrders() {
     fetchMyActivity();
   }, []);
 
-  const tabs = ['pending', 'confirmed', 'completed', 'cancelled'];
-  const filteredOrders = myOrders.filter(o => o.status === activeTab);
+  const tabs = ['pending', 'held_in_escrow', 'funds_released', 'disputed'];
+  const agentClaims = myOrders.filter(o => o.order_type === 'agent_claim');
+  const b2bOrders = myOrders.filter(o => o.order_type !== 'agent_claim');
+  const filteredOrders = activeTab === 'agent_claims' 
+    ? agentClaims 
+    : myOrders.filter(o => o.status === activeTab && o.order_type !== 'agent_claim');
 
   return (
     <div className="space-y-6 animate-fade-in pb-20">
@@ -37,23 +46,43 @@ export default function MyOrders() {
       </div>
 
       {/* Tab Strip */}
-      <div className="flex bg-slate-100 dark:bg-slate-900 p-1.5 rounded-2xl gap-1">
-        {tabs.map(tab => {
-          const count = myOrders.filter(o => o.status === tab).length;
-          return (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`flex-1 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all ${
-                activeTab === tab
-                  ? 'bg-white dark:bg-slate-800 text-primary shadow-sm'
-                  : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
-              }`}
-            >
-              {tab} {count > 0 && `(${count})`}
-            </button>
-          );
-        })}
+      <div className="flex flex-col gap-2">
+        {/* Agent Claims Tab — Prominent for Weavers */}
+        <button
+          onClick={() => setActiveTab('agent_claims')}
+          className={`w-full py-3 rounded-2xl text-xs font-black uppercase tracking-widest flex items-center justify-between px-4 transition-all border ${
+            activeTab === 'agent_claims'
+              ? 'bg-primary text-white border-primary shadow-lg shadow-primary/20'
+              : 'bg-white dark:bg-slate-900 text-slate-500 border-slate-100 dark:border-slate-800'
+          }`}
+        >
+          <span>📦 Agent Claims (Network Pickups)</span>
+          {agentClaims.length > 0 && (
+            <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${activeTab === 'agent_claims' ? 'bg-white/20' : 'bg-primary/10 text-primary'}`}>
+              {agentClaims.length}
+            </span>
+          )}
+        </button>
+
+        {/* B2B Orders Strip */}
+        <div className="flex bg-slate-100 dark:bg-slate-900 p-1.5 rounded-2xl gap-1">
+          {tabs.map(tab => {
+            const count = b2bOrders.filter(o => o.status === tab).length;
+            return (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`flex-1 py-2 rounded-xl text-[9px] font-black uppercase tracking-wider transition-all ${
+                  activeTab === tab
+                    ? 'bg-white dark:bg-slate-800 text-primary shadow-sm'
+                    : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
+                }`}
+              >
+                {tab.replace('_', ' ')} {count > 0 && `(${count})`}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* Orders List */}
@@ -125,23 +154,42 @@ export default function MyOrders() {
                 </div>
 
                 {/* Actions */}
-                <div className="flex gap-3 mt-4">
-                  {(order.status === 'pending' || order.status === 'confirmed') && !order.bookingId && (
-                    <button
-                      onClick={() => requestTransport(order)}
-                      className="flex-1 py-3 bg-primary hover:bg-emerald-600 text-white text-[10px] font-black uppercase tracking-widest rounded-xl shadow-lg shadow-primary/20 transition-all flex items-center justify-center gap-2"
-                    >
-                      <Truck className="w-4 h-4" /> Request Transport
-                    </button>
+                <div className="flex flex-col gap-2 mt-4">
+                  {order.status === 'held_in_escrow' && (
+                    <div className="flex gap-2 w-full">
+                      <button
+                        onClick={() => releaseEscrow(order)}
+                        className="flex-1 py-3 bg-emerald-500 hover:bg-emerald-600 text-white text-[10px] font-black uppercase tracking-widest rounded-xl shadow-lg shadow-emerald-500/20 transition-all"
+                      >
+                        Release Funds (Confirm Delivery)
+                      </button>
+                      <button
+                        onClick={() => disputeOrder(order.id, 'Material quality/weight mismatch')}
+                        className="px-4 py-3 bg-rose-500 hover:bg-rose-600 text-white text-[10px] font-black uppercase tracking-widest rounded-xl shadow-lg shadow-rose-500/20 transition-all"
+                      >
+                        Dispute
+                      </button>
+                    </div>
                   )}
-                  {order.status === 'pending' && (
-                    <button
-                      onClick={() => cancelOrder(order.id)}
-                      className={`py-3 text-[10px] font-black uppercase tracking-widest text-rose-500 border border-slate-200 dark:border-slate-800 rounded-xl hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors ${order.bookingId ? 'flex-1' : 'px-6'}`}
-                    >
-                      {order.bookingId ? 'Cancel' : 'Cancel Order'}
-                    </button>
-                  )}
+
+                  <div className="flex gap-3">
+                    {(order.status === 'pending' || order.status === 'held_in_escrow') && !order.bookingId && (
+                      <button
+                        onClick={() => requestTransport(order)}
+                        className="flex-1 py-3 bg-primary hover:bg-emerald-600 text-white text-[10px] font-black uppercase tracking-widest rounded-xl shadow-lg shadow-primary/20 transition-all flex items-center justify-center gap-2"
+                      >
+                        <Truck className="w-4 h-4" /> Request Transport
+                      </button>
+                    )}
+                    {order.status === 'pending' && (
+                      <button
+                        onClick={() => cancelOrder(order.id)}
+                        className={`py-3 text-[10px] font-black uppercase tracking-widest text-rose-500 border border-slate-200 dark:border-slate-800 rounded-xl hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors ${order.bookingId ? 'flex-1' : 'px-6'}`}
+                      >
+                        {order.bookingId ? 'Cancel' : 'Cancel Order'}
+                      </button>
+                    )}
+                  </div>
                 </div>
                 {order.status === 'completed' && (
                   <div className="text-center text-[10px] font-black text-emerald-600 uppercase tracking-widest pt-1">

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { 
   Building2, BadgeCheck, TrendingUp, Truck, 
   Search, Check, X, ShieldCheck, 
-  Activity, AlertCircle, ShoppingBag, ArrowRight
+  Activity, AlertCircle, ShoppingBag, ArrowRight, Scale
 } from 'lucide-react';
 import { useAdminStore } from '@cleanflow/core';
 import { toast } from 'sonner';
@@ -265,8 +265,8 @@ export default function AdminB2B() {
                             </div>
                          </div>
                          <div className="text-right">
-                           <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Est. Bounty</p>
-                           <p className="text-lg font-black text-slate-900 dark:text-white italic underline decoration-primary decoration-4">KSh {order.total_price * 0.1 > 500 ? (order.total_price * 0.1).toFixed(0) : 500}</p>
+                           <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Platform Revenue</p>
+                           <p className="text-lg font-black text-slate-900 dark:text-white italic underline decoration-primary decoration-4">KSh {order.total_price * 0.2 > 500 ? (order.total_price * 0.2).toFixed(0) : 500}</p>
                          </div>
                          <button className="p-4 bg-slate-50 dark:bg-slate-800 rounded-2xl text-slate-400 hover:bg-primary hover:text-white transition-all group">
                             <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />

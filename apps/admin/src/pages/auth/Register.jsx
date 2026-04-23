@@ -76,14 +76,13 @@ export default function Register() {
       <div className="max-w-md w-full mx-auto animate-slide-up">
         
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <Link to="/login" className="p-2 -ml-2 rounded-full hover:bg-white/10 text-slate-400 transition-colors">
-            <ArrowLeft className="w-5 h-5" />
-          </Link>
-          <div className="w-10 h-10 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white">
-            <Recycle className="w-5 h-5" />
+        <div className="flex flex-col items-center mb-8">
+          <div className="w-full flex items-center justify-between mb-6">
+            <Link to="/login" className="p-2 -ml-2 rounded-full hover:bg-white/10 text-slate-400 transition-colors">
+              <ArrowLeft className="w-5 h-5" />
+            </Link>
           </div>
-          <div className="w-9" /> {/* Spacer */}
+          <img src="/logo.png" className="w-56 h-auto shadow-2xl rounded-3xl mb-4" alt="Admin Logo" />
         </div>
 
         <div>

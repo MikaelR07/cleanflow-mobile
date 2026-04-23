@@ -1,14 +1,16 @@
 import { useState, useEffect } from 'react';
 import { 
-  Leaf, ShieldCheck, Zap, Globe, 
-  Building2, User, Truck, 
-  ChevronRight, ExternalLink, BarChart3, Bot,
-  MessageSquare, Mail, Layers, Sun, Moon,
-  Cpu, Award, Sprout, HandCoins, Activity,
-  LockKeyhole, TrendingUp, Navigation
+  ShieldCheck, Zap, Globe, ArrowRight, Layers, 
+  Trash2, Search, TrendingUp, LockKeyhole, BarChart3, 
+  CheckCircle2, Sparkles, Building2, Package, 
+  Repeat, CreditCard, Brain, Mic, Wallet,
+  Leaf, User, Truck, ChevronRight, ExternalLink,
+  MessageSquare, Mail, Sun, Moon, Cpu, Award,
+  Sprout, HandCoins, Activity, Navigation
 } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { useThemeStore } from '@cleanflow/core';
+import { useThemeStore, useAssetStore } from '@cleanflow/core';
+import ImpactTicker from '../components/ImpactTicker';
 
 const GlassMockup = ({ color = "emerald", icon: Icon, isDarkMode }) => {
   const colorMap = {
@@ -16,6 +18,7 @@ const GlassMockup = ({ color = "emerald", icon: Icon, isDarkMode }) => {
     blue: { bg: 'bg-blue-500', shadow: 'shadow-blue-500/40', glow: 'from-blue-500/20', border: 'border-blue-500/20' },
     purple: { bg: 'bg-purple-500', shadow: 'shadow-purple-500/40', glow: 'from-purple-500/20', border: 'border-purple-500/20' },
     rose: { bg: 'bg-rose-500', shadow: 'shadow-rose-500/40', glow: 'from-rose-500/20', border: 'border-rose-500/20' },
+    indigo: { bg: 'bg-indigo-500', shadow: 'shadow-indigo-500/40', glow: 'from-indigo-500/20', border: 'border-indigo-500/20' },
   };
   const theme = colorMap[color];
 
@@ -61,6 +64,11 @@ const GlassMockup = ({ color = "emerald", icon: Icon, isDarkMode }) => {
 export default function LandingPage() {
   const [scrolled, setScrolled] = useState(false);
   const { isDarkMode, toggleTheme } = useThemeStore();
+  const { fetchAssets } = useAssetStore();
+
+  useEffect(() => {
+    fetchAssets();
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -83,10 +91,10 @@ export default function LandingPage() {
   };
 
   const portals = [
-    { title: "CleanFlow Resident", desc: "Household waste scheduling, tracking, and rewards.", icon: User, color: "from-emerald-500 to-teal-600", link: getPortalLink('client') },
-    { title: "CleanFlow Agent", desc: "Digital hub for mechanized waste collectors.", icon: Truck, color: "from-blue-500 to-indigo-600", link: getPortalLink('agent') },
-    { title: "CleanFlow Business", desc: "Industrial B2B marketplace and AI advisory.", icon: Building2, color: "from-purple-500 to-pink-600", link: getPortalLink('business') },
-    { title: "CleanFlow Admin", desc: "High-security systemic control and oversight.", icon: ShieldCheck, color: "from-rose-500 to-orange-600", link: getPortalLink('admin') }
+    { title: "CleanFlow Resident", desc: "Turn household waste into digital assets with real-time tracking and rewards.", icon: User, color: "from-emerald-500 to-teal-600", link: getPortalLink('client') },
+    { title: "CleanFlow Agent", desc: "The official verification hub for waste-as-asset grading and logistics.", icon: Truck, color: "from-blue-500 to-indigo-600", link: getPortalLink('agent') },
+    { title: "CleanFlow Weaver", desc: "The live marketplace for informal collectors to claim and trade verified assets.", icon: Building2, color: "from-purple-500 to-pink-600", link: getPortalLink('business') },
+    { title: "CleanFlow Oracle", desc: "Strategic control center for network pricing and ecosystem oversight.", icon: ShieldCheck, color: "from-rose-500 to-orange-600", link: getPortalLink('admin') }
   ];
 
   return (
@@ -152,12 +160,12 @@ export default function LandingPage() {
           </motion.div>
 
           <motion.h1 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }} className={`text-5xl md:text-8xl font-black tracking-tight mb-8 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
-            Closing the Loop on <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 to-teal-400">Africa's Waste Management</span>
+            Turning Waste into <br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 to-teal-400">Digital Assets.</span>
           </motion.h1>
 
           <motion.p initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.2 }} className={`max-w-2xl mx-auto text-lg md:text-xl font-medium leading-relaxed mb-12 ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>
-            Four interlocking technological platforms uniting households, independent mechanics, industrial titans, and AI infrastructure to make circular economics a reality.
+            Four interlocking technological platforms uniting households, informal weavers, industrial titans, and AI infrastructure to turn circular economics into a high-yield reality.
           </motion.p>
 
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.4 }} className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -179,12 +187,12 @@ export default function LandingPage() {
           <div className="flex flex-col md:flex-row items-center justify-between gap-4 md:gap-0 relative">
             <div className="hidden md:block absolute top-1/2 left-0 w-full h-1 bg-gradient-to-r from-emerald-500/20 via-emerald-500 to-emerald-500/20 -translate-y-1/2 z-0" />
             
-            {[ { i: User, t: "Households" }, { i: Truck, t: "Agents" }, { i: Building2, t: "Marketplace" }, { i: ShieldCheck, t: "Oversight" } ].map((step, idx) => (
+            {[ { i: User, t: "Households" }, { i: Truck, t: "Verification" }, { i: Building2, t: "Weaver Network" }, { i: ShieldCheck, t: "Asset Market" } ].map((step, idx) => (
               <div key={idx} className="relative z-10 flex flex-col items-center gap-4 bg-slate-50 dark:bg-slate-900 p-2">
                 <div className="w-16 h-16 rounded-2xl bg-emerald-500 flex items-center justify-center shadow-lg shadow-emerald-500/20 text-white">
                   <step.i className="w-8 h-8" />
                 </div>
-                <div className="font-bold uppercase tracking-widest text-xs text-slate-500 ">{step.t}</div>
+                <div className="font-bold uppercase tracking-widest text-[10px] text-slate-500 ">{step.t}</div>
               </div>
             ))}
           </div>
@@ -202,7 +210,7 @@ export default function LandingPage() {
               <h2 className="text-sm font-black uppercase tracking-widest text-emerald-500 mb-6 font-mono">The Thesis</h2>
               <h3 className={`text-4xl md:text-6xl font-black mb-8 tracking-tighter ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
                 A Future Where <br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 to-teal-400 italic">Waste is Wealth.</span>
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 to-teal-400 italic">Waste is an Asset.</span>
               </h3>
               <p className={`text-lg font-medium leading-relaxed mb-10 ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>
                 CleanFlow is more than a software suite—it is the digital foundation for a circular society. By integrating real-time telemetry, automated rewards, and industrial marketplaces, we are transforming waste into a high-value digital asset.
@@ -245,32 +253,155 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
+      {/* ── THE CIRCULAR ECOSYSTEM (Intricate Node Mapping) ───────── */}
+      <section id="ecosystem" className={`py-40 px-6 overflow-hidden relative ${isDarkMode ? 'bg-slate-950' : 'bg-white'}`}>
+        <div className="max-w-7xl mx-auto relative z-10">
+          <div className="text-center mb-24">
+            <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} className="inline-flex items-center gap-2 text-emerald-500 font-black uppercase tracking-[0.3em] text-[10px] mb-4">
+               <Repeat className="w-4 h-4" /> Systemic Mapping
+            </motion.div>
+            <h2 className={`text-4xl md:text-6xl font-black mb-8 tracking-tighter ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+               The Value Chain Oracle
+            </h2>
+            <p className="text-slate-500 font-bold uppercase tracking-widest text-sm max-w-2xl mx-auto">
+               From household trash to industrial raw material. Every node adds value, verified by AI, secured by Escrow.
+            </p>
+          </div>
 
-      {/* ── DEEP DIVES ─────────────────────────────────────────── */}
-      <section className="py-12">
+          <div className="relative min-h-[600px] flex items-center justify-center">
+            {/* SVG Connection Paths (Desktop Only) */}
+            <div className="absolute inset-0 pointer-events-none hidden lg:block">
+               <svg className="w-full h-full opacity-20" viewBox="0 0 1200 600" fill="none">
+                  <motion.path 
+                    initial={{ pathLength: 0 }}
+                    whileInView={{ pathLength: 1 }}
+                    transition={{ duration: 2, ease: "easeInOut" }}
+                    d="M150 300 C 300 300, 300 300, 450 300" 
+                    stroke="url(#grad-emerald)" strokeWidth="4" strokeDasharray="10 10" 
+                  />
+                  <motion.path 
+                    initial={{ pathLength: 0 }}
+                    whileInView={{ pathLength: 1 }}
+                    transition={{ duration: 2, delay: 0.5, ease: "easeInOut" }}
+                    d="M450 300 C 600 300, 600 300, 750 300" 
+                    stroke="url(#grad-emerald)" strokeWidth="4" strokeDasharray="10 10" 
+                  />
+                  <motion.path 
+                    initial={{ pathLength: 0 }}
+                    whileInView={{ pathLength: 1 }}
+                    transition={{ duration: 2, delay: 1, ease: "easeInOut" }}
+                    d="M750 300 C 900 300, 900 300, 1050 300" 
+                    stroke="url(#grad-emerald)" strokeWidth="4" strokeDasharray="10 10" 
+                  />
+                  <defs>
+                    <linearGradient id="grad-emerald" x1="0%" y1="0%" x2="100%" y2="0%">
+                      <stop offset="0%" stopColor="#10b981" />
+                      <stop offset="100%" stopColor="#34d399" />
+                    </linearGradient>
+                  </defs>
+               </svg>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 w-full">
+              {[
+                { 
+                  title: "Resident Source", 
+                  desc: "Waste is segregated & tagged", 
+                  value: "Digital Asset Born",
+                  icon: Trash2, 
+                  pos: "left-[5%]",
+                  color: "emerald"
+                },
+                { 
+                  title: "Green Agent", 
+                  desc: "AI Scan & Digital Sealing", 
+                  value: "Quality Guaranteed",
+                  icon: ShieldCheck, 
+                  pos: "left-[35%]",
+                  color: "blue"
+                },
+                { 
+                  title: "Informal Weaver", 
+                  desc: "Lot Aggregation & Storage", 
+                  value: "B2B Lot Created",
+                  icon: Package, 
+                  pos: "left-[65%]",
+                  color: "indigo"
+                },
+                { 
+                  title: "Industrial Plant", 
+                  desc: "Bulk Purchase via Escrow", 
+                  value: "Liquidity Released",
+                  icon: Building2, 
+                  pos: "left-[95%]",
+                  color: "rose"
+                },
+              ].map((node, i) => (
+                <motion.div 
+                  key={i}
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: i * 0.2 }}
+                  className={`group relative p-10 rounded-[3.5rem] border text-center transition-all hover:border-emerald-500/50 ${
+                    isDarkMode ? 'bg-slate-900 border-white/5' : 'bg-white border-slate-200'
+                  }`}
+                >
+                  <div className={`w-20 h-20 mx-auto rounded-3xl bg-slate-100 dark:bg-slate-800 text-slate-400 flex items-center justify-center mb-8 group-hover:bg-emerald-500 group-hover:text-white group-hover:rotate-12 transition-all duration-500`}>
+                    <node.icon className="w-10 h-10" />
+                  </div>
+                  
+                  <div className="absolute top-6 right-10 opacity-0 group-hover:opacity-100 transition-opacity">
+                     <div className="px-3 py-1 bg-emerald-500 text-[8px] font-black text-white rounded-full uppercase tracking-widest">
+                        Node 0{i+1}
+                     </div>
+                  </div>
+
+                  <h4 className={`font-black text-2xl mb-2 tracking-tighter ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{node.title}</h4>
+                  <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest mb-6">{node.desc}</p>
+                  
+                  <div className={`mt-8 py-3 px-4 rounded-2xl text-[10px] font-black uppercase tracking-widest border border-dashed border-emerald-500/20 text-emerald-500`}>
+                     Value Flow: {node.value}
+                  </div>
+
+                  {/* Desktop Only Connectors Text */}
+                  {i < 3 && (
+                    <div className="absolute -right-8 top-1/2 -translate-y-1/2 z-20 hidden lg:block">
+                       <div className="w-16 h-16 rounded-full bg-slate-900 border border-emerald-500/20 flex items-center justify-center text-emerald-500 animate-pulse">
+                          <ArrowRight className="w-6 h-6" />
+                       </div>
+                    </div>
+                  )}
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── PORTAL DEEP DIVES ─────────────────────────────────────── */}
+      <section className="space-y-0">
         
-        {/* 1. CLIENT APP */}
-        <div className={`py-24 px-6 ${isDarkMode ? 'hover:bg-slate-800/20' : 'hover:bg-slate-100/50'} transition-colors`}>
-          <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
+        {/* 1. RESIDENT APP */}
+        <div className={`py-32 px-6 ${isDarkMode ? 'bg-slate-950' : 'bg-slate-50'}`}>
+          <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-20 items-center">
             <motion.div initial={{ opacity: 0, x: -50 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}>
               <GlassMockup color="emerald" icon={User} isDarkMode={isDarkMode} />
             </motion.div>
             <motion.div initial={{ opacity: 0, x: 50 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}>
-              <div className="inline-flex items-center gap-2 text-emerald-500 font-bold mb-4 uppercase tracking-widest text-xs">Platform One</div>
-              <h2 className={`text-4xl md:text-5xl font-black mb-6 tracking-tighter ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>CleanFlow Resident</h2>
-              <p className="text-xl font-medium text-slate-400 italic mb-8">"Turn your daily waste into actual wealth with gamified tracking."</p>
-              
-              <ul className="space-y-6">
+              <div className="inline-flex items-center gap-2 text-emerald-500 font-bold mb-4 uppercase tracking-widest text-xs">Node One: The Source</div>
+              <h2 className={`text-4xl md:text-5xl font-black mb-6 tracking-tighter ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Resident Wealth Portal</h2>
+              <p className="text-xl font-medium text-slate-400 italic mb-10">"Turning household waste into a high-yield digital asset."</p>
+              <ul className="grid gap-8">
                 {[
-                  { title: "Dynamic Weight-Based Pricing", desc: "Get paid instantly per KG for segregated plastic and metal, securely into your digital wallet.", icon: HandCoins },
-                  { title: "IoT Eco-System", desc: "We integrate with CleanFlow IoT hardware—real-time air quality sensors and smart bins that alert agents automatically when they reach extreme volume capacities.", icon: Cpu },
-                  { title: "GFP Rewards & Gamification", desc: "Earn Green Flow Points (GFP) and unlock achievement badges. Turn your recycling volume into leaderboards and cashback bonuses.", icon: Award },
-                ].map((item, i) => (
-                  <li key={i} className="flex gap-4">
-                    <div className="w-12 h-12 shrink-0 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center"><item.icon className="w-5 h-5" /></div>
+                  { title: "Dynamic Payouts", desc: "Get paid instantly per KG for segregated materials directly into your M-Pesa linked wallet.", icon: HandCoins },
+                  { title: "GFP Reward Engine", desc: "Earn Green Flow Points (GFP) for every verified pickup. Unlock local merchant discounts and achievement status.", icon: Award },
+                  { title: "AI Waste Advisory", desc: "Receive personalized tips on how to maximize your household earnings through better segregation.", icon: Sparkles },
+                ].map((f, i) => (
+                  <li key={i} className="flex gap-5">
+                    <div className="w-12 h-12 shrink-0 rounded-2xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center"><f.icon className="w-6 h-6" /></div>
                     <div>
-                      <h4 className={`font-black text-lg mb-1 ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>{item.title}</h4>
-                      <p className="text-slate-500 text-sm font-medium leading-relaxed">{item.desc}</p>
+                      <h4 className={`font-black text-lg mb-1 ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>{f.title}</h4>
+                      <p className="text-slate-500 text-sm font-medium leading-relaxed">{f.desc}</p>
                     </div>
                   </li>
                 ))}
@@ -280,24 +411,23 @@ export default function LandingPage() {
         </div>
 
         {/* 2. AGENT APP */}
-        <div className={`py-24 px-6 border-y ${isDarkMode ? 'border-white/5 bg-slate-900 hover:bg-slate-800/30' : 'border-slate-200 bg-white hover:bg-slate-50/80'} transition-colors`}>
-          <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
+        <div className={`py-32 px-6 border-y ${isDarkMode ? 'border-white/5 bg-slate-900' : 'border-slate-200 bg-white'}`}>
+          <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-20 items-center">
             <motion.div initial={{ opacity: 0, x: -50 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} className="order-2 lg:order-1">
-              <div className="inline-flex items-center gap-2 text-blue-500 font-bold mb-4 uppercase tracking-widest text-xs">Platform Two</div>
-              <h2 className={`text-4xl md:text-5xl font-black mb-6 tracking-tighter ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>CleanFlow Agent</h2>
-              <p className="text-xl font-medium text-slate-400 italic mb-8">"The ultimate logistics tool for verified waste mechanics."</p>
-              
-              <ul className="space-y-6">
+              <div className="inline-flex items-center gap-2 text-blue-500 font-bold mb-4 uppercase tracking-widest text-xs">Node Two: The Verifier</div>
+              <h2 className={`text-4xl md:text-5xl font-black mb-6 tracking-tighter ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Green Agent HUD</h2>
+              <p className="text-xl font-medium text-slate-400 italic mb-10">"Precision verification for a trust-less circular economy."</p>
+              <ul className="grid gap-8">
                 {[
-                  { title: "Live Mission Boards", desc: "Agents receive real-time push notifications from smart-bins or household pickup requests in their verified zones.", icon: Activity },
-                  { title: "GPS Route Optimization", desc: "Dynamic mapping technology built into the app ensures agents collect maximum volume with minimum travel time.", icon: Navigation },
-                  { title: "Instant Digital Payouts", desc: "The moment an agent validates a KG-weight collection, the bounty is routed into their mobile wallet for instant withdrawal.", icon: Zap },
-                ].map((item, i) => (
-                  <li key={i} className="flex gap-4">
-                    <div className="w-12 h-12 shrink-0 rounded-xl bg-blue-500/10 text-blue-500 flex items-center justify-center"><item.icon className="w-5 h-5" /></div>
+                  { title: "HygeneX AI Scanner", desc: "Mobile-first computer vision that grades and seals waste materials with industrial precision.", icon: Search },
+                  { title: "Network Value Reveal", desc: "Instantly see the financial impact of every pickup on the network market cap.", icon: Activity },
+                  { title: "Optimized Logistics", desc: "AI-driven route mapping ensures maximum collections with minimum carbon footprint.", icon: Navigation },
+                ].map((f, i) => (
+                  <li key={i} className="flex gap-5">
+                    <div className="w-12 h-12 shrink-0 rounded-2xl bg-blue-500/10 text-blue-500 flex items-center justify-center"><f.icon className="w-6 h-6" /></div>
                     <div>
-                      <h4 className={`font-black text-lg mb-1 ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>{item.title}</h4>
-                      <p className="text-slate-500 text-sm font-medium leading-relaxed">{item.desc}</p>
+                      <h4 className={`font-black text-lg mb-1 ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>{f.title}</h4>
+                      <p className="text-slate-500 text-sm font-medium leading-relaxed">{f.desc}</p>
                     </div>
                   </li>
                 ))}
@@ -310,27 +440,26 @@ export default function LandingPage() {
         </div>
 
         {/* 3. BUSINESS APP */}
-        <div className={`py-24 px-6 ${isDarkMode ? 'hover:bg-slate-800/20' : 'hover:bg-slate-100/50'} transition-colors`}>
-          <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
+        <div className={`py-32 px-6 ${isDarkMode ? 'bg-slate-950' : 'bg-slate-50'}`}>
+          <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-20 items-center">
             <motion.div initial={{ opacity: 0, x: -50 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}>
-              <GlassMockup color="purple" icon={Building2} isDarkMode={isDarkMode} />
+              <GlassMockup color="indigo" icon={Building2} isDarkMode={isDarkMode} />
             </motion.div>
             <motion.div initial={{ opacity: 0, x: 50 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}>
-              <div className="inline-flex items-center gap-2 text-purple-500 font-bold mb-4 uppercase tracking-widest text-xs">Platform Three</div>
-              <h2 className={`text-4xl md:text-5xl font-black mb-6 tracking-tighter ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>CleanFlow Business</h2>
-              <p className="text-xl font-medium text-slate-400 italic mb-8">"Industrial-scale raw material sourcing powered by AI."</p>
-              
-              <ul className="space-y-6">
+              <div className="inline-flex items-center gap-2 text-indigo-500 font-bold mb-4 uppercase tracking-widest text-xs">Node Three: The Aggregator</div>
+              <h2 className={`text-4xl md:text-5xl font-black mb-6 tracking-tighter ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Weaver Marketplace</h2>
+              <p className="text-xl font-medium text-slate-400 italic mb-10">"Smart matching for informal weavers and industrial buyers."</p>
+              <ul className="grid gap-8">
                 {[
-                  { title: "B2B Volume Marketplace", desc: "Recycling factories bid on multi-ton volumes of plastics, metals, and e-waste aggregated directly from our agents.", icon: TrendingUp },
-                  { title: "Agricultural Organic Trades", desc: "A dedicated marketplace pipeline for farms, factories, and agricultural fields to trade, monetize, and source organic waste and biofuels securely.", icon: Sprout },
-                  { title: "HygeneX AI Intelligence", desc: "Our proprietary AI agent provides realtime market forecasting, anomaly detection, and material yield optimizations.", icon: Bot },
-                ].map((item, i) => (
-                  <li key={i} className="flex gap-4">
-                    <div className="w-12 h-12 shrink-0 rounded-xl bg-purple-500/10 text-purple-500 flex items-center justify-center"><item.icon className="w-5 h-5" /></div>
+                  { title: "Smart Match Feed", desc: "Personalized asset matching based on the Weaver's unique material specializations.", icon: Sparkles },
+                  { title: "Digital Warehouse", desc: "Manage verified inventory and self-collected 'side hustle' materials in one dashboard.", icon: Package },
+                  { title: "Escrow & Disputes", desc: "Safe, automated 90/10 payment splits with built-in mediation for total trade security.", icon: Wallet },
+                ].map((f, i) => (
+                  <li key={i} className="flex gap-5">
+                    <div className="w-12 h-12 shrink-0 rounded-2xl bg-indigo-500/10 text-indigo-500 flex items-center justify-center"><f.icon className="w-6 h-6" /></div>
                     <div>
-                      <h4 className={`font-black text-lg mb-1 ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>{item.title}</h4>
-                      <p className="text-slate-500 text-sm font-medium leading-relaxed">{item.desc}</p>
+                      <h4 className={`font-black text-lg mb-1 ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>{f.title}</h4>
+                      <p className="text-slate-500 text-sm font-medium leading-relaxed">{f.desc}</p>
                     </div>
                   </li>
                 ))}
@@ -340,24 +469,23 @@ export default function LandingPage() {
         </div>
 
         {/* 4. ADMIN APP */}
-        <div className={`py-24 px-6 border-y ${isDarkMode ? 'border-white/5 bg-slate-900 hover:bg-slate-800/30' : 'border-slate-200 bg-white hover:bg-slate-50/80'} transition-colors`}>
-          <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
+        <div className={`py-32 px-6 border-y ${isDarkMode ? 'border-white/5 bg-slate-900' : 'border-slate-200 bg-white'}`}>
+          <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-20 items-center">
             <motion.div initial={{ opacity: 0, x: -50 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} className="order-2 lg:order-1">
-              <div className="inline-flex items-center gap-2 text-rose-500 font-bold mb-4 uppercase tracking-widest text-xs">Platform Four</div>
-              <h2 className={`text-4xl md:text-5xl font-black mb-6 tracking-tighter ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>CleanFlow Security</h2>
-              <p className="text-xl font-medium text-slate-400 italic mb-8">"Total systemic control, financial oversight, and compliance."</p>
-              
-              <ul className="space-y-6">
+              <div className="inline-flex items-center gap-2 text-rose-500 font-bold mb-4 uppercase tracking-widest text-xs">Node Four: The Governance</div>
+              <h2 className={`text-4xl md:text-5xl font-black mb-6 tracking-tighter ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>Network Oracle</h2>
+              <p className="text-xl font-medium text-slate-400 italic mb-10">"Macro control over the entire waste-as-asset economy."</p>
+              <ul className="grid gap-8">
                 {[
-                  { title: "Master-Key Protection", desc: "Impenetrable environment-variable master keys replace SMS OTPs for hyper-secure internal system access.", icon: LockKeyhole },
-                  { title: "Macro Financial Oversight", desc: "Track liquidity, agent bounties processed, marketplace transaction taxes, and overarching corporate growth from a single pane of glass.", icon: BarChart3 },
-                  { title: "Compliance Verification", desc: "Manually audit and verify the NEMA (Environmental Authority) licenses of businesses before giving them access to the B2B marketplace.", icon: ShieldCheck },
-                ].map((item, i) => (
-                  <li key={i} className="flex gap-4">
-                    <div className="w-12 h-12 shrink-0 rounded-xl bg-rose-500/10 text-rose-500 flex items-center justify-center"><item.icon className="w-5 h-5" /></div>
+                  { title: "Financial Oversight", desc: "Track liquidity, platform commissions, and agent bounties from a centralized HUD.", icon: BarChart3 },
+                  { title: "Market Correction", desc: "Manually adjust material price-per-KG to respond to global market shifts instantly.", icon: Globe },
+                  { title: "Dispute Mediation", desc: "Review and resolve marketplace disputes with full access to verified digital pedigrees.", icon: LockKeyhole },
+                ].map((f, i) => (
+                  <li key={i} className="flex gap-5">
+                    <div className="w-12 h-12 shrink-0 rounded-2xl bg-rose-500/10 text-rose-500 flex items-center justify-center"><f.icon className="w-6 h-6" /></div>
                     <div>
-                      <h4 className={`font-black text-lg mb-1 ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>{item.title}</h4>
-                      <p className="text-slate-500 text-sm font-medium leading-relaxed">{item.desc}</p>
+                      <h4 className={`font-black text-lg mb-1 ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>{f.title}</h4>
+                      <p className="text-slate-500 text-sm font-medium leading-relaxed">{f.desc}</p>
                     </div>
                   </li>
                 ))}
@@ -368,7 +496,6 @@ export default function LandingPage() {
             </motion.div>
           </div>
         </div>
-
       </section>
 
       {/* ── PORTAL LAUNCHER ─────────────────────────────────────────── */}
@@ -379,27 +506,34 @@ export default function LandingPage() {
             <p className="text-slate-500 font-bold uppercase tracking-widest text-sm">Select the portal that fits your role.</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {portals.map((portal, idx) => (
-              <motion.a
-                href={portal.link}
-                target="_blank"
-                key={idx}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: idx * 0.1 }}
-                viewport={{ once: true }}
-                className={`group p-8 rounded-3xl border transition-all duration-300 block ${isDarkMode ? 'bg-white/5 border-white/5 hover:bg-white/10' : 'bg-white border-slate-200 hover:border-emerald-300 shadow-xl shadow-slate-200/50 hover:shadow-2xl'}`}
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[
+              { title: "CleanFlow Resident", desc: "Homeowners & Estates", icon: User, color: "emerald", url: getPortalLink('client') },
+              { title: "CleanFlow Agent", desc: "Verifiers & Logistics", icon: Truck, color: "blue", url: getPortalLink('agent') },
+              { title: "CleanFlow Weaver", desc: "B2B Marketplace", icon: Building2, color: "indigo", url: getPortalLink('business') },
+              { title: "CleanFlow Oracle", desc: "Network Governance", icon: ShieldCheck, color: "rose", url: getPortalLink('admin') },
+            ].map((portal, i) => (
+              <motion.div
+                key={i}
+                whileHover={{ y: -10 }}
+                className={`p-8 rounded-[3rem] border transition-all group relative overflow-hidden ${
+                  isDarkMode ? 'bg-slate-900 border-white/5 hover:border-emerald-500/50' : 'bg-white border-slate-200 hover:border-emerald-500/50'
+                }`}
               >
-                <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${portal.color} flex items-center justify-center text-white mb-6 shadow-xl group-hover:scale-110 transition-transform duration-500`}>
+                <div className={`w-14 h-14 rounded-2xl mb-6 flex items-center justify-center bg-slate-100 dark:bg-slate-800 text-slate-400 group-hover:bg-emerald-500 group-hover:text-white transition-all duration-500`}>
                   <portal.icon className="w-7 h-7" />
                 </div>
-                <h3 className={`text-xl font-black mb-3 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{portal.title}</h3>
-                <p className="text-slate-500 text-sm font-medium leading-relaxed mb-6">{portal.desc}</p>
-                <div className="inline-flex items-center gap-2 text-xs font-black uppercase tracking-widest text-emerald-500 group-hover:text-emerald-400 transition-colors">
-                  Open Sub-App <ExternalLink className="w-3 h-3" />
-                </div>
-              </motion.a>
+                <h3 className={`font-black text-xl mb-2 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{portal.title}</h3>
+                <p className="text-slate-500 text-sm font-medium mb-8">{portal.desc}</p>
+                <a 
+                  href={portal.url} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 text-xs font-black uppercase tracking-widest text-emerald-500 group-hover:gap-4 transition-all"
+                >
+                  Enter Portal <ArrowRight className="w-4 h-4" />
+                </a>
+              </motion.div>
             ))}
           </div>
         </div>
@@ -438,6 +572,9 @@ export default function LandingPage() {
           <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 text-center border-t border-slate-200 dark:border-white/5 pt-12 italic">© 2026 CleanFlow Logistics. Optimized for Circularity.</p>
         </div>
       </footer>
+
+      {/* Live Network Pulse */}
+      <ImpactTicker />
     </div>
   );
 }

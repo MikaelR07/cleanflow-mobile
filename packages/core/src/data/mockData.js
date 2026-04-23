@@ -25,33 +25,33 @@ export const PRICING_CONSTANTS = {
 export const SUBSCRIPTION_TIERS = {
   lite: {
     id: 'lite', 
-    label: 'Self-Sustaining', 
-    impactTag: 'Local Hero',
+    label: 'Basic Plan', 
+    impactTag: 'Member',
     price: 0, 
     serviceFee: 300,
     rewardMult: 1,
-    features: ['Pay-as-you-go', 'Standard 1x rewards', 'Personal IoT access'], 
+    features: ['Pay only when you book', 'Earn normal points', 'Use your own smart bin'], 
     limit: 0
   },
   standard: {
     id: 'standard', 
-    label: 'Community Impact', 
-    impactTag: 'Estate Partner',
+    label: 'Family Plan', 
+    impactTag: 'Neighborhood Hero',
     price: 1200, 
     serviceFee: 0,
     rewardMult: 2,
-    features: ['Sponsors 1 Estate Bin', '2x Rewards boost', 'Priority AI scheduling'], 
+    features: ['Up to 4 Free Pickups / mo', 'Sponsor a bin for your estate', 'Earn 2x more points'], 
     limit: 4
   },
   premium: {
     id: 'premium', 
-    label: 'Environmental Leader', 
-    impactTag: 'Zero-Waste Champion',
+    label: 'Gold Plan', 
+    impactTag: 'Eco Leader',
     price: 2500, 
     serviceFee: 0,
     rewardMult: 5,
-    features: ['Sponsors 5 Estate Bins', '5x Rewards (Max Tier)', 'Unlimited AI pickups'], 
-    limit: 99
+    features: ['Up to 12 Free Pickups / mo', 'Sponsor 5 bins for your estate', 'Earn 5x more points (Highest)'], 
+    limit: 12
   }
 };
 

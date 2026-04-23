@@ -1,6 +1,21 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Flame, Trophy, Medal, Zap, Leaf, Loader2 } from 'lucide-react';
+import { 
+  ArrowLeft, 
+  Flame, 
+  Trophy, 
+  Medal, 
+  Zap, 
+  Leaf, 
+  Loader2, 
+  Info, 
+  X, 
+  CheckCircle2, 
+  Lock,
+  ChevronRight,
+  TrendingUp,
+  Award
+} from 'lucide-react';
 import { useAuthStore, useBookingStore, supabase } from '@cleanflow/core';
 
 // Badge definitions — unlock conditions are checked dynamically
@@ -68,6 +83,8 @@ export default function ImpactHub() {
 
   const [leaderboard, setLeaderboard] = useState([]);
   const [loadingBoard, setLoadingBoard] = useState(true);
+  const [showBadgeModal, setShowBadgeModal] = useState(false);
+  const [showRankingInfo, setShowRankingInfo] = useState(false);
 
   // Fetch leaderboard from DB
   useEffect(() => {
@@ -200,15 +217,19 @@ export default function ImpactHub() {
           <h3 className="font-extrabold flex items-center gap-2">
             <Medal className="w-4 h-4 text-amber-500" /> Badges
           </h3>
-          <span className="text-[10px] font-black text-primary uppercase tracking-widest">
-            {unlockedCount}/{badges.length} Earned
-          </span>
+          <button 
+            onClick={() => setShowBadgeModal(true)}
+            className="text-[10px] font-black text-primary uppercase tracking-widest flex items-center gap-1 hover:underline"
+          >
+            How to earn <ChevronRight className="w-3 h-3" />
+          </button>
         </div>
         <div className="grid grid-cols-3 gap-3">
-          {badges.map(badge => (
+          {badges.slice(0, 6).map(badge => (
             <div 
               key={badge.id} 
-              className={`card p-3 text-center transition-all ${!badge.unlocked ? 'grayscale opacity-40' : 'shadow-md'}`}
+              onClick={() => setShowBadgeModal(true)}
+              className={`card p-3 text-center transition-all cursor-pointer ${!badge.unlocked ? 'grayscale opacity-40' : 'shadow-md border-amber-100 bg-amber-50/10'}`}
             >
               <div className={`text-3xl mb-1.5 ${badge.unlocked ? 'transform hover:scale-110 transition-transform' : ''}`}>
                 {badge.icon}
@@ -216,7 +237,6 @@ export default function ImpactHub() {
               <p className="text-[9px] font-black leading-tight uppercase tracking-tighter text-slate-700 dark:text-slate-300">
                 {badge.name}
               </p>
-              <p className="text-[7px] text-slate-400 mt-0.5 leading-tight">{badge.description}</p>
             </div>
           ))}
         </div>
@@ -224,9 +244,46 @@ export default function ImpactHub() {
 
       {/* Community Leaderboard */}
       <div className="space-y-4">
-        <h3 className="font-extrabold flex items-center gap-2">
-          <Trophy className="w-4 h-4 text-amber-400" /> Community Leaderboard
-        </h3>
+        <div className="flex items-center justify-between">
+          <h3 className="font-extrabold flex items-center gap-2">
+            <Trophy className="w-4 h-4 text-amber-400" /> Community Rankings
+          </h3>
+          <button 
+            onClick={() => setShowRankingInfo(!showRankingInfo)}
+            className="p-1.5 bg-slate-100 dark:bg-slate-800 rounded-lg text-slate-400 hover:text-primary transition-colors"
+          >
+            <Info className="w-4 h-4" />
+          </button>
+        </div>
+
+        {/* Ranking Explanation Tab */}
+        {showRankingInfo && (
+          <div className="card p-5 bg-primary/5 border-primary/20 animate-in slide-in-from-top duration-300">
+            <div className="flex items-start gap-4">
+              <div className="w-10 h-10 bg-primary/10 rounded-2xl flex items-center justify-center shrink-0">
+                <TrendingUp className="w-5 h-5 text-primary" />
+              </div>
+              <div>
+                <h4 className="text-xs font-black uppercase tracking-widest text-primary mb-2">How Rankings Work</h4>
+                <ul className="space-y-3">
+                  <li className="flex items-start gap-2 text-[11px] font-medium text-slate-600 dark:text-slate-400">
+                    <div className="w-1.5 h-1.5 bg-primary rounded-full mt-1.5" />
+                    <span>**Points (GFP):** Earned based on weight. 1kg of waste = 5 Green Flow Points.</span>
+                  </li>
+                  <li className="flex items-start gap-2 text-[11px] font-medium text-slate-600 dark:text-slate-400">
+                    <div className="w-1.5 h-1.5 bg-orange-500 rounded-full mt-1.5" />
+                    <span>**Streaks:** Book weekly to maintain a streak. High streaks multiply your GFP per kg.</span>
+                  </li>
+                  <li className="flex items-start gap-2 text-[11px] font-medium text-slate-600 dark:text-slate-400">
+                    <div className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-1.5" />
+                    <span>**Estate Pride:** Your individual rank helps your estate climb the overall Kenya Green Map.</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="card border-0 bg-slate-50 dark:bg-slate-800/50 p-1">
           {loadingBoard ? (
             <div className="flex items-center justify-center py-8">
@@ -268,6 +325,68 @@ export default function ImpactHub() {
           )}
         </div>
       </div>
+
+      {/* Badge Guide Modal */}
+      {showBadgeModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setShowBadgeModal(false)} />
+          <div className="relative w-full max-w-sm bg-white dark:bg-slate-900 rounded-[2.5rem] shadow-2xl border border-slate-100 dark:border-slate-800 overflow-hidden flex flex-col max-h-[85vh] animate-in zoom-in duration-300">
+            <div className="p-6 border-b border-slate-50 dark:border-slate-800 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-amber-100 dark:bg-amber-900/30 rounded-2xl flex items-center justify-center">
+                  <Award className="w-6 h-6 text-amber-600" />
+                </div>
+                <div>
+                  <h3 className="font-black text-sm uppercase tracking-widest">Badge Guide</h3>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">How to earn badges</p>
+                </div>
+              </div>
+              <button onClick={() => setShowBadgeModal(false)} className="p-2 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl">
+                <X className="w-5 h-5 text-slate-400" />
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar">
+              {badges.map(badge => (
+                <div 
+                  key={badge.id}
+                  className={`p-4 rounded-3xl border flex items-center gap-4 transition-all ${
+                    badge.unlocked 
+                    ? 'bg-emerald-50/50 border-emerald-100 dark:bg-emerald-900/10 dark:border-emerald-800/30' 
+                    : 'bg-slate-50 dark:bg-slate-800/30 border-slate-100 dark:border-slate-800'
+                  }`}
+                >
+                  <div className={`text-3xl ${!badge.unlocked && 'grayscale opacity-50'}`}>
+                    {badge.icon}
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <h4 className="text-xs font-black uppercase tracking-tight">{badge.name}</h4>
+                      {badge.unlocked ? (
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 fill-emerald-500/10" />
+                      ) : (
+                        <Lock className="w-3 h-3 text-slate-300" />
+                      )}
+                    </div>
+                    <p className="text-[10px] font-medium text-slate-500 dark:text-slate-400 leading-tight mt-0.5">
+                      {badge.description}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="p-6 bg-slate-50 dark:bg-slate-800/50">
+              <button 
+                onClick={() => setShowBadgeModal(false)}
+                className="w-full py-4 bg-slate-900 dark:bg-slate-700 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl active:scale-[0.98] transition-all"
+              >
+                Got it, Captain!
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

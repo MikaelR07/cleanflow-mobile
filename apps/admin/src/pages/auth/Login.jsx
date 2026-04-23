@@ -45,9 +45,7 @@ export default function Login() {
         
         {/* Branding */}
         <div className="text-center mb-10">
-          <div className="w-16 h-16 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center mx-auto mb-4 shadow-2xl text-white">
-            <Recycle className="w-8 h-8" />
-          </div>
+          <img src="/logo.png" className="w-56 h-auto mx-auto mb-8 shadow-2xl rounded-3xl" alt="Admin Logo" />
           <h1 className="text-2xl font-bold text-white tracking-widest uppercase">
             CLEAN<span className="text-slate-400">CORE</span>
           </h1>

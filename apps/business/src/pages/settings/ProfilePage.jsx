@@ -18,6 +18,7 @@ export default function ProfilePage() {
     idNumber: profile?.idNumber || '',
     vehicle: profile?.vehicle || '',
     businessType: profile?.businessType || '',
+    specializations: profile?.specializations || [],
     nemaLicense: profile?.nemaLicense || '',
   });
   const [isLoading, setIsLoading] = useState(false);
@@ -107,10 +108,10 @@ export default function ProfilePage() {
                 className="w-full px-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white text-sm focus:ring-2 text-base focus:ring-primary/50"
               >
                 <option value="">Select Type</option>
-                <option value="Collector">Collector</option>
-                <option value="Recycler">Recycler</option>
-                <option value="Manufacturer">Manufacturer</option>
-                <option value="Aggregator">Aggregator</option>
+                <option value="weaver">Informal Weaver</option>
+                <option value="recycler">Recycling Firm</option>
+                <option value="manufacturer">Manufacturer</option>
+                <option value="retailer">Retailer / Importer</option>
               </select>
             </div>
             <div>
@@ -124,6 +125,35 @@ export default function ProfilePage() {
               />
             </div>
           </div>
+
+          {/* Weaver Specializations */}
+          {formData.businessType === 'weaver' && (
+            <div className="pt-4 border-t border-primary/10">
+              <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider text-primary">Specialized Materials (Smart Match)</label>
+              <div className="flex flex-wrap gap-2">
+                {['PET', 'HDPE', 'Metal', 'Paper', 'Glass', 'E-Waste'].map(spec => (
+                  <button
+                    key={spec}
+                    type="button"
+                    onClick={() => {
+                      const current = formData.specializations || [];
+                      const next = current.includes(spec) 
+                        ? current.filter(s => s !== spec) 
+                        : [...current, spec];
+                      setFormData(prev => ({ ...prev, specializations: next }));
+                    }}
+                    className={`px-3 py-1.5 rounded-full text-[10px] font-bold border transition-all ${
+                      formData.specializations?.includes(spec)
+                        ? 'bg-primary border-primary text-white'
+                        : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-500'
+                    }`}
+                  >
+                    {spec}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
           <p className="text-[10px] text-slate-500 leading-relaxed italic">
             Once submitted, our compliance team will verify your documents to award you the **Verified badge** for the marketplace.
           </p>

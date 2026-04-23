@@ -10,10 +10,11 @@
     "preview": "vite preview"
   },
   "dependencies": {
-     "@cleanflow/constants": "*",
+    "@cleanflow/constants": "*",
     "@cleanflow/core": "*",
     "@cleanflow/supabase": "*",
     "@cleanflow/ui": "*",
+    "framer-motion": "^11.18.2",
     "leaflet": "^1.9.4",
     "lucide-react": "^1.8.0",
     "react": "^19.2.4",
@@ -26,9 +27,9 @@
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.3.4",
-    "tailwindcss": "^3.4.1",
-    "postcss": "^8.4.38",
     "autoprefixer": "^10.4.19",
+    "postcss": "^8.4.38",
+    "tailwindcss": "^3.4.1",
     "vite": "^6.0.0",
     "vite-plugin-pwa": "^1.2.0"
   }

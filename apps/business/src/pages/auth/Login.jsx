@@ -45,9 +45,7 @@ export default function Login() {
 
         {/* Branding */}
         <div className="text-center mb-10">
-          <div className="w-20 h-20 rounded-[2rem] bg-gradient-to-br from-indigo-600 to-violet-600 flex items-center justify-center mx-auto mb-6 shadow-2xl shadow-indigo-500/30 text-white transform rotate-3 hover:rotate-0 transition-transform duration-500">
-            <Store className="w-10 h-10" />
-          </div>
+          <img src="/logo.png" className="w-56 h-auto mx-auto mb-8 shadow-2xl rounded-3xl" alt="Business Logo" />
           <h1 className="text-3xl font-black text-slate-900 dark:text-white tracking-tighter">
             Clean<span className="text-indigo-600 italic">Business</span>
           </h1>

@@ -40,7 +40,9 @@ CREATE TABLE public.profiles (
   
   -- B2B Verification
   is_verified    BOOLEAN DEFAULT false,
-  business_type  TEXT, -- 'Collector', 'Recycler', 'Manufacturer'
+  business_type  TEXT, -- 'weaver', 'recycler', 'manufacturer'
+  business_name  TEXT, 
+  specializations TEXT[] DEFAULT '{}', 
   nema_license   TEXT,
   is_online      BOOLEAN DEFAULT false,
 

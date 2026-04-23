@@ -3,16 +3,16 @@
  */
 import { useEffect, useState } from 'react';
 import { Sparkles, MapPin, Clock, Package, CheckCircle, XCircle, RefreshCw, Loader2, Navigation, Zap } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { toast } from 'sonner';
-import { useAgentStore, useAuthStore } from '@cleanflow/core';
-import { WASTE_TYPES } from '@cleanflow/core/src/data/mockData';
+import { useAgentStore, useAuthStore, useServiceStore } from '@cleanflow/core';
 import EmptyState from '@cleanflow/ui/components/EmptyState';
 import { SkeletonCard } from '@cleanflow/ui/components/Skeletons';
 
 export default function AvailableJobs() {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('available'); // 'available' or 'active'
+  const location = useLocation();
+  const [activeTab, setActiveTab] = useState(location.state?.tab || 'available'); // Respect navigation hints
   const [weighingJob, setWeighingJob] = useState(null);
   const [weightValue, setWeightValue] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -24,14 +24,26 @@ export default function AvailableJobs() {
     completeJob,
     fetchAvailableJobs, 
     fetchActiveJobs,
-    isLoadingJobs 
+    subscribeToJobs,
+    cleanupJobs,
+    isLoadingJobs,
+    arrivedJobIds
   } = useAgentStore();
-  const { userId } = useAuthStore();
+  const { userId, profile } = useAuthStore();
+  const { categories, fetchCategories } = useServiceStore();
 
   useEffect(() => {
     fetchAvailableJobs();
     fetchActiveJobs();
-  }, []);
+    fetchCategories();
+    
+    // Subscribe to real-time job updates if online
+    if (profile?.isOnline) {
+      subscribeToJobs();
+    }
+    
+    return () => cleanupJobs();
+  }, [profile?.isOnline, subscribeToJobs, cleanupJobs]);
 
   const handleAccept = async (job) => {
     try {
@@ -74,12 +86,13 @@ export default function AvailableJobs() {
     setIsSubmitting(true);
     try {
       await completeJob(weighingJob.id, parseFloat(weightValue));
-      toast.success("Job marked as completed! ✨", {
-        description: `Recorded ${weightValue}kg. Client rewarded.`,
+      toast.success("Weight Recorded! ⚖️", {
+        description: `Request for KSh ${(100 + parseFloat(weightValue)*20).toLocaleString()} sent to resident.`,
       });
       setWeighingJob(null);
+      fetchActiveJobs();
     } catch (err) {
-      toast.error("Failed to update status");
+      toast.error("Failed to record weight");
     } finally {
       setIsSubmitting(false);
     }
@@ -140,7 +153,8 @@ export default function AvailableJobs() {
       ) : (
         <div className="space-y-4">
           {currentJobs.map((job) => {
-            const waste = WASTE_TYPES.find((w) => w.id === job.material);
+            const waste = categories.find((w) => w.slug === job.material) || 
+                          categories.find((w) => w.id === job.material);
             return (
               <div
                 key={job.id}
@@ -183,7 +197,7 @@ export default function AvailableJobs() {
                   </div>
                   <div className="text-right">
                     <p className="text-xl font-black text-primary">KSh {job.pay.toLocaleString()}</p>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Your Pay (70%)</p>
+                    <p className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest">Your Pay (85%) · Founder Rate</p>
                   </div>
                 </div>
 
@@ -225,10 +239,23 @@ export default function AvailableJobs() {
                         <Navigation className="w-4 h-4" /> Go to Map
                       </button>
                       <button
+                        disabled={job.paymentStatus === 'authorized' || !arrivedJobIds.includes(job.id)}
                         onClick={() => handleComplete(job)}
-                        className="flex-[1.5] py-4 rounded-2xl bg-emerald-500 text-white font-black text-xs shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2 animate-pulse-soft"
+                        className={`flex-[1.5] py-4 rounded-2xl font-black text-xs shadow-lg transition-all flex items-center justify-center gap-2 ${
+                          job.paymentStatus === 'authorized'
+                            ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                            : !arrivedJobIds.includes(job.id)
+                              ? 'bg-slate-100 dark:bg-slate-800 text-slate-400 cursor-not-allowed border border-slate-200 dark:border-slate-700'
+                              : 'bg-emerald-500 text-white shadow-emerald-500/20 animate-pulse-soft'
+                        }`}
                       >
-                        <CheckCircle className="w-4 h-4 shadow-sm" /> Mark Complete
+                        {job.paymentStatus === 'authorized' ? (
+                          <>Awaiting Payment...</>
+                        ) : !arrivedJobIds.includes(job.id) ? (
+                          <>Arrive at location first</>
+                        ) : (
+                          <><CheckCircle className="w-4 h-4" /> Mark Complete</>
+                        )}
                       </button>
                     </>
                   )}
@@ -284,4 +311,3 @@ export default function AvailableJobs() {
     </div>
   );
 }
-

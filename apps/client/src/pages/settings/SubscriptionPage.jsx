@@ -16,12 +16,12 @@ export default function SubscriptionPage() {
       if (tierId === currentTier) return;
       
       await updateSubscription(tierId);
-      toast.success(`Mission level: ${SUBSCRIPTION_TIERS[tierId].label}! 🎉`, {
-        description: `You are now an ${SUBSCRIPTION_TIERS[tierId].impactTag}.`
+      toast.success(`You're now on the ${SUBSCRIPTION_TIERS[tierId].label}! 🎉`, {
+        description: `Welcome to the ${SUBSCRIPTION_TIERS[tierId].impactTag} team.`
       });
       navigate('/');
     } catch (error) {
-      toast.error('Failed to update mission level');
+      toast.error('Failed to update plan');
     }
   };
 
@@ -35,22 +35,22 @@ export default function SubscriptionPage() {
         >
           <ArrowLeft className="w-5 h-5 text-slate-600 dark:text-slate-300" />
         </button>
-        <h1 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">Your Impact Level</h1>
+        <h1 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">Your Membership</h1>
       </div>
 
       {/* Hero Card (Value Back Focus) */}
       <div className="bg-gradient-to-br from-primary to-green-700 rounded-3xl p-6 text-white shadow-xl shadow-primary/20 relative overflow-hidden">
         <div className="relative z-10">
-          <p className="text-[10px] font-black uppercase tracking-widest opacity-80 mb-1">Environmental Hero</p>
-          <h2 className="text-2xl font-black mb-4">Offset Your Costs Through Recycling</h2>
+          <p className="text-[10px] font-black uppercase tracking-widest opacity-80 mb-1">Save & Recycle</p>
+          <h2 className="text-2xl font-black mb-4">Earn Money Back While Cleaning Your Home</h2>
           <div className="flex items-center gap-2 text-[10px] font-black bg-white/20 backdrop-blur-md px-3 py-1.5 rounded-full w-fit border border-white/30 uppercase tracking-widest">
-            <Zap className="w-3 h-3 fill-amber-300 text-amber-300" /> Most members earn back their fee in rewards
+            <Zap className="w-3 h-3 fill-amber-300 text-amber-300" /> Your recycling rewards can pay for your plan!
           </div>
         </div>
         <Sparkles className="absolute -right-4 -bottom-4 w-32 h-32 opacity-20 rotate-12" />
       </div>
 
-      {/* Impact Levels List */}
+      {/* Plans List */}
       <div className="space-y-4">
         {Object.values(SUBSCRIPTION_TIERS).map((tier) => {
           const isCurrent = tier.id === currentTier;
@@ -76,14 +76,14 @@ export default function SubscriptionPage() {
                     {tier.id === 'premium' && <Crown className="w-4 h-4 text-amber-500 fill-amber-500" />}
                   </h3>
                   <p className="text-[10px] font-black text-primary uppercase tracking-widest">
-                    {tier.rewardMult}x Reward Multiplier
+                    {tier.rewardMult}x Point Boost
                   </p>
                 </div>
                 <div className="text-right">
                   <p className="text-xl font-black text-slate-900 dark:text-white leading-none">
                     {tier.price === 0 ? 'Free' : `KSh ${tier.price.toLocaleString()}`}
                   </p>
-                  <p className="text-[8px] font-bold text-slate-400 uppercase tracking-tighter">Contribution / month</p>
+                  <p className="text-[8px] font-bold text-slate-400 uppercase tracking-tighter">Per month</p>
                 </div>
               </div>
 
@@ -107,7 +107,7 @@ export default function SubscriptionPage() {
                     : 'bg-primary text-white shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-95'
                 }`}
               >
-                {isCurrent ? 'Current Level' : tier.id === 'lite' ? 'Return to Basic' : `Become an ${tier.impactTag}`}
+                {isCurrent ? 'Your Current Plan' : tier.id === 'lite' ? 'Back to Basic' : `Switch to ${tier.label}`}
               </button>
             </div>
           );
@@ -117,15 +117,15 @@ export default function SubscriptionPage() {
       {/* Community Impact Footer */}
       <div className="card p-5 bg-slate-50 dark:bg-slate-800/50 border-dashed border-2 border-slate-200 dark:border-slate-700">
         <h4 className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-widest mb-2 flex items-center gap-2">
-          <Shield className="w-4 h-4 text-primary" /> Your Community Impact
+          <Shield className="w-4 h-4 text-primary" /> Helping Your Neighborhood
         </h4>
         <p className="text-[10px] text-slate-500 dark:text-slate-400 font-bold leading-relaxed uppercase tracking-tight">
-          Standard and Premium contributions fund public estate bins and neighborhood cleanup projects in your area. 
-          100% of rewards earned go directly to your wallet for M-Pesa withdrawal.
+          When you join a Family or Gold plan, you help us put free recycling bins in your estate and keep our streets clean. 
+          All the money you earn from recycling goes straight to your wallet.
         </p>
       </div>
       <p className="text-center text-[10px] text-slate-400 font-bold uppercase tracking-widest leading-relaxed px-6 py-6">
-        Prices include all NEMA disposal levies and insurance. You can cancel or change your plan anytime.
+        Prices include all waste disposal fees. You can change or cancel your plan at any time.
       </p>
     </div>
   );

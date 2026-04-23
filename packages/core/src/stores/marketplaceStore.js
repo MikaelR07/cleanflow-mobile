@@ -219,7 +219,7 @@ export const useMarketplaceStore = create(
             quantity:    Number(quantity),
             unit_price:  listing.pricePerKg,
             total_price: totalPrice,
-            status:      'pending',
+            status:      'held_in_escrow', // Auto-initiate escrow
             message:     message || null,
           })
           .select()
@@ -269,6 +269,59 @@ export const useMarketplaceStore = create(
           toast.success('Order Cancelled');
         }
       },
+
+      // ── DISPUTE AN ORDER ──────────────────────────────────────────
+      disputeOrder: async (orderId, reason) => {
+        set({ isLoading: true });
+        try {
+          const { error } = await supabase
+            .from('marketplace_orders')
+            .update({ 
+              status: 'disputed',
+              message: `DISPUTE: ${reason}` 
+            })
+            .eq('id', orderId);
+
+          if (error) throw error;
+
+          set(state => ({
+            myOrders: state.myOrders.map(o =>
+              o.id === orderId ? { ...o, status: 'disputed' } : o
+            ),
+          }));
+
+          toast.warning('Order Disputed', {
+            description: 'Platform admins have been notified to mediate this trade.'
+          });
+        } catch (err) {
+          toast.error('Failed to initiate dispute.');
+        } finally {
+          set({ isLoading: false });
+        }
+      },
+
+      // ── GET FINANCIAL SUMMARY ─────────────────────────────────────
+      getFinancialSummary: async () => {
+        const { userId } = useAuthStore.getState();
+        if (!userId) return null;
+
+        const { data, error } = await supabase
+          .from('marketplace_orders')
+          .select('total_price, status')
+          .eq('status', 'funds_released')
+          .or(`buyer_id.eq.${userId},seller_id.eq.${userId}`);
+
+        if (error) return null;
+
+        const totalVolume = data.reduce((sum, o) => sum + o.total_price, 0);
+        const totalFees = totalVolume * 0.10;
+        
+        return {
+          totalVolume,
+          totalFees,
+          netEarnings: totalVolume - totalFees
+        };
+      },
       
       // ── REQUEST TRANSPORT (Logistics Integration) ───────────────
       requestTransport: async (order) => {
@@ -310,6 +363,37 @@ export const useMarketplaceStore = create(
           set({ isLoading: false });
         }
       },
+
+      // ── ESCROW RELEASE (AUTOMATED COMMISSION SPLIT) ──────────────
+      releaseEscrow: async (order) => {
+        set({ isLoading: true });
+        
+        try {
+          // Update Order Status — The Database Trigger handles the 90/10 payout
+          const { error } = await supabase
+            .from('marketplace_orders')
+            .update({ status: 'funds_released' })
+            .eq('id', order.id);
+
+          if (error) throw error;
+
+          // Update local state
+          set(state => ({
+            myOrders: state.myOrders.map(o => 
+              o.id === order.id ? { ...o, status: 'funds_released' } : o
+            )
+          }));
+
+          toast.success('Funds Released! 💸', {
+            description: `Payment has been successfully transferred to the seller.`
+          });
+        } catch (err) {
+          console.error('[Escrow] Release Failed:', err);
+          toast.error('Failed to release escrow funds.');
+        } finally {
+          set({ isLoading: false });
+        }
+      }
     }),
     { name: 'cf_marketplace_v3' }
   )

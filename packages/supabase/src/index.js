@@ -32,8 +32,12 @@ export const supabase = isSupabaseConfigured
   : null;
 
 export const phoneToEmail = (phone) => {
-  const digits = phone.replace(/\D/g, '').slice(-9);
-  return `cf${digits}@gmail.com`;
+  const clean = (phone || '').replace(/\D/g, ''); 
+  let normalized = clean;
+  if (clean.length === 10 && clean.startsWith('0')) {
+    normalized = '254' + clean.slice(1);
+  }
+  return `${normalized.replace('+', '')}@cleanflow.ke`;
 };
 
 export const sanitizeProfile = (profile) => {

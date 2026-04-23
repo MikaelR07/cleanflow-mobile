@@ -1,25 +1,26 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft, Upload, Loader2, Tag, Scale, Coins, Info, MapPin, Package } from 'lucide-react';
-import { useMarketplaceStore } from '@cleanflow/core';
-import { useAuthStore } from '@cleanflow/core';
+import { useMarketplaceStore, useAuthStore, uploadFile } from '@cleanflow/core';
 import { toast } from 'sonner';
 
 export default function SellRecyclables() {
   const { postListing, isLoading } = useMarketplaceStore();
   const { profile } = useAuthStore();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [formData, setFormData] = useState({
-    material: '',
-    quantity: '',
+    material: location.state?.material || '',
+    quantity: location.state?.quantity || '',
     pricePerKg: '',
-    description: '',
+    description: location.state?.description || '',
     grade: 'Industrial Mix',
     unit: 'KG',
     moq: '1',
-    photo: 'https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?q=80&w=2670&auto=format&fit=crop', // Default mock photo
+    photo: 'https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?q=80&w=2670&auto=format&fit=crop', 
   });
+  const [photoFile, setPhotoFile] = useState(null);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -33,8 +34,21 @@ export default function SellRecyclables() {
       return;
     }
 
+    let finalPhoto = formData.photo;
+    
+    if (photoFile) {
+      toast.info("Uploading listing photo...");
+      try {
+        finalPhoto = await uploadFile('marketplace', photoFile, profile.id);
+      } catch (err) {
+        toast.error("Upload failed");
+        return;
+      }
+    }
+
     await postListing({
       ...formData,
+      photo: finalPhoto,
       quantity: Number(formData.quantity),
       pricePerKg: Number(formData.pricePerKg),
       moq: Number(formData.moq),
@@ -188,13 +202,25 @@ export default function SellRecyclables() {
               </div>
             </div>
 
-            {/* Photo Upload Placeholder */}
+            {/* Photo Upload */}
             <div>
               <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Listing Photo</label>
-              <div className="border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl p-8 flex flex-col items-center justify-center gap-2 cursor-not-allowed opacity-60">
-                <Upload className="w-8 h-8 text-slate-400" />
-                <span className="text-xs font-medium text-slate-500">Camera Integration coming soon</span>
-              </div>
+              <label className="border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl p-8 flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-primary transition-all group">
+                <Upload className="w-8 h-8 text-slate-400 group-hover:text-primary transition-colors" />
+                <span className="text-xs font-medium text-slate-500">{photoFile ? photoFile.name : 'Tap to upload material photo'}</span>
+                <input 
+                  type="file" 
+                  accept="image/*" 
+                  className="hidden" 
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      setPhotoFile(file);
+                      setFormData(prev => ({ ...prev, photo: URL.createObjectURL(file) }));
+                    }
+                  }} 
+                />
+              </label>
             </div>
           </div>
 

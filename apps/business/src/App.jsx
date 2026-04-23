@@ -1,36 +1,41 @@
-import { useEffect } from 'react';
+import { useEffect, useState, lazy, Suspense } from 'react';
 import { Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { Store, PlusCircle, ShoppingBag, Package, Brain, MoreHorizontal } from 'lucide-react';
 
 // Shared Packages
-import { useAuthStore, useThemeStore, ROLES } from '@cleanflow/core';
-import { Navbar, BottomNav, ProtectedRoute } from '@cleanflow/ui';
-
+import { useAuthStore, useThemeStore, usePWA, ROLES } from '@cleanflow/core';
+import { Navbar, BottomNav, PWAInstallModal, ProtectedRoute, LoadingScreen } from '@cleanflow/ui';
 import { Toaster } from 'sonner';
 
-// Pages
-import Login from './pages/auth/Login.jsx';
-import Register from './pages/auth/Register.jsx';
-import MarketplaceHome from './pages/marketplace/MarketplaceHome.jsx';
-import BuyRecyclables from './pages/marketplace/BuyRecyclables.jsx';
-import SellRecyclables from './pages/marketplace/SellRecyclables.jsx';
-import MyListings from './pages/marketplace/MyListings.jsx';
-import MyOrders from './pages/marketplace/MyOrders.jsx';
-import HygeneXPage from './pages/shared/HygeneXPage.jsx';
+// ── LAZY LOADED PAGES (SPEED OPTIMIZATION) ─────────────────────────
+const MarketplaceHome = lazy(() => import('./pages/marketplace/MarketplaceHome.jsx'));
+const BuyRecyclables = lazy(() => import('./pages/marketplace/BuyRecyclables.jsx'));
+const SellRecyclables = lazy(() => import('./pages/marketplace/SellRecyclables.jsx'));
+const MyListings = lazy(() => import('./pages/marketplace/MyListings.jsx'));
+const MyOrders = lazy(() => import('./pages/marketplace/MyOrders.jsx'));
+const WeaverWarehouse = lazy(() => import('./pages/marketplace/WeaverWarehouse.jsx'));
+const SupplyTerminal = lazy(() => import('./pages/marketplace/SupplyTerminal.jsx'));
+const HygeneXPage = lazy(() => import('./pages/shared/HygeneXPage.jsx'));
 
 // Settings Pages
-import SettingsMenu from './pages/settings/SettingsMenu.jsx';
-import ProfilePage from './pages/settings/ProfilePage.jsx';
-import NotificationsPage from './pages/settings/NotificationsPage.jsx';
-import PrivacySecurityPage from './pages/settings/PrivacySecurityPage.jsx';
-import SupportPage from './pages/settings/SupportPage.jsx';
-import FeedbackPage from './pages/settings/FeedbackPage.jsx';
+const SettingsMenu = lazy(() => import('./pages/settings/SettingsMenu.jsx'));
+const ProfilePage = lazy(() => import('./pages/settings/ProfilePage.jsx'));
+const NotificationsPage = lazy(() => import('./pages/settings/NotificationsPage.jsx'));
+const PrivacySecurityPage = lazy(() => import('./pages/settings/PrivacySecurityPage.jsx'));
+const SupportPage = lazy(() => import('./pages/settings/SupportPage.jsx'));
+const FeedbackPage = lazy(() => import('./pages/settings/FeedbackPage.jsx'));
+
+// Auth Pages (Instant Load)
+import Welcome from './pages/auth/Welcome.jsx';
+import RoleSelection from './pages/auth/RoleSelection.jsx';
+import Login from './pages/auth/Login.jsx';
+import Register from './pages/auth/Register.jsx';
 
 const BUSINESS_NAV = [
   { path: '/', icon: Store, label: 'Market' },
   { path: '/sell', icon: PlusCircle, label: 'Sell' },
-  { path: '/buy', icon: ShoppingBag, label: 'Buy' },
-  { path: '/orders', icon: Package, label: 'Orders' },
+  { path: '/warehouse', icon: Package, label: 'Warehouse' },
+  { path: '/orders', icon: ShoppingBag, label: 'Orders' },
   { path: '/hygenex', icon: Brain, label: 'Advisor' },
   { path: '/settings', icon: MoreHorizontal, label: 'More' },
 ];
@@ -39,7 +44,9 @@ function MobileLayout() {
   return (
     <>
       <div className="max-w-lg mx-auto px-4 py-5 pb-24">
-        <Outlet />
+        <Suspense fallback={<LoadingScreen message="Loading Terminal..." />}>
+          <Outlet />
+        </Suspense>
       </div>
       <BottomNav items={BUSINESS_NAV} />
     </>
@@ -55,7 +62,30 @@ function ProtectedLayout() {
 }
 
 export default function App() {
-  const { role, isAuthenticated, checkAppRole } = useAuthStore();
+  const { role, isAuthenticated, checkAppRole, isInitializing, initializeAuth } = useAuthStore();
+  
+  // PWA Installation
+  const { isInstallable, triggerInstall } = usePWA();
+  const [showInstallModal, setShowInstallModal] = useState(false);
+
+  useEffect(() => {
+    // Proactive Prompt: Show modal automatically after 10 seconds
+    const hasPrompted = sessionStorage.getItem('pwa_prompted');
+    
+    if (isInstallable && !hasPrompted) {
+      const timer = setTimeout(() => {
+        setShowInstallModal(true);
+        sessionStorage.setItem('pwa_prompted', 'true');
+      }, 10000); // 10 second delay
+      
+      return () => clearTimeout(timer);
+    }
+  }, [isInstallable]);
+
+  useEffect(() => {
+    // Initialize Auth Session on Boot
+    initializeAuth();
+  }, []);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -63,9 +93,20 @@ export default function App() {
     }
   }, [isAuthenticated, checkAppRole]);
 
+  if (isInitializing) {
+    return <LoadingScreen message="Syncing Marketplace..." />;
+  }
+
   return (
     <div className="min-h-dvh bg-slate-100 dark:bg-slate-900 transition-colors duration-200">
+      <Navbar 
+        canInstall={isInstallable} 
+        onInstall={() => setShowInstallModal(true)} 
+      />
+
       <Routes>
+        <Route path="/welcome" element={isAuthenticated ? <Navigate to="/" replace /> : <Welcome />} />
+        <Route path="/roles" element={isAuthenticated ? <Navigate to="/" replace /> : <RoleSelection />} />
         <Route path="/login" element={isAuthenticated ? <Navigate to="/" replace /> : <Login />} />
         <Route path="/register" element={isAuthenticated ? <Navigate to="/" replace /> : <Register />} />
 
@@ -76,6 +117,8 @@ export default function App() {
             <Route path="/sell" element={<SellRecyclables />} />
             <Route path="/listings" element={<MyListings />} />
             <Route path="/orders" element={<MyOrders />} />
+            <Route path="/warehouse" element={<WeaverWarehouse />} />
+            <Route path="/arrivals" element={<SupplyTerminal />} />
             <Route path="/hygenex" element={<HygeneXPage />} />
             
             <Route path="/settings">
@@ -91,6 +134,16 @@ export default function App() {
           </Route>
         </Route>
       </Routes>
+
+      <PWAInstallModal 
+        isOpen={showInstallModal} 
+        onClose={() => setShowInstallModal(false)}
+        onInstall={() => {
+          setShowInstallModal(false);
+          triggerInstall();
+        }}
+      />
+
       <Toaster position="top-center" richColors />
     </div>
   );

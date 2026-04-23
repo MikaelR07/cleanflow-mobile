@@ -11,14 +11,27 @@
   }
 
   body {
-    @apply antialiased text-slate-900 dark:text-slate-50 transition-colors duration-300;
+    @apply antialiased text-slate-900 dark:text-slate-50 bg-[#F1F5F9] dark:bg-slate-950 transition-colors duration-300;
     /* Native App Feel Optimizations */
     padding-top: env(safe-area-inset-top);
     padding-bottom: env(safe-area-inset-bottom);
-    overscroll-behavior-y: contain; /* Relaxed from 'none' to allow smoother scroll while preventing full body pull-to-refresh */
+    
+    /* GESTURE LOCK: Prevents browser-native back/forward gestures */
+    overscroll-behavior-x: none;
+    overscroll-behavior-y: contain;
+    
     -webkit-tap-highlight-color: transparent;
     -webkit-overflow-scrolling: touch;
     user-select: none;
+  }
+
+  /* Universal Scrollbar Hiding - The "Nuclear Option" */
+  *::-webkit-scrollbar {
+    display: none !important;
+  }
+  * {
+    -ms-overflow-style: none !important;
+    scrollbar-width: none !important;
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -29,8 +42,9 @@
 @layer components {
   .card {
     @apply bg-white dark:bg-slate-900 
-           border border-slate-200/60 dark:border-slate-800/80 
-           rounded-3xl shadow-sm hover:shadow-md 
+           border border-slate-200/40 dark:border-slate-800/80 
+           rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.08)] dark:shadow-none
+           hover:shadow-[0_20_40px_rgb(0,0,0,0.12)] dark:hover:shadow-none
            transition-all duration-300;
   }
 

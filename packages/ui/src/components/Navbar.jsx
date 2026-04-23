@@ -1,7 +1,7 @@
-import { Recycle, Moon, Sun, Bell } from 'lucide-react';
+import { Recycle, Moon, Sun, Bell, Smartphone } from 'lucide-react';
 import { useThemeStore, useNotificationStore } from '@cleanflow/core';
 
-export default function Navbar({ onShowNotifications }) {
+export default function Navbar({ onShowNotifications, canInstall, onInstall }) {
   const { isDarkMode, toggleTheme } = useThemeStore();
   const { notifications } = useNotificationStore();
   
@@ -10,19 +10,25 @@ export default function Navbar({ onShowNotifications }) {
   return (
     <header className="sticky top-0 z-50 glass border-b border-slate-200/60 dark:border-slate-800/60">
       <div className="max-w-7xl mx-auto flex items-center justify-between px-4 h-14">
-        {/* Logo */}
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-xl bg-primary flex items-center justify-center shadow-sm">
-            <Recycle className="w-5 h-5 text-white" />
-          </div>
-          <span className="font-bold text-lg tracking-tight text-slate-900 dark:text-white">
+          <img src="/logo.png" alt="CleanFlow Logo" className="w-12 h-12 rounded-xl object-cover shadow-sm" />
+          <span className="font-black text-lg tracking-tighter text-slate-900 dark:text-white flex items-center">
             Clean<span className="text-primary">Flow</span>
-            <span className="text-xs text-slate-400 ml-1 font-medium">KE</span>
+            <span className="text-[10px] bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded-md ml-1.5 font-black text-slate-500 uppercase tracking-widest">v2</span>
           </span>
         </div>
 
         {/* Controls */}
         <div className="flex items-center gap-3 ml-3">
+          {canInstall && (
+            <button 
+              onClick={onInstall}
+              className="p-2.5 rounded-full bg-primary/10 text-primary border border-primary/20 animate-pulse-slow active:scale-95 transition-all shadow-sm"
+            >
+              <Smartphone className="w-4 h-4" />
+            </button>
+          )}
+
           <button 
             onClick={onShowNotifications}
             className="relative p-2.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 transition-colors shadow-sm bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800"

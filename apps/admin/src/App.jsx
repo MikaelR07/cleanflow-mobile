@@ -1,14 +1,15 @@
 import { useEffect } from 'react';
 import { Routes, Route, Navigate, Outlet } from 'react-router-dom';
-import { LayoutDashboard, FileText, Brain, MapPin, Settings, MessageSquare, Building2 } from 'lucide-react';
+import { LayoutDashboard, MessageSquare, Brain, MapPin, Settings, Users } from 'lucide-react';
 
 // Shared Packages
-import { useAuthStore, useThemeStore, useNotificationStore, useSystemStore, ROLES } from '@cleanflow/core';
+import { useAuthStore, useNotificationStore, useSystemStore, ROLES } from '@cleanflow/core';
 import { Navbar, AdminSidebar, ProtectedRoute, BottomNav } from '@cleanflow/ui';
 
 import { Toaster } from 'sonner';
 
 // Pages
+import Welcome from './pages/auth/Welcome.jsx';
 import Login from './pages/auth/Login.jsx';
 import Register from './pages/auth/Register.jsx';
 import AdminDashboard from './pages/admin/AdminDashboard.jsx';
@@ -16,7 +17,11 @@ import AdminReports from './pages/admin/AdminReports.jsx';
 import AdminLiveMap from './pages/admin/AdminLiveMap.jsx';
 import AdminFeedbackInbox from './pages/admin/AdminFeedbackInbox.jsx';
 import AdminB2B from './pages/admin/AdminB2B.jsx';
+import NetworkOracle from './pages/admin/NetworkOracle.jsx';
+import PriceOracle from './pages/admin/PriceOracle.jsx';
 import HygeneXPage from './pages/shared/HygeneXPage.jsx';
+import ServiceManager from './pages/admin/ServiceManager.jsx';
+import UserManager from './pages/admin/UserManager.jsx';
 
 // Settings Pages
 import SettingsMenu from './pages/settings/SettingsMenu.jsx';
@@ -27,11 +32,9 @@ import SupportPage from './pages/settings/SupportPage.jsx';
 import FeedbackPage from './pages/settings/FeedbackPage.jsx';
 import SystemConfigPage from './pages/settings/SystemConfigPage.jsx';
 
-const ADMIN_NAV = [
+const BOTTOM_NAV = [
   { path: '/', icon: LayoutDashboard, label: 'Dashboard' },
-  { path: '/reports', icon: FileText, label: 'Reports' },
-  { path: '/reviews', icon: MessageSquare, label: 'Reviews' },
-  { path: '/b2b', icon: Building2, label: 'B2B Center' },
+  { path: '/users', icon: Users, label: 'Users' },
   { path: '/hygenex', icon: Brain, label: 'HygeneX' },
   { path: '/map', icon: MapPin, label: 'Live Map' },
   { path: '/settings', icon: Settings, label: 'Settings' },
@@ -44,7 +47,7 @@ function AdminLayout() {
       <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-6xl w-full">
         <Outlet />
       </main>
-      <BottomNav items={ADMIN_NAV} />
+      <BottomNav items={BOTTOM_NAV} />
     </div>
   );
 }
@@ -59,11 +62,12 @@ function ProtectedLayout() {
 }
 
 export default function App() {
-  const { role, isAuthenticated, checkAppRole, userId } = useAuthStore();
+  const { role, isAuthenticated, checkAppRole, userId, initializeAuth } = useAuthStore();
   const { subscribeToRealtime } = useNotificationStore();
   const { fetchConfig } = useSystemStore();
 
   useEffect(() => {
+    initializeAuth();
     fetchConfig();
   }, []);
 
@@ -77,16 +81,21 @@ export default function App() {
   return (
     <div className="min-h-dvh bg-slate-100 dark:bg-slate-900 transition-colors duration-200">
       <Routes>
+        <Route path="/welcome" element={isAuthenticated && role === ROLES.ADMIN ? <Navigate to="/" replace /> : <Welcome />} />
         <Route path="/login" element={isAuthenticated && role === ROLES.ADMIN ? <Navigate to="/" replace /> : <Login />} />
         <Route path="/register" element={isAuthenticated && role === ROLES.ADMIN ? <Navigate to="/" replace /> : <Register />} />
 
         <Route element={<ProtectedLayout />}>
           <Route element={<AdminLayout />}>
             <Route path="/" element={<AdminDashboard />} />
+            <Route path="/users" element={<UserManager />} />
             <Route path="/reports" element={<AdminReports />} />
             <Route path="/reviews" element={<AdminFeedbackInbox />} />
             <Route path="/b2b" element={<AdminB2B />} />
+            <Route path="/oracle" element={<NetworkOracle />} />
+            <Route path="/prices" element={<PriceOracle />} />
             <Route path="/hygenex" element={<HygeneXPage />} />
+            <Route path="/services" element={<ServiceManager />} />
             <Route path="/map" element={<AdminLiveMap />} />
             
             <Route path="/settings">

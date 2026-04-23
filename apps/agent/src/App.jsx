@@ -1,33 +1,35 @@
-import { useEffect } from 'react';
+import { useEffect, useState, lazy, Suspense } from 'react';
 import { Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { Home, Briefcase, Brain, Wallet, MoreHorizontal } from 'lucide-react';
 
 // Shared Packages
-import { useAuthStore, useThemeStore, useNotificationStore, ROLES } from '@cleanflow/core';
-import { Navbar, BottomNav, ProtectedRoute } from '@cleanflow/ui';
-
+import { useAuthStore, useThemeStore, useNotificationStore, usePWA, ROLES } from '@cleanflow/core';
+import { Navbar, BottomNav, PWAInstallModal, ProtectedRoute, LoadingScreen } from '@cleanflow/ui';
 import { Toaster } from 'sonner';
+import { useAgentStore } from '@cleanflow/core';
 
-// Pages
-import Login from './pages/auth/Login.jsx';
-import Register from './pages/auth/Register.jsx';
-import AgentHome from './pages/agent/AgentHome.jsx';
-import AvailableJobs from './pages/agent/AvailableJobs.jsx';
-import EarningsPage from './pages/agent/EarningsPage.jsx';
-import MyRoutes from './pages/agent/MyRoutes.jsx';
-import ReviewsPage from './pages/agent/ReviewsPage.jsx';
-import NavigateJobPage from './pages/agent/NavigateJobPage.jsx';
-import HygeneXPage from './pages/shared/HygeneXPage.jsx';
+// ── LAZY LOADED PAGES (SPEED OPTIMIZATION) ─────────────────────────
+const AgentHome = lazy(() => import('./pages/agent/AgentHome.jsx'));
+const AvailableJobs = lazy(() => import('./pages/agent/AvailableJobs.jsx'));
+const EarningsPage = lazy(() => import('./pages/agent/EarningsPage.jsx'));
+const MyRoutes = lazy(() => import('./pages/agent/MyRoutes.jsx'));
+const ReviewsPage = lazy(() => import('./pages/agent/ReviewsPage.jsx'));
+const NavigateJobPage = lazy(() => import('./pages/agent/NavigateJobPage.jsx'));
+const HygeneXPage = lazy(() => import('./pages/shared/HygeneXPage.jsx'));
 
 // Settings Pages
-import SettingsMenu from './pages/settings/SettingsMenu.jsx';
-import ProfilePage from './pages/settings/ProfilePage.jsx';
-import NotificationsPage from './pages/settings/NotificationsPage.jsx';
-import PrivacySecurityPage from './pages/settings/PrivacySecurityPage.jsx';
-import SupportPage from './pages/settings/SupportPage.jsx';
-import FeedbackPage from './pages/settings/FeedbackPage.jsx';
+const SettingsMenu = lazy(() => import('./pages/settings/SettingsMenu.jsx'));
+const ProfilePage = lazy(() => import('./pages/settings/ProfilePage.jsx'));
+const NotificationsPage = lazy(() => import('./pages/settings/NotificationsPage.jsx'));
+const PrivacySecurityPage = lazy(() => import('./pages/settings/PrivacySecurityPage.jsx'));
+const SupportPage = lazy(() => import('./pages/settings/SupportPage.jsx'));
+const FeedbackPage = lazy(() => import('./pages/settings/FeedbackPage.jsx'));
+const StaffApplication = lazy(() => import('./pages/settings/StaffApplication.jsx'));
 
-import { useAgentStore } from '@cleanflow/core';
+// Auth Pages
+import Welcome from './pages/auth/Welcome.jsx';
+import Login from './pages/auth/Login.jsx';
+import Register from './pages/auth/Register.jsx';
 
 function MobileLayout() {
   const { availableJobs } = useAgentStore();
@@ -43,7 +45,9 @@ function MobileLayout() {
   return (
     <>
       <div className="max-w-lg mx-auto px-4 py-5 pb-24">
-        <Outlet />
+        <Suspense fallback={<LoadingScreen message="Loading..." />}>
+          <Outlet />
+        </Suspense>
       </div>
       <BottomNav items={AGENT_NAV} />
     </>
@@ -59,8 +63,30 @@ function ProtectedLayout() {
 }
 
 export default function App() {
-  const { role, isAuthenticated, checkAppRole, userId } = useAuthStore();
+  const { role, isAuthenticated, checkAppRole, userId, isInitializing, initializeAuth } = useAuthStore();
   const { fetchNotifications, subscribeToRealtime } = useNotificationStore();
+
+  // PWA Installation
+  const { isInstallable, triggerInstall } = usePWA();
+  const [showInstallModal, setShowInstallModal] = useState(false);
+
+  useEffect(() => {
+    // Proactive Prompt: Show modal automatically after 10 seconds
+    const hasPrompted = sessionStorage.getItem('pwa_prompted');
+    
+    if (isInstallable && !hasPrompted) {
+      const timer = setTimeout(() => {
+        setShowInstallModal(true);
+        sessionStorage.setItem('pwa_prompted', 'true');
+      }, 10000); // 10 second delay
+      
+      return () => clearTimeout(timer);
+    }
+  }, [isInstallable]);
+
+  useEffect(() => {
+    initializeAuth();
+  }, []);
 
   useEffect(() => {
     if (isAuthenticated && userId) {
@@ -70,9 +96,19 @@ export default function App() {
     }
   }, [isAuthenticated, checkAppRole, userId, role]);
 
+  if (isInitializing) {
+    return <LoadingScreen message="Syncing Dispatch..." />;
+  }
+
   return (
     <div className="min-h-dvh bg-slate-100 dark:bg-slate-900 transition-colors duration-200">
+      <Navbar 
+        canInstall={isInstallable} 
+        onInstall={() => setShowInstallModal(true)} 
+      />
+
       <Routes>
+        <Route path="/welcome" element={isAuthenticated ? <Navigate to="/" replace /> : <Welcome />} />
         <Route path="/login" element={isAuthenticated ? <Navigate to="/" replace /> : <Login />} />
         <Route path="/register" element={isAuthenticated ? <Navigate to="/" replace /> : <Register />} />
 
@@ -93,12 +129,23 @@ export default function App() {
               <Route path="privacy" element={<PrivacySecurityPage />} />
               <Route path="support" element={<SupportPage />} />
               <Route path="feedback" element={<FeedbackPage />} />
+              <Route path="staff-application" element={<StaffApplication />} />
             </Route>
 
             <Route path="*" element={<Navigate to="/" replace />} />
           </Route>
         </Route>
       </Routes>
+
+      <PWAInstallModal 
+        isOpen={showInstallModal} 
+        onClose={() => setShowInstallModal(false)}
+        onInstall={() => {
+          setShowInstallModal(false);
+          triggerInstall();
+        }}
+      />
+
       <Toaster position="top-center" richColors />
     </div>
   );
