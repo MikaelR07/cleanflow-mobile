@@ -249,7 +249,7 @@ export default function UserHome() {
       {/* ── IMPACT HERO CARD ── */}
       <div className="relative group perspective-1000">
         <div className="absolute -inset-1 bg-gradient-to-r from-primary to-emerald-500 rounded-[2.5rem] blur opacity-10 group-hover:opacity-20 transition duration-1000"></div>
-        <div className="relative bg-slate-100/30 dark:bg-slate-900 rounded-[2.5rem] border border-slate-200/50 dark:border-slate-800 p-8 shadow-xl overflow-hidden backdrop-blur-xl">
+        <div className="relative bg-slate-100/30 dark:bg-slate-900 rounded-[2.5rem] border border-slate-200/50 dark:border-slate-800 p-5 sm:p-6 shadow-xl overflow-hidden backdrop-blur-xl">
           <div className="absolute -top-10 -right-10 w-40 h-40 bg-primary/5 rounded-full blur-3xl" />
           
           <div className="flex flex-col gap-6 relative z-10">
@@ -332,9 +332,6 @@ export default function UserHome() {
               onClick={() => navigate('/book-pickup?mode=service')}
               className="bg-slate-100/50 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800 rounded-[2rem] p-4 flex flex-col items-center gap-3 hover:shadow-lg transition-all active:scale-[0.98] group relative overflow-hidden"
             >
-              <div className="absolute top-0 right-0 p-2 opacity-5">
-                <Trash2 className="w-16 h-16" />
-              </div>
               <div className="w-12 h-12 bg-rose-500 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-rose-500/20 group-hover:scale-110 transition-transform">
                 <Trash2 className="w-6 h-6" />
               </div>
@@ -348,9 +345,6 @@ export default function UserHome() {
               onClick={() => toast.info('HygeneX AI launching...', { description: 'Identify your waste and its value.' })}
               className="bg-slate-100/50 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800 rounded-[2rem] p-4 flex flex-col items-center gap-3 hover:shadow-lg transition-all active:scale-[0.98] group relative overflow-hidden"
             >
-              <div className="absolute top-0 right-0 p-2 opacity-5">
-                <Scan className="w-16 h-16" />
-              </div>
               <div className="w-12 h-12 bg-blue-500 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/20 group-hover:scale-110 transition-transform">
                 <Scan className="w-6 h-6" />
               </div>
@@ -366,9 +360,6 @@ export default function UserHome() {
               onClick={() => navigate('/book-pickup?mode=sell')}
               className="bg-slate-100/50 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800 rounded-[2rem] p-4 flex flex-col items-center gap-3 hover:shadow-lg transition-all active:scale-[0.98] group relative overflow-hidden"
             >
-              <div className="absolute top-0 right-0 p-2 opacity-5">
-                <Recycle className="w-16 h-16" />
-              </div>
               <div className="w-12 h-12 bg-emerald-500 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-emerald-500/20 group-hover:scale-110 transition-transform">
                 <Recycle className="w-6 h-6" />
               </div>
@@ -382,9 +373,6 @@ export default function UserHome() {
               onClick={() => toast.info('Market Intelligence Hub...', { description: 'Analyzing live material value.' })}
               className="bg-slate-100/50 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800 rounded-[2rem] p-4 flex flex-col items-center gap-3 hover:shadow-lg transition-all active:scale-[0.98] group relative overflow-hidden"
             >
-              <div className="absolute top-0 right-0 p-2 opacity-5">
-                <TrendingUp className="w-16 h-16" />
-              </div>
               <div className="w-12 h-12 bg-indigo-600 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-500/20 group-hover:scale-110 transition-transform">
                 <TrendingUp className="w-6 h-6" />
               </div>
@@ -399,7 +387,7 @@ export default function UserHome() {
 
       {/* ── HYGENEX SMART WINDOW ── */}
       {topSuggestion && (
-        <div className="bg-gradient-to-br from-indigo-600 to-blue-700 rounded-[2.5rem] p-6 text-white relative overflow-hidden shadow-xl shadow-blue-500/10">
+        <div className="bg-gradient-to-br from-indigo-600 to-blue-700 rounded-[2.5rem] p-5 text-white relative overflow-hidden shadow-xl shadow-blue-500/10">
           <div className="absolute top-0 right-0 p-4 opacity-10">
             <Sparkles className="w-20 h-20" />
           </div>
@@ -441,7 +429,7 @@ export default function UserHome() {
 
       {/* ── COMMUNITY & RANKING (RESIDENT ONLY) ── */}
       {clientType === 'resident' && (
-        <div className="bg-slate-100/50 dark:bg-slate-900 rounded-[2rem] p-6 border border-slate-200/50 dark:border-slate-800 flex items-center justify-between backdrop-blur-sm">
+        <div className="bg-slate-100/50 dark:bg-slate-900 rounded-[2rem] p-5 border border-slate-200/50 dark:border-slate-800 flex items-center justify-between backdrop-blur-sm">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 bg-amber-100 dark:bg-amber-900/30 rounded-2xl flex items-center justify-center">
               <Trophy className="w-6 h-6 text-amber-600" />
@@ -458,7 +446,7 @@ export default function UserHome() {
       )}
 
       {/* ── RECENT ACTIVITY ── */}
-      <div className="bg-slate-100/30 dark:bg-slate-900 rounded-[2rem] p-6 border border-slate-200/50 dark:border-slate-800">
+      <div className="bg-slate-100/30 dark:bg-slate-900 rounded-[2rem] p-5 border border-slate-200/50 dark:border-slate-800">
         <div className="flex items-center justify-between mb-6">
           <h3 className="font-black text-xs uppercase tracking-widest text-slate-400 px-1">Recent Activity</h3>
           <div className="flex items-center gap-3">

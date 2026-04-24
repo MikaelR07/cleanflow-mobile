@@ -47,7 +47,7 @@ function MobileLayout() {
 
   return (
     <>
-      <div className="max-w-lg mx-auto px-4 py-5 pb-24">
+      <div className="max-w-lg mx-auto px-2 py-5 pb-24">
         <Suspense fallback={<LoadingScreen message="Loading..." />}>
           <Outlet />
         </Suspense>
