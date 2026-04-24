@@ -15,7 +15,7 @@ export const useFeedbackStore = create((set, get) => ({
     set({ isLoading: true });
     const { data, error } = await supabase
       .from('app_reviews')
-      .select('*')
+      .select('*, profiles:user_id(role, business_type)')
       .order('created_at', { ascending: false });
 
     if (!error && data) {
@@ -29,6 +29,8 @@ export const useFeedbackStore = create((set, get) => ({
         category: r.category,
         text: r.feedback,
         date: r.created_at,
+        role: r.profiles?.role || 'public',
+        businessType: r.profiles?.business_type || null
       }));
       set({ feedbackList: mapped });
     }
@@ -37,22 +39,28 @@ export const useFeedbackStore = create((set, get) => ({
 
   // Client: submit new feedback
   submitFeedback: async (payload) => {
-    const { error } = await supabase.from('app_reviews').insert({
+    console.log("SUBMITTING FEEDBACK:", payload);
+    const { data, error } = await supabase.from('app_reviews').insert({
       user_id: payload.userId || null,
       name: payload.name || 'Anonymous',
       phone: payload.phone || null,
       rating: payload.rating,
       category: payload.category,
       feedback: payload.text,
-    });
+    }).select();
 
-    if (error) throw new Error(error.message);
+    if (error) {
+      console.error("SUBMISSION ERROR:", error);
+      throw new Error(error.message);
+    }
+    
+    console.log("SUBMISSION SUCCESS. VERIFIED RECORD:", data);
 
     // Optimistically add to local list
     set((state) => ({
       feedbackList: [
         {
-          id: `FDBK-${Date.now()}`,
+          id: data?.[0]?.id || `FDBK-${Date.now()}`,
           ...payload,
           date: new Date().toISOString(),
         },

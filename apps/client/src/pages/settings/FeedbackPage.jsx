@@ -27,31 +27,33 @@ export default function FeedbackPage() {
     }
     
     setIsLoading(true);
-    await new Promise(r => setTimeout(r, 800));
-    
-    submitFeedback({
-      userId: profile?.id,
-      name: profile?.name,
-      phone: profile?.phone,
-      rating,
-      category,
-      text: feedback
-    });
+    try {
+      await submitFeedback({
+        userId: profile?.id,
+        name: profile?.name,
+        phone: profile?.phone,
+        rating,
+        category,
+        text: feedback
+      });
 
-    setIsLoading(false);
+      if (rating <= 2 && category === 'Reporting Issues') {
+        setShowWhatsAppPrompt(true);
+        return;
+      }
 
-    if (rating <= 2 && category === 'Reporting Issues') {
-      setShowWhatsAppPrompt(true);
-      return; // Don't navigate away yet
+      if (rating === 5) {
+        toast.success('We love you too! 🌿', { description: 'Consider rating us on the App Store.' });
+      } else {
+        toast.success('Thank You!', { description: 'Your feedback helps us improve CleanFlow.' });
+      }
+      
+      setTimeout(() => navigate('/settings'), 1500);
+    } catch (err) {
+      toast.error('Submission Failed', { description: 'Please try again later.' });
+    } finally {
+      setIsLoading(false);
     }
-
-    if (rating === 5) {
-      toast.success('We love you too! 🌿', { description: 'Consider rating us on the App Store.' });
-    } else {
-      toast.success('Thank You!', { description: 'Your feedback helps us improve CleanFlow.' });
-    }
-    
-    setTimeout(() => navigate('/settings'), 1500);
   };
 
   return (

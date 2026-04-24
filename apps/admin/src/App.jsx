@@ -17,10 +17,8 @@ import AdminReports from './pages/admin/AdminReports.jsx';
 import AdminLiveMap from './pages/admin/AdminLiveMap.jsx';
 import AdminFeedbackInbox from './pages/admin/AdminFeedbackInbox.jsx';
 import AdminB2B from './pages/admin/AdminB2B.jsx';
-import NetworkOracle from './pages/admin/NetworkOracle.jsx';
-import PriceOracle from './pages/admin/PriceOracle.jsx';
+import MarketHub from './pages/admin/MarketHub.jsx';
 import HygeneXPage from './pages/shared/HygeneXPage.jsx';
-import ServiceManager from './pages/admin/ServiceManager.jsx';
 import UserManager from './pages/admin/UserManager.jsx';
 
 // Settings Pages
@@ -92,10 +90,8 @@ export default function App() {
             <Route path="/reports" element={<AdminReports />} />
             <Route path="/reviews" element={<AdminFeedbackInbox />} />
             <Route path="/b2b" element={<AdminB2B />} />
-            <Route path="/oracle" element={<NetworkOracle />} />
-            <Route path="/prices" element={<PriceOracle />} />
+            <Route path="/hub" element={<MarketHub />} />
             <Route path="/hygenex" element={<HygeneXPage />} />
-            <Route path="/services" element={<ServiceManager />} />
             <Route path="/map" element={<AdminLiveMap />} />
             
             <Route path="/settings">

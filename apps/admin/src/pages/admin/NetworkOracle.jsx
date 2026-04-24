@@ -171,7 +171,7 @@ export default function NetworkOracle() {
             </div>
 
             <div className="h-[300px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={1} debounce={50}>
                 <AreaChart data={[
                   { time: '00:00', volume: 120 },
                   { time: '04:00', volume: 80 },

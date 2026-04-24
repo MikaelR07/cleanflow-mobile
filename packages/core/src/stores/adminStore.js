@@ -51,28 +51,39 @@ export const useAdminStore = create((set, get) => ({
   openNemaModal: () => set({ nemaModalOpen: true, isGeneratingReport: false, reportReady: false }),
   closeNemaModal: () => set({ nemaModalOpen: false, isGeneratingReport: false, reportReady: false }),
 
-  // ── ANALYTICS FETCHING ────────────────────────────────────────────
+  // ── ANALYTICS FETCHING (Resilient — each RPC fails independently) ──
   refreshDashboardStats: async () => {
     set({ isLoading: true });
-    try {
-      const [overview, trends, materials, alerts] = await Promise.all([
-        supabase.rpc('get_admin_overview'),
-        supabase.rpc('get_revenue_trends'),
-        supabase.rpc('get_material_distribution'),
-        supabase.rpc('get_high_alert_bookings')
-      ]);
 
-      set({
-        stats: overview.data || INITIAL_STATE.stats,
-        revenueTrends: trends.data || [],
-        materialDistribution: materials.data || [],
-        highAlerts: alerts.data || [],
-        isLoading: false
-      });
-    } catch (error) {
-      console.error('[CleanFlow Admin] Fetch Error:', error);
-      set({ isLoading: false });
-    }
+    // Helper: safely call an RPC, return fallback on failure
+    const safeRpc = async (name, fallback) => {
+      try {
+        const { data, error } = await supabase.rpc(name);
+        if (error) {
+          console.warn(`[Admin] RPC '${name}' failed:`, error.message);
+          return fallback;
+        }
+        return data ?? fallback;
+      } catch (err) {
+        console.warn(`[Admin] RPC '${name}' unavailable:`, err.message);
+        return fallback;
+      }
+    };
+
+    const [overview, trends, materials, alerts] = await Promise.all([
+      safeRpc('get_admin_overview', INITIAL_STATE.stats),
+      safeRpc('get_revenue_trends', []),
+      safeRpc('get_material_distribution', []),
+      safeRpc('get_high_alert_bookings', [])
+    ]);
+
+    set({
+      stats: overview || INITIAL_STATE.stats,
+      revenueTrends: trends || [],
+      materialDistribution: materials || [],
+      highAlerts: alerts || [],
+      isLoading: false
+    });
   },
 
   // ── LIVE SYSTEM PULSE ─────────────────────────────────────────────

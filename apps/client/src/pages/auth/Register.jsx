@@ -1,15 +1,19 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useLocation, useNavigate, Link } from 'react-router-dom';
 import { 
   Recycle, User, Phone, Lock, ChevronRight, MapPin, 
   Loader2, ArrowLeft, ShieldCheck, Mail, Sparkles, Star,
-  Fingerprint, Shield, X
+  Fingerprint, Shield, X, ShoppingBag, Home as HomeIcon
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuthStore, ROLES } from '@cleanflow/core';
 import LocationSelector from '@cleanflow/ui/components/LocationSelector';
 
 export default function Register() {
+  const location = useLocation();
+  const query = new URLSearchParams(location.search);
+  const initialType = query.get('type') || 'resident';
+
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
@@ -18,6 +22,7 @@ export default function Register() {
     confirmPin: '',
     role: ROLES.USER,
     location: null,
+    clientType: initialType
   });
   const [isLoading, setIsLoading] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);

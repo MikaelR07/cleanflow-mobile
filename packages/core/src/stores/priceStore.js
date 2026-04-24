@@ -58,5 +58,13 @@ export const usePriceStore = create((set, get) => ({
       materialName.toLowerCase().includes(p.material_name.toLowerCase())
     );
     return priceObj ? priceObj.price_per_kg : 10; // Default KSh 10
+  },
+
+  getCategoryPrice: (category) => {
+    const { prices } = get();
+    const catPrices = prices.filter(p => (p.category || 'Other').toLowerCase() === category.toLowerCase());
+    if (catPrices.length === 0) return 10;
+    const avg = catPrices.reduce((sum, p) => sum + p.price_per_kg, 0) / catPrices.length;
+    return Math.round(avg);
   }
 }));

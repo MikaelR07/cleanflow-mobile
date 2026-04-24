@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Loader2, Save } from 'lucide-react';
-import { useAuthStore, ROLES } from '@cleanflow/core';
+import { useAuthStore, ROLES, getBusinessLabel } from '@cleanflow/core';
 import { toast } from 'sonner';
 import LocationSelector from '@cleanflow/ui/components/LocationSelector';
 
@@ -94,8 +94,10 @@ export default function ProfilePage() {
             <h2 className="text-sm font-bold text-primary">Business Verification (B2B)</h2>
             {profile?.isVerified ? (
               <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-600 text-[10px] font-black uppercase">Verified ✓</span>
+            ) : formData.nemaLicense ? (
+              <span className="px-2 py-0.5 rounded-full bg-orange-100 text-orange-600 text-[10px] font-black uppercase animate-pulse">Pending Review</span>
             ) : (
-              <span className="px-2 py-0.5 rounded-full bg-orange-100 text-orange-600 text-[10px] font-black uppercase">Pending Review</span>
+              <span className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-400 text-[10px] font-black uppercase">Not Submitted</span>
             )}
           </div>
           
@@ -115,21 +117,38 @@ export default function ProfilePage() {
               </select>
             </div>
             <div>
-              <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wider">NEMA License</label>
+              <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wider">
+                NEMA License 
+                {formData.nemaLicense && formData.nemaLicense.length > 0 && (
+                  !formData.nemaLicense.toUpperCase().startsWith('NEMA/') ? (
+                    <span className="text-red-500 lowercase text-[10px] ml-2">(Must start with NEMA/)</span>
+                  ) : formData.nemaLicense.length < 10 ? (
+                    <span className="text-orange-500 lowercase text-[10px] ml-2">(Too short)</span>
+                  ) : (
+                    <span className="text-emerald-500 lowercase text-[10px] ml-2">(Format Valid)</span>
+                  )
+                )}
+              </label>
               <input 
                 type="text" 
                 value={formData.nemaLicense} 
-                onChange={(e) => setFormData({...formData, nemaLicense: e.target.value})} 
+                onChange={(e) => setFormData({...formData, nemaLicense: e.target.value.toUpperCase()})} 
                 placeholder="NEMA/WML/..." 
-                className="w-full px-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white text-sm focus:ring-2 text-base focus:ring-primary/50" 
+                className={`w-full px-4 py-3 bg-white dark:bg-slate-900 border rounded-xl text-slate-900 dark:text-white text-sm focus:ring-2 text-base transition-all ${
+                  formData.nemaLicense && (!formData.nemaLicense.startsWith('NEMA/') || formData.nemaLicense.length < 10)
+                    ? 'border-red-300 focus:ring-red-500/50' 
+                    : 'border-slate-200 dark:border-slate-800 focus:ring-primary/50'
+                }`} 
               />
             </div>
           </div>
 
-          {/* Weaver Specializations */}
-          {formData.businessType === 'weaver' && (
+          {/* Role-Specific Specializations */}
+          {formData.businessType && (
             <div className="pt-4 border-t border-primary/10">
-              <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider text-primary">Specialized Materials (Smart Match)</label>
+              <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider text-primary">
+                {getBusinessLabel(formData.businessType, 'role')} Focus Areas (Smart Match)
+              </label>
               <div className="flex flex-wrap gap-2">
                 {['PET', 'HDPE', 'Metal', 'Paper', 'Glass', 'E-Waste'].map(spec => (
                   <button
@@ -161,8 +180,8 @@ export default function ProfilePage() {
 
         <button
           type="submit"
-          disabled={isLoading}
-          className="w-full py-4 bg-primary hover:bg-primary-dark text-white rounded-xl font-bold flex items-center justify-center gap-2 transition-colors disabled:opacity-70"
+          disabled={isLoading || (formData.nemaLicense && (!formData.nemaLicense.startsWith('NEMA/') || formData.nemaLicense.length < 10))}
+          className="w-full py-4 bg-primary hover:bg-primary-dark text-white rounded-xl font-bold flex items-center justify-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />} Save Changes
         </button>

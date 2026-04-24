@@ -27,9 +27,13 @@ import {
   MapPin,
   Zap,
   Clock,
-  Scale
+  Scale,
+  BadgeCheck
 } from 'lucide-react';
-import { useMarketplaceStore, useAuthStore, ROLES, useAssetStore, usePriceStore } from '@cleanflow/core';
+import { 
+  useAuthStore, useAssetStore, useMarketplaceStore, 
+  usePriceStore, getBusinessLabel 
+} from '@cleanflow/core';
 import { toast } from 'sonner';
 import { AssetBadge, TopUpModal } from '@cleanflow/ui';
 
@@ -86,15 +90,15 @@ export default function MarketplaceHome() {
       {/* ── INDUSTRIAL HEADER ── */}
       <div className="flex items-center justify-between px-1">
         <div>
-          <h1 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white leading-none">
+          <h1 className="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-full text-sm font-black uppercase tracking-widest border border-slate-200 dark:border-slate-700 mb-2">
+            <Building2 className="w-4 h-4" /> 
             {profile?.business_name || 'Industrial Terminal'}
+            {profile?.isVerified && <BadgeCheck className="w-4 h-4 text-emerald-500 fill-emerald-500/10" />}
           </h1>
-          <div className="flex items-center gap-2 mt-2">
-            <div className="flex items-center gap-1.5 text-[9px] text-indigo-600 font-black uppercase tracking-widest bg-indigo-50 px-2.5 py-1 rounded-full border border-indigo-100">
-              <Database className="w-3 h-3" /> Weaver ID: CF-{profile?.id?.slice(0, 4).toUpperCase()}
-            </div>
-            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Live Node</span>
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="px-3 py-1 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-full text-[9px] font-black uppercase tracking-widest flex items-center gap-1.5 border border-indigo-100 dark:border-indigo-800">
+              <Database className="w-3 h-3" /> {getBusinessLabel(profile?.business_type, 'id')}: CF-{profile?.id?.slice(0, 4).toUpperCase()}
+            </span>
           </div>
         </div>
         <div className="flex flex-col items-end gap-2">

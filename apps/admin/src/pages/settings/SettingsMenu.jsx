@@ -10,7 +10,7 @@ export default function SettingsMenu() {
 
   const menuItems = [
     { icon: User, label: 'My Profile', subtitle: 'Edit your information', path: '/settings/profile' },
-    { icon: Settings2, label: 'System Config', subtitle: 'Global settings & contacts', path: '/settings/system' },
+    {icon: Settings2, label: 'Operating Hours', subtitle: 'Global service schedule', path: '/settings/system' },
     { icon: Bell, label: 'Notifications', subtitle: 'Manage alerts', path: '/settings/notifications' },
     { icon: Shield, label: 'Privacy & Security', subtitle: 'Account settings', path: '/settings/privacy' },
   ];

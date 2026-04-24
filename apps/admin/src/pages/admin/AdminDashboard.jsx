@@ -1,14 +1,15 @@
 import { 
   TrendingUp, TrendingDown, Sparkles, FileText, Users, Truck, 
   Leaf, Star, ShieldCheck, Gift, Recycle, Cpu, Network, Clock,
-  AlertCircle, ChevronRight, Activity, Wallet, AlertTriangle, Info, Zap
+  AlertCircle, ChevronRight, Activity, Wallet, AlertTriangle, Info, Zap,
+  Briefcase, BarChart3
 } from 'lucide-react';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
   LineChart, Line, PieChart, Pie, Cell, Legend, AreaChart, Area 
 } from 'recharts';
 import { useAdminStore, useIotStore } from '@cleanflow/core';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 export default function AdminDashboard() {
   const { 
@@ -17,13 +18,42 @@ export default function AdminDashboard() {
   } = useAdminStore();
   
   const { smartBins } = useIotStore();
+  const [activeHub, setActiveHub] = useState('marketplace');
 
   useEffect(() => {
     initAdminLiveFeed();
   }, []);
 
-  const kpis = [
+  const hubs = [
     { 
+      id: 'marketplace', 
+      label: 'Marketplace', 
+      icon: Briefcase, 
+      color: 'emerald',
+      desc: 'Business Partners',
+      mainMetric: `KSh ${(stats?.totalRevenue || 0).toLocaleString()}`
+    },
+    { 
+      id: 'logistics', 
+      label: 'Transport', 
+      icon: Truck, 
+      color: 'indigo',
+      desc: 'Drivers & Fleet',
+      mainMetric: `${(stats?.totalWeight || 0).toLocaleString()} KG`
+    },
+    { 
+      id: 'community', 
+      label: 'Community', 
+      icon: Users, 
+      color: 'slate',
+      desc: 'Resident Members',
+      mainMetric: `${(stats?.totalUsers || 0).toLocaleString()} Users`
+    }
+  ];
+
+  const allKpis = [
+    { 
+      hub: 'community',
       label: 'Free Members', 
       value: stats?.freeTierMembers || 0, 
       unit: '', 
@@ -31,6 +61,7 @@ export default function AdminDashboard() {
       color: 'slate'
     },
     { 
+      hub: 'community',
       label: 'Standard Members', 
       value: stats?.standardMembers || 0, 
       unit: '', 
@@ -38,6 +69,7 @@ export default function AdminDashboard() {
       color: 'emerald'
     },
     { 
+      hub: 'community',
       label: 'Premium Members', 
       value: stats?.premiumMembers || 0, 
       unit: '', 
@@ -45,6 +77,7 @@ export default function AdminDashboard() {
       color: 'amber'
     },
     { 
+      hub: 'logistics',
       label: 'Active Agents', 
       value: stats?.activeAgents || 0, 
       unit: '', 
@@ -52,6 +85,7 @@ export default function AdminDashboard() {
       color: 'emerald'
     },
     { 
+      hub: 'logistics',
       label: 'Total Agents', 
       value: stats?.registeredAgents || 0, 
       unit: '', 
@@ -59,6 +93,7 @@ export default function AdminDashboard() {
       color: 'slate'
     },
     { 
+      hub: 'marketplace',
       label: 'Businesses', 
       value: stats?.totalBusinesses || 0, 
       unit: '', 
@@ -66,6 +101,7 @@ export default function AdminDashboard() {
       color: 'indigo'
     },
     { 
+      hub: 'marketplace',
       label: 'Total Sales', 
       value: stats?.totalRevenue || 0, 
       unit: 'KSh', 
@@ -73,6 +109,7 @@ export default function AdminDashboard() {
       color: 'emerald'
     },
     { 
+      hub: 'community',
       label: 'Subscription Earnings', 
       value: stats?.subscriptionRevenue || 0, 
       unit: 'KSh', 
@@ -80,6 +117,7 @@ export default function AdminDashboard() {
       color: 'indigo'
     },
     { 
+      hub: 'marketplace',
       label: 'Platform Commissions', 
       value: stats?.commissionRevenue || 0, 
       unit: 'KSh', 
@@ -87,6 +125,7 @@ export default function AdminDashboard() {
       color: 'purple'
     },
     { 
+      hub: 'logistics',
       label: 'Waste Recovered', 
       value: stats?.totalWeight || 0, 
       unit: 'KG', 
@@ -94,13 +133,15 @@ export default function AdminDashboard() {
       color: 'amber'
     },
     { 
+      hub: 'community',
       label: 'Total Customers', 
       value: stats?.totalUsers || 0, 
       unit: '', 
       icon: Users,
-      color: 'blue'
+      color: 'slate'
     },
     { 
+      hub: 'marketplace',
       label: 'User Balances', 
       value: stats?.rewardsLiabilities || 0, 
       unit: 'KSh', 
@@ -109,32 +150,91 @@ export default function AdminDashboard() {
     }
   ];
 
+  const activeKpis = allKpis.filter(k => k.hub === activeHub);
+
   return (
-    <div className="space-y-6 animate-fade-in pb-20">
-      {/* Header Section */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div className="space-y-8 animate-slide-up pb-20">
+      
+      {/* ── COMMAND CENTER HEADER ── */}
+      <header className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
-          <div className="flex items-center gap-3">
-            <h1 className="text-3xl font-black tracking-tight text-slate-900 dark:text-white">Business Overview</h1>
-            <div className="flex items-center gap-1.5 px-2.5 py-1 bg-emerald-500/10 rounded-full border border-emerald-500/20">
-              <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
-              <span className="text-[10px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest">Active</span>
-            </div>
-          </div>
-          <p className="text-sm text-slate-500 font-medium">Real-time status of your waste network</p>
+           <h1 className="text-3xl font-black dark:text-white tracking-tighter">Executive Dashboard</h1>
+           <p className="text-xs font-bold text-slate-400 uppercase tracking-[0.2em]">Platform Pulse & Performance</p>
         </div>
-        
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
+           <button 
+             onClick={openNemaModal}
+             className="flex items-center gap-2 px-4 py-2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-xl font-bold text-sm hover:scale-105 active:scale-95 transition-all shadow-lg"
+           >
+             <Sparkles className="w-4 h-4" /> AI Compliance
+           </button>
+           <div className="flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-white/5">
+              <Activity className="w-4 h-4 text-emerald-500" />
+              <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Live Sync</span>
+              <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse ml-1" />
+           </div>
+        </div>
+      </header>
+
+      {/* ── INTERACTIVE HUB TILES ── */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {hubs.map(hub => (
           <button 
-            onClick={openNemaModal}
-            className="flex items-center gap-2 px-4 py-2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-xl font-bold text-sm hover:scale-105 active:scale-95 transition-all shadow-lg shadow-slate-200 dark:shadow-none"
+            key={hub.id}
+            onClick={() => setActiveHub(hub.id)}
+            className={`relative p-8 rounded-[2.5rem] border transition-all text-left group overflow-hidden ${
+              activeHub === hub.id 
+                ? 'bg-white dark:bg-slate-900 border-primary ring-4 ring-primary/10 shadow-2xl scale-[1.02]' 
+                : 'bg-white dark:bg-slate-900 border-slate-100 dark:border-white/5 hover:border-slate-300 dark:hover:border-white/20'
+            }`}
           >
-            <Sparkles className="w-4 h-4" /> AI Compliance
+            {activeHub === hub.id && (
+              <div className="absolute top-6 right-6 px-3 py-1 bg-primary text-white text-[9px] font-black uppercase tracking-widest rounded-full animate-fade-in shadow-lg shadow-primary/20 flex items-center gap-1.5 z-10">
+                <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                Selected View
+              </div>
+            )}
+
+            <div className={`w-14 h-14 rounded-3xl flex items-center justify-center mb-6 transition-all ${
+              activeHub === hub.id ? 'bg-primary shadow-lg shadow-primary/30' : 'bg-slate-50 dark:bg-slate-800 group-hover:scale-110'
+            }`}>
+              <hub.icon className={`w-7 h-7 ${activeHub === hub.id ? 'text-white' : 'text-slate-400'}`} />
+            </div>
+            
+            <h3 className={`text-xl font-black tracking-tight mb-1 ${activeHub === hub.id ? 'text-slate-900 dark:text-white' : 'text-slate-700 dark:text-slate-300'}`}>
+              {hub.label} Hub
+            </h3>
+            <p className={`text-xs font-bold uppercase tracking-widest mb-6 ${activeHub === hub.id ? 'text-primary' : 'text-slate-400'}`}>
+              {hub.desc}
+            </p>
+
+            <div className="flex items-end justify-between">
+               <div>
+                  <p className={`text-[10px] font-black uppercase tracking-tighter mb-1 text-slate-300`}>Cumulative Peak</p>
+                  <p className="text-2xl font-black font-mono text-slate-900 dark:text-white">
+                    {hub.mainMetric}
+                  </p>
+               </div>
+               <div className={`p-2 rounded-full border transition-all ${activeHub === hub.id ? 'bg-primary border-primary text-white shadow-lg shadow-primary/20' : 'border-slate-100 dark:border-white/5 text-slate-300'}`}>
+                  <ChevronRight className="w-5 h-5" />
+               </div>
+            </div>
           </button>
-        </div>
+        ))}
       </div>
 
-      {/* High Alert Banner */}
+      <div className="flex items-center gap-4 py-4">
+         <div className="h-px flex-1 bg-gradient-to-r from-transparent via-slate-200 dark:via-white/5 to-transparent" />
+         <div className="flex items-center gap-2 px-6 py-2 bg-slate-50 dark:bg-slate-800/50 rounded-full border border-slate-100 dark:border-white/5">
+            <BarChart3 className="w-4 h-4 text-primary" />
+            <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500">
+               {activeHub} Operations Overview
+            </h2>
+         </div>
+         <div className="h-px flex-1 bg-gradient-to-r from-transparent via-slate-200 dark:via-white/5 to-transparent" />
+      </div>
+
+      {/* ── HIGH ALERT BANNER (If any) ── */}
       {highAlerts.length > 0 && (
         <div className="bg-rose-500/10 border border-rose-500/20 p-4 rounded-2xl flex items-center justify-between group overflow-hidden relative">
           <div className="absolute top-0 left-0 w-2 h-full bg-rose-500" />
@@ -143,36 +243,34 @@ export default function AdminDashboard() {
               <AlertTriangle className="w-5 h-5 text-white" />
             </div>
             <div>
-              <p className="font-black text-rose-600 dark:text-rose-400 text-sm uppercase tracking-widest">High Alert: Delayed Jobs</p>
-              <p className="text-xs text-rose-500/80 font-bold">{highAlerts.length} pickups are pending for more than 24 hours.</p>
+              <p className="font-black text-rose-600 dark:text-rose-400 text-sm uppercase tracking-widest leading-none mb-1">Operational Warning</p>
+              <p className="text-xs text-rose-500/80 font-bold">{highAlerts.length} system anomalies require review.</p>
             </div>
           </div>
-          <button className="px-4 py-2 bg-rose-500 text-white rounded-xl font-bold text-[10px] uppercase tracking-widest hover:bg-rose-600 transition-colors">
-            Resolve Now
+          <button className="px-4 py-2 bg-rose-500 text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-rose-600 transition-colors">
+            Analyze
           </button>
         </div>
       )}
 
-      {/* KPI Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
-        {kpis.map((kpi, idx) => (
-          <div key={idx} className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-xl shadow-slate-100/50 dark:shadow-none group overflow-hidden relative">
-            <div className={`absolute top-0 right-0 w-24 h-24 -mr-8 -mt-8 bg-${kpi.color}-500/5 rounded-full group-hover:scale-150 transition-transform duration-700`} />
-            
-            <div className="flex items-center justify-between mb-4 relative z-10">
-              <div className={`p-3 rounded-2xl bg-${kpi.color}-500/10 text-${kpi.color}-600 dark:text-${kpi.color}-400`}>
-                <kpi.icon className="w-6 h-6" />
+      {/* ── DYNAMIC METRICS GRID ── */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {activeKpis.map((kpi, idx) => (
+          <div key={idx} className="p-6 bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-100 dark:border-white/5 shadow-sm hover:shadow-md transition-all group">
+            <div className="flex items-start justify-between mb-4">
+              <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors bg-slate-50 dark:bg-slate-800 group-hover:bg-primary/10`}>
+                <kpi.icon className="w-5 h-5 text-slate-400 group-hover:text-primary transition-colors" />
               </div>
-              <Activity className="w-4 h-4 text-slate-200 dark:text-slate-700 animate-pulse" />
+              <div className="text-emerald-500 flex items-center gap-1">
+                <TrendingUp className="w-3 h-3" />
+                <span className="text-[10px] font-black">Live</span>
+              </div>
             </div>
-            
-            <div className="relative z-10">
-              <p className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400 mb-1">{kpi.label}</p>
-              <h2 className="text-3xl font-black text-slate-900 dark:text-white leading-none">
-                {isLoading ? '...' : (kpi.value || 0).toLocaleString()}
-                <span className="text-xs ml-1 opacity-40 font-bold uppercase">{kpi.unit}</span>
-              </h2>
-            </div>
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{kpi.label}</p>
+            <h4 className="text-2xl font-black dark:text-white font-mono flex items-baseline gap-1">
+              {(kpi.value || 0).toLocaleString()}
+              <span className="text-xs font-bold text-slate-300">{kpi.unit}</span>
+            </h4>
           </div>
         ))}
       </div>
@@ -196,7 +294,7 @@ export default function AdminDashboard() {
             </div>
 
               <div className="h-[350px] w-full relative">
-                <ResponsiveContainer width="100%" height="100%" minWidth={0} debounce={50}>
+                <ResponsiveContainer key={activeHub} width="100%" height={350}>
                   <LineChart data={revenueTrends.length > 1 ? revenueTrends : [
                     { month: 'Start', revenue: 0 }, 
                     ...(revenueTrends.length === 1 ? revenueTrends : [{ month: 'Current', revenue: 0 }])
@@ -243,7 +341,7 @@ export default function AdminDashboard() {
              <div className="bg-white dark:bg-slate-900 p-8 rounded-[2rem] border border-slate-100 dark:border-slate-800 shadow-xl shadow-slate-100/50 dark:shadow-none">
                 <h3 className="text-sm font-black text-slate-900 dark:text-white mb-6 uppercase tracking-widest">Material Breakdown (Top 5)</h3>
                 <div className="h-[240px]">
-                  <ResponsiveContainer width="100%" height="100%" minWidth={0} debounce={50}>
+                  <ResponsiveContainer key={activeHub} width="100%" height={240}>
                     <PieChart>
                       <Pie 
                         data={materialDistribution} 

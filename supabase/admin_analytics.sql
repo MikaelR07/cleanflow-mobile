@@ -1,9 +1,11 @@
 -- ════════════════════════════════════════════════════════════════
 -- CLEANFLOW ADMIN ANALYTICS — Production RPC Layer
+-- Run this in Supabase SQL Editor to deploy all admin functions.
 -- ════════════════════════════════════════════════════════════════
 
 -- 1. OVERVIEW STATS
 -- Returns a master snapshot of system health
+DROP FUNCTION IF EXISTS get_admin_overview();
 CREATE OR REPLACE FUNCTION get_admin_overview()
 RETURNS JSONB AS $$
 DECLARE
@@ -62,6 +64,7 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- 2. REVENUE & GROWTH TRENDS
 -- Returns last 6 months of earnings
+DROP FUNCTION IF EXISTS get_revenue_trends();
 CREATE OR REPLACE FUNCTION get_revenue_trends()
 RETURNS JSONB AS $$
 BEGIN
@@ -84,6 +87,7 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- 3. MATERIAL DISTRIBUTION (TOP 5)
 -- Returns the top 5 materials collected
+DROP FUNCTION IF EXISTS get_material_distribution();
 CREATE OR REPLACE FUNCTION get_material_distribution()
 RETURNS JSONB AS $$
 BEGIN
@@ -105,6 +109,7 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- 4. HIGH ALERT MONITORING
 -- Finds bookings pending for more than 24 hours
+DROP FUNCTION IF EXISTS get_high_alert_bookings();
 CREATE OR REPLACE FUNCTION get_high_alert_bookings()
 RETURNS JSONB AS $$
 BEGIN

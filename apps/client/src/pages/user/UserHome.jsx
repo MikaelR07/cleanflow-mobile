@@ -36,6 +36,8 @@ export default function UserHome() {
     profile, 
     withdrawRewards, 
     role, 
+    clientType,
+    toggleClientType,
     subscribeToProfileChanges,
     topUpBalance 
   } = useAuthStore();
@@ -231,15 +233,19 @@ export default function UserHome() {
         </div>
         
         <div className="flex items-center gap-3">
-          {/* GFP Badge */}
+          {/* Persona Toggle Badge */}
           <button 
-            onClick={() => navigate('/impact-hub')}
-            className={`flex items-center gap-1.5 bg-amber-500 text-white px-3 py-1.5 rounded-xl shadow-lg shadow-amber-200 dark:shadow-none active:scale-95 transition-all
-              ${profile?.rewardPoints > 0 ? 'animate-pulse-soft border-2 border-white/50' : ''}`}
+            onClick={toggleClientType}
+            className={`flex items-center gap-2 px-3 py-2 rounded-2xl border-2 transition-all active:scale-95 shadow-sm
+              ${clientType === 'seller' 
+                ? 'bg-emerald-600 border-emerald-400 text-white shadow-emerald-500/20' 
+                : 'bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-700 text-slate-600 dark:text-slate-300'}`}
           >
-            <Leaf className="w-3.5 h-3.5 fill-white" />
-            <span className="text-xs font-black uppercase tracking-tighter mr-0.5">GFP</span>
-            <span className="text-sm font-black tracking-tight">{profile?.rewardPoints || 0}</span>
+            <div className={`w-2 h-2 rounded-full animate-pulse ${clientType === 'seller' ? 'bg-white' : 'bg-primary'}`} />
+            <span className="text-[10px] font-black uppercase tracking-widest">
+              {clientType === 'seller' ? 'Seller' : 'Resident'}
+            </span>
+            <ArrowRight className={`w-3 h-3 opacity-50 ${clientType === 'seller' ? 'rotate-180' : ''} transition-transform`} />
           </button>
 
           <button 
@@ -271,6 +277,14 @@ export default function UserHome() {
                 <h2 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter leading-none">
                   KSh {(profile?.balance || profile?.walletBalance || 0).toLocaleString()}
                 </h2>
+                <div className="mt-4 flex items-center gap-4">
+                  <div className="flex items-center gap-2 bg-amber-500/10 px-3 py-1.5 rounded-xl border border-amber-500/20">
+                    <Leaf className="w-3.5 h-3.5 text-amber-600 fill-amber-500" />
+                    <span className="text-xs font-black text-amber-700 dark:text-amber-500">{profile?.rewardPoints || 0} GFP</span>
+                  </div>
+                  <div className="h-4 w-[1px] bg-slate-200 dark:bg-slate-800" />
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Total Assets</p>
+                </div>
               </div>
               <div className="flex flex-col gap-2">
                 <button 
@@ -310,53 +324,99 @@ export default function UserHome() {
         </div>
       </div>
 
-      {/* ── MISSION UPGRADE BANNER ── */}
-      <button 
-        onClick={() => navigate('/settings/subscriptions')}
-        className="w-full p-5 rounded-[2rem] bg-amber-100/30 dark:bg-amber-900/10 border border-amber-200/50 dark:border-amber-800/30 flex items-center justify-between group transition-all active:scale-[0.98] overflow-hidden relative"
-      >
-        <div className="absolute -right-4 -top-4 w-20 h-20 bg-amber-400/10 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700" />
-        <div className="flex items-center gap-4 relative z-10">
-          <div className="w-11 h-11 bg-amber-100/50 dark:bg-amber-900/40 rounded-2xl flex items-center justify-center shadow-inner">
-            <Star className="w-6 h-6 text-amber-600 dark:text-amber-500 fill-amber-500" />
+      {/* ── MISSION UPGRADE BANNER (RESIDENT ONLY) ── */}
+      {clientType === 'resident' && (
+        <button 
+          onClick={() => navigate('/settings/subscriptions')}
+          className="w-full p-5 rounded-[2rem] bg-amber-100/30 dark:bg-amber-900/10 border border-amber-200/50 dark:border-amber-800/30 flex items-center justify-between group transition-all active:scale-[0.98] overflow-hidden relative"
+        >
+          <div className="absolute -right-4 -top-4 w-20 h-20 bg-amber-400/10 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700" />
+          <div className="flex items-center gap-4 relative z-10">
+            <div className="w-11 h-11 bg-amber-100/50 dark:bg-amber-900/40 rounded-2xl flex items-center justify-center shadow-inner">
+              <Star className="w-6 h-6 text-amber-600 dark:text-amber-500 fill-amber-500" />
+            </div>
+            <div className="text-left">
+              <p className="text-[10px] font-black text-amber-700 dark:text-amber-500 uppercase tracking-widest leading-none mb-1">Impact Level</p>
+              <p className="text-sm font-bold text-slate-900 dark:text-white leading-tight">
+                Join community impact to earn 2X rewards
+              </p>
+            </div>
           </div>
-          <div className="text-left">
-            <p className="text-[10px] font-black text-amber-700 dark:text-amber-500 uppercase tracking-widest leading-none mb-1">Impact Level</p>
-            <p className="text-sm font-bold text-slate-900 dark:text-white leading-tight">
-              Join community impact to earn 2X rewards
-            </p>
-          </div>
-        </div>
-        <ChevronRight className="w-5 h-5 text-amber-600 group-hover:translate-x-1 transition-transform" />
-      </button>
+          <ChevronRight className="w-5 h-5 text-amber-600 group-hover:translate-x-1 transition-transform" />
+        </button>
+      )}
 
-      {/* ── QUICK ACTIONS (SIMPLE CARDS) ── */}
+      {/* ── QUICK ACTIONS (PERSONA-DRIVEN) ── */}
       <div className="grid grid-cols-2 gap-4">
-        <button
-          onClick={() => navigate('/book-pickup')}
-          className="bg-slate-100/50 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800 rounded-[2rem] p-5 flex items-center gap-4 hover:shadow-md transition-all active:scale-[0.98] group"
-        >
-          <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all">
-            <CalendarDays className="w-6 h-6" />
-          </div>
-          <div className="text-left">
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Booking</p>
-            <p className="text-sm font-black text-slate-900 dark:text-white leading-tight">Book Pickup</p>
-          </div>
-        </button>
+        {clientType === 'resident' ? (
+          <>
+            <button
+              onClick={() => navigate('/book-pickup?mode=service')}
+              className="bg-slate-100/50 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800 rounded-[2rem] p-4 flex flex-col items-center gap-3 hover:shadow-lg transition-all active:scale-[0.98] group relative overflow-hidden"
+            >
+              <div className="absolute top-0 right-0 p-2 opacity-5">
+                <Trash2 className="w-16 h-16" />
+              </div>
+              <div className="w-12 h-12 bg-rose-500 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-rose-500/20 group-hover:scale-110 transition-transform">
+                <Trash2 className="w-6 h-6" />
+              </div>
+              <div className="text-center">
+                <p className="text-[9px] font-black text-rose-600 dark:text-rose-400 uppercase tracking-widest mb-0.5">Service</p>
+                <p className="text-xs font-black text-slate-900 dark:text-white leading-tight">Order Clean-up</p>
+              </div>
+            </button>
 
-        <button
-          onClick={() => toast.info('AI Scanner launching...', { description: 'Get ready to scan your recyclables.' })}
-          className="bg-slate-100/50 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800 rounded-[2rem] p-5 flex items-center gap-4 hover:shadow-md transition-all active:scale-[0.98] group"
-        >
-          <div className="w-12 h-12 bg-slate-200/50 dark:bg-slate-800 rounded-2xl flex items-center justify-center text-slate-500 group-hover:bg-slate-900 dark:group-hover:bg-slate-700 group-hover:text-white transition-all">
-            <Scan className="w-6 h-6" />
-          </div>
-          <div className="text-left">
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">HygeneX</p>
-            <p className="text-sm font-black text-slate-900 dark:text-white leading-tight">Scan Recyclable</p>
-          </div>
-        </button>
+            <button
+              onClick={() => toast.info('HygeneX AI launching...', { description: 'Identify your waste and its value.' })}
+              className="bg-slate-100/50 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800 rounded-[2rem] p-4 flex flex-col items-center gap-3 hover:shadow-lg transition-all active:scale-[0.98] group relative overflow-hidden"
+            >
+              <div className="absolute top-0 right-0 p-2 opacity-5">
+                <Scan className="w-16 h-16" />
+              </div>
+              <div className="w-12 h-12 bg-blue-500 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/20 group-hover:scale-110 transition-transform">
+                <Scan className="w-6 h-6" />
+              </div>
+              <div className="text-center">
+                <p className="text-[9px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest mb-0.5">Education</p>
+                <p className="text-xs font-black text-slate-900 dark:text-white leading-tight">Scan with AI</p>
+              </div>
+            </button>
+          </>
+        ) : (
+          <>
+            <button
+              onClick={() => navigate('/book-pickup?mode=sell')}
+              className="bg-slate-100/50 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800 rounded-[2rem] p-4 flex flex-col items-center gap-3 hover:shadow-lg transition-all active:scale-[0.98] group relative overflow-hidden"
+            >
+              <div className="absolute top-0 right-0 p-2 opacity-5">
+                <Recycle className="w-16 h-16" />
+              </div>
+              <div className="w-12 h-12 bg-emerald-500 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-emerald-500/20 group-hover:scale-110 transition-transform">
+                <Recycle className="w-6 h-6" />
+              </div>
+              <div className="text-center">
+                <p className="text-[9px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest mb-0.5">Deposit</p>
+                <p className="text-xs font-black text-slate-900 dark:text-white leading-tight">Sell Waste</p>
+              </div>
+            </button>
+
+            <button
+              onClick={() => toast.info('Market Intelligence Hub...', { description: 'Analyzing live material value.' })}
+              className="bg-slate-100/50 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800 rounded-[2rem] p-4 flex flex-col items-center gap-3 hover:shadow-lg transition-all active:scale-[0.98] group relative overflow-hidden"
+            >
+              <div className="absolute top-0 right-0 p-2 opacity-5">
+                <TrendingUp className="w-16 h-16" />
+              </div>
+              <div className="w-12 h-12 bg-indigo-600 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-500/20 group-hover:scale-110 transition-transform">
+                <TrendingUp className="w-6 h-6" />
+              </div>
+              <div className="text-center">
+                <p className="text-[9px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-widest mb-0.5">Intelligence</p>
+                <p className="text-xs font-black text-slate-900 dark:text-white leading-tight">Analyze & Value</p>
+              </div>
+            </button>
+          </>
+        )}
       </div>
 
       {/* ── HYGENEX SMART WINDOW ── */}
@@ -384,36 +444,40 @@ export default function UserHome() {
         </div>
       )}
 
-      {/* ── VOICE BOOKING CTA (MOVED UP) ── */}
-      <button
-        onClick={openVoiceModal}
-        className="w-full bg-slate-100/50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-[2rem] p-5 flex items-center gap-4 hover:shadow-md transition-all active:scale-[0.98] group"
-      >
-        <div className="w-12 h-12 bg-blue-600 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/20 group-hover:scale-110 transition-transform">
-          <Mic className="w-6 h-6 text-white" />
-        </div>
-        <div className="text-left">
-          <p className="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest mb-0.5">Voice Command</p>
-          <p className="text-sm font-bold text-slate-900 dark:text-white leading-tight">"Book my plastic pickup for tomorrow"</p>
-          <p className="text-[10px] text-slate-400 font-medium mt-1">Sema kwa Kiswahili au English</p>
-        </div>
-      </button>
-
-      {/* ── COMMUNITY & RANKING ── */}
-      <div className="bg-slate-100/50 dark:bg-slate-900 rounded-[2rem] p-6 border border-slate-200/50 dark:border-slate-800 flex items-center justify-between backdrop-blur-sm">
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 bg-amber-100 dark:bg-amber-900/30 rounded-2xl flex items-center justify-center">
-            <Trophy className="w-6 h-6 text-amber-600" />
+      {/* ── VOICE BOOKING CTA (RESIDENT ONLY) ── */}
+      {clientType === 'resident' && (
+        <button
+          onClick={openVoiceModal}
+          className="w-full bg-slate-100/50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-[2rem] p-5 flex items-center gap-4 hover:shadow-md transition-all active:scale-[0.98] group"
+        >
+          <div className="w-12 h-12 bg-blue-600 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/20 group-hover:scale-110 transition-transform">
+            <Mic className="w-6 h-6 text-white" />
           </div>
-          <div>
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Estate Ranking</p>
-            <p className="text-sm font-black text-slate-900 dark:text-white uppercase">{profile?.location?.estate || 'South B'} is #2</p>
+          <div className="text-left">
+            <p className="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest mb-0.5">Voice Command</p>
+            <p className="text-sm font-bold text-slate-900 dark:text-white leading-tight">"Book my plastic pickup for tomorrow"</p>
+            <p className="text-[10px] text-slate-400 font-medium mt-1">Sema kwa Kiswahili au English</p>
           </div>
-        </div>
-        <button onClick={() => navigate('/impact-hub')} className="p-2 bg-slate-200/50 dark:bg-slate-800 rounded-xl transition-colors">
-          <ChevronRight className="w-5 h-5 text-slate-400" />
         </button>
-      </div>
+      )}
+
+      {/* ── COMMUNITY & RANKING (RESIDENT ONLY) ── */}
+      {clientType === 'resident' && (
+        <div className="bg-slate-100/50 dark:bg-slate-900 rounded-[2rem] p-6 border border-slate-200/50 dark:border-slate-800 flex items-center justify-between backdrop-blur-sm">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-amber-100 dark:bg-amber-900/30 rounded-2xl flex items-center justify-center">
+              <Trophy className="w-6 h-6 text-amber-600" />
+            </div>
+            <div>
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Estate Ranking</p>
+              <p className="text-sm font-black text-slate-900 dark:text-white uppercase">{profile?.location?.estate || 'South B'} is #2</p>
+            </div>
+          </div>
+          <button onClick={() => navigate('/impact-hub')} className="p-2 bg-slate-200/50 dark:bg-slate-800 rounded-xl transition-colors">
+            <ChevronRight className="w-5 h-5 text-slate-400" />
+          </button>
+        </div>
+      )}
 
       {/* ── RECENT ACTIVITY ── */}
       <div className="bg-slate-100/30 dark:bg-slate-900 rounded-[2rem] p-6 border border-slate-200/50 dark:border-slate-800">

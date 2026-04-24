@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, PhoneCall, MessageCircle, Send, Loader2 } from 'lucide-react';
+import { useSystemStore } from '@cleanflow/core';
 import { toast } from 'sonner';
 
 export default function SupportPage() {
   const navigate = useNavigate();
+  const { supportPhone, whatsappNumber } = useSystemStore();
   const [form, setForm] = useState({ subject: '', message: '' });
   const [isLoading, setIsLoading] = useState(false);
 
@@ -30,7 +32,7 @@ export default function SupportPage() {
 
         {/* Quick Contact Buttons */}
         <div className="grid grid-cols-2 gap-3">
-           <a href="tel:+254123456789" className="p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-primary transition-all flex flex-col items-center justify-center gap-3 text-center shadow-sm">
+           <a href={`tel:${supportPhone}`} className="p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-primary transition-all flex flex-col items-center justify-center gap-3 text-center shadow-sm">
              <div className="w-12 h-12 bg-primary/10 text-primary rounded-full flex items-center justify-center">
                <PhoneCall className="w-6 h-6" />
              </div>
@@ -40,7 +42,7 @@ export default function SupportPage() {
              </div>
            </a>
 
-           <a href="https://wa.me/254123456789" target="_blank" rel="noreferrer" className="p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-[#25D366] transition-all flex flex-col items-center justify-center gap-3 text-center shadow-sm">
+           <a href={`https://wa.me/${whatsappNumber}`} target="_blank" rel="noreferrer" className="p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-[#25D366] transition-all flex flex-col items-center justify-center gap-3 text-center shadow-sm">
              <div className="w-12 h-12 bg-[#25D366]/10 text-[#25D366] rounded-full flex items-center justify-center">
                <MessageCircle className="w-6 h-6" />
              </div>

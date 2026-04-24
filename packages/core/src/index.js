@@ -1,4 +1,4 @@
-export * from './stores/authStore.js';
+export { useAuthStore, getBusinessLabel, normalizePhone, phoneToEmail } from './stores/authStore.js';
 export * from './stores/hygenexStore.js';
 export * from './stores/iotStore.js';
 export * from './stores/bookingStore.js';

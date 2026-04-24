@@ -13,7 +13,10 @@ import {
   X
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useMarketplaceStore, useAuthStore, useAssetStore, supabase } from '@cleanflow/core';
+import { 
+  useAuthStore, useAssetStore, useMarketplaceStore, 
+  getBusinessLabel, supabase 
+} from '@cleanflow/core';
 import { toast } from 'sonner';
 
 export default function SupplyTerminal() {
@@ -117,7 +120,7 @@ export default function SupplyTerminal() {
             <ArrowLeft className="w-5 h-5" />
           </button>
           <div className="text-center">
-            <h1 className="text-sm font-black uppercase tracking-[0.2em]">{isWeaver ? 'Weaver' : 'Industrial'} Terminal</h1>
+            <h1 className="text-sm font-black uppercase tracking-[0.2em]">{getBusinessLabel(profile?.business_type, 'terminal')}</h1>
             <div className="flex items-center justify-center gap-1.5 mt-0.5">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
               <p className="text-[9px] font-bold text-emerald-500 uppercase tracking-widest">Live Arrivals</p>
@@ -134,7 +137,7 @@ export default function SupplyTerminal() {
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <input 
               type="text" 
-              placeholder={`Filter ${isWeaver ? 'pickups' : 'bulk bales'}...`}
+              placeholder={`Filter ${isWeaver ? 'pickups' : 'bulk inventory'}...`}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full pl-11 pr-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl text-sm outline-none"

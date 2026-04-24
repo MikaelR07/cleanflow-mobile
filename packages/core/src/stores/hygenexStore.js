@@ -30,10 +30,12 @@ export const useHygenexStore = create((set, get) => ({
     const { userId } = useAuthStore.getState();
     if (!userId) return;
 
-    // 1. Cleanup existing to prevent race conditions
-    const existingChannel = get().realtimeChannel;
-    if (existingChannel) {
-      supabase.removeChannel(existingChannel);
+    const channelName = `hygenex_realtime_${userId}_${Date.now()}`;
+
+    // 1. Cleanup old channel if stored in state
+    const oldChannel = get().realtimeChannel;
+    if (oldChannel) {
+      supabase.removeChannel(oldChannel);
     }
 
     // 2. Fetch History
@@ -54,9 +56,10 @@ export const useHygenexStore = create((set, get) => ({
       set({ messages: [WELCOME_MESSAGE, ...mapped] });
     }
 
-    // 3. Realtime listener for incoming AI responses
-    const channel = supabase
-      .channel(`hygenex_realtime_${userId}`)
+    // 3. Create a TRULY fresh channel with a unique name
+    const channel = supabase.channel(channelName);
+    
+    channel
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'hygenex_messages', filter: `user_id=eq.${userId}` },

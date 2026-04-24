@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import { 
   useAssetStore, useAuthStore, useMarketplaceStore, 
-  MATERIAL_TYPES, ASSET_SOURCES 
+  MATERIAL_TYPES, ASSET_SOURCES, getBusinessLabel 
 } from '@cleanflow/core';
 import { AssetBadge } from '@cleanflow/ui';
 import { toast } from 'sonner';
@@ -102,12 +102,12 @@ export default function WeaverWarehouse() {
            <div className="flex justify-between items-end">
               <div className="flex gap-6">
                  <div>
-                    <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">{isWeaver ? 'From Agents' : 'From Weavers'}</p>
+                    <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">{getBusinessLabel(profile?.business_type, 'sourceA')}</p>
                     <p className="text-sm font-black text-white">{agentWeight.toLocaleString()} <span className="text-[10px] opacity-40">KG</span></p>
                  </div>
                  <div className="w-px h-8 bg-white/5" />
                  <div>
-                    <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">{isWeaver ? 'From Peers' : 'Market Spending'}</p>
+                    <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">{getBusinessLabel(profile?.business_type, 'sourceB')}</p>
                     <p className="text-sm font-black text-white">
                        {isWeaver ? peerWeight.toLocaleString() : (financials?.totalEarnings || 0).toLocaleString()} 
                        <span className="text-[10px] opacity-40 ml-1">{isWeaver ? 'KG' : 'KES'}</span>
@@ -145,7 +145,7 @@ export default function WeaverWarehouse() {
                 <Plus className="w-5 h-5" />
              </div>
              <span className="text-[10px] font-black uppercase tracking-widest text-slate-600 dark:text-slate-300">
-               {isWeaver ? 'Add Private Collection' : 'Log Direct Purchase'}
+               {getBusinessLabel(profile?.business_type, 'actionAdd')}
              </span>
           </div>
           <ArrowRight className="w-4 h-4 text-slate-300" />

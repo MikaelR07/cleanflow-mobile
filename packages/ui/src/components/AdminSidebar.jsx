@@ -2,19 +2,17 @@
  * Admin Sidebar — desktop sidebar navigation for admin panel
  */
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, FileText, MapPin, Users, Settings, Recycle, Brain, MessageSquare, Building2, Network } from 'lucide-react';
+import { LayoutDashboard, FileText, MapPin, Users, Settings, Recycle, Brain, MessageSquare, Building2, Network, Coins } from 'lucide-react';
 
 const links = [
-  { path: '/', icon: LayoutDashboard, label: 'Overview', end: true },
-  { path: '/oracle', icon: Network, label: 'Market Status' },
-  { path: '/users', icon: Users, label: 'Fleet & Users' },
-  { path: '/prices', icon: Recycle, label: 'Pricing Hub' },
-  { path: '/services', icon: Settings, label: 'Service List' },
-  { path: '/b2b', icon: Building2, label: 'Business Center' },
-  { path: '/reviews', icon: MessageSquare, label: 'User Reviews' },
-  { path: '/reports', icon: FileText, label: 'Analytics' },
+  { path: '/', icon: LayoutDashboard, label: 'Dashboard' },
+  { path: '/users', icon: Users, label: 'User Manager' },
+  { path: '/hub', icon: Coins, label: 'Market Hub' },
+  { path: '/map', icon: MapPin, label: 'Live Fleet Map' },
+  { path: '/b2b', icon: Network, label: 'B2B Logistics' },
+  { path: '/reports', icon: FileText, label: 'System Reports' },
+  { path: '/reviews', icon: MessageSquare, label: 'Feedback' },
   { path: '/hygenex', icon: Brain, label: 'HygeneX AI' },
-  { path: '/map', icon: MapPin, label: 'Live Map' },
   { path: '/settings', icon: Settings, label: 'Settings' },
 ];
 

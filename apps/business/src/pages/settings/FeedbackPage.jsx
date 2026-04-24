@@ -1,10 +1,13 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useFeedbackStore, useAuthStore } from '@cleanflow/core';
 import { ArrowLeft, Loader2, Star, Send } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function FeedbackPage() {
   const navigate = useNavigate();
+  const { profile } = useAuthStore();
+  const { submitFeedback } = useFeedbackStore();
   const [rating, setRating] = useState(0);
   const [hoveredRating, setHoveredRating] = useState(0);
   const [category, setCategory] = useState('UI / App Experience');
@@ -21,9 +24,22 @@ export default function FeedbackPage() {
     }
     
     setIsLoading(true);
-    await new Promise(r => setTimeout(r, 1000));
-    toast.success('Thank You!', { description: 'Your feedback helps us improve CleanFlow.' });
-    navigate('/settings');
+    try {
+      await submitFeedback({
+        userId: profile?.id,
+        name: profile?.name || 'Business Partner',
+        phone: profile?.phone,
+        rating,
+        category,
+        text: feedback
+      });
+      toast.success('Thank You!', { description: 'Your feedback helps us improve CleanFlow.' });
+      navigate('/settings');
+    } catch (err) {
+      toast.error('Submission Failed', { description: 'Please try again later.' });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (

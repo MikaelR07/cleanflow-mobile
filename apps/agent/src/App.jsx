@@ -102,10 +102,7 @@ export default function App() {
 
   return (
     <div className="min-h-dvh bg-slate-100 dark:bg-slate-900 transition-colors duration-200">
-      <Navbar 
-        canInstall={isInstallable} 
-        onInstall={() => setShowInstallModal(true)} 
-      />
+
 
       <Routes>
         <Route path="/welcome" element={isAuthenticated ? <Navigate to="/" replace /> : <Welcome />} />

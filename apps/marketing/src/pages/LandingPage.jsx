@@ -6,7 +6,7 @@ import {
   Repeat, CreditCard, Brain, Mic, Wallet,
   Leaf, User, Truck, ChevronRight, ExternalLink,
   MessageSquare, Mail, Sun, Moon, Cpu, Award,
-  Sprout, HandCoins, Activity, Navigation
+  Sprout, HandCoins, Activity, Navigation, Menu, X
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useThemeStore, useAssetStore } from '@cleanflow/core';
@@ -23,7 +23,7 @@ const GlassMockup = ({ color = "emerald", icon: Icon, isDarkMode }) => {
   const theme = colorMap[color];
 
   return (
-    <div className={`aspect-square rounded-[3rem] border ${isDarkMode ? 'border-white/5 bg-slate-800/20' : 'border-slate-200 bg-white/50'} relative overflow-hidden shadow-2xl backdrop-blur-sm group`}>
+    <div className={`aspect-square rounded-[2rem] md:rounded-[3rem] border ${isDarkMode ? 'border-white/5 bg-slate-800/20' : 'border-slate-200 bg-white/50'} relative overflow-hidden shadow-2xl backdrop-blur-sm group`}>
       <div className={`absolute inset-0 bg-gradient-to-br ${theme.glow} to-transparent opacity-50`} />
       
       {/* Dynamic Background Elements */}
@@ -63,6 +63,7 @@ const GlassMockup = ({ color = "emerald", icon: Icon, isDarkMode }) => {
 
 export default function LandingPage() {
   const [scrolled, setScrolled] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { isDarkMode, toggleTheme } = useThemeStore();
   const { fetchAssets } = useAssetStore();
 
@@ -93,15 +94,14 @@ export default function LandingPage() {
   const portals = [
     { title: "CleanFlow Resident", desc: "Turn household waste into digital assets with real-time tracking and rewards.", icon: User, color: "from-emerald-500 to-teal-600", link: getPortalLink('client') },
     { title: "CleanFlow Agent", desc: "The official verification hub for waste-as-asset grading and logistics.", icon: Truck, color: "from-blue-500 to-indigo-600", link: getPortalLink('agent') },
-    { title: "CleanFlow Weaver", desc: "The live marketplace for informal collectors to claim and trade verified assets.", icon: Building2, color: "from-purple-500 to-pink-600", link: getPortalLink('business') },
-    { title: "CleanFlow Oracle", desc: "Strategic control center for network pricing and ecosystem oversight.", icon: ShieldCheck, color: "from-rose-500 to-orange-600", link: getPortalLink('admin') }
+    { title: "CleanFlow Weaver", desc: "The live marketplace for informal collectors to claim and trade verified assets.", icon: Building2, color: "from-purple-500 to-pink-600", link: getPortalLink('business') }
   ];
 
   return (
     <div className={`overflow-hidden min-h-screen transition-colors duration-500 ${isDarkMode ? 'bg-slate-900 text-slate-100 selection:bg-emerald-500/30' : 'bg-slate-50 text-slate-900 selection:bg-emerald-500/20'}`}>
       
       {/* ── NAVBAR ────────────────────────────────────────────────── */}
-      <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${scrolled ? (isDarkMode ? 'bg-slate-900/80 border-white/5' : 'bg-white/80 border-slate-200') + ' backdrop-blur-xl border-b py-4' : 'bg-transparent py-8'}`}>
+      <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${scrolled || mobileMenuOpen ? (isDarkMode ? 'bg-slate-900/90 border-white/5' : 'bg-white/90 border-slate-200') + ' backdrop-blur-xl border-b py-4' : 'bg-transparent py-8'}`}>
         <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="w-10 h-10 rounded-xl bg-emerald-500 flex items-center justify-center shadow-lg shadow-emerald-500/20">
@@ -120,11 +120,34 @@ export default function LandingPage() {
             </button>
             <a href="#portals" className="px-6 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-white text-xs font-black uppercase tracking-widest rounded-full transition-all shadow-lg shadow-emerald-500/20">Launch Apps</a>
           </div>
+
+          <div className="flex md:hidden items-center gap-4">
+            <button onClick={toggleTheme} className={`p-2 rounded-full ${isDarkMode ? 'text-yellow-400' : 'text-slate-700'}`}>
+              {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+            </button>
+            <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className={isDarkMode ? 'text-white' : 'text-slate-900'}>
+              {mobileMenuOpen ? <X className="w-8 h-8" /> : <Menu className="w-8 h-8" />}
+            </button>
+          </div>
         </div>
+
+        {/* Mobile Menu Overlay */}
+        {mobileMenuOpen && (
+          <motion.div 
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className={`md:hidden absolute top-full left-0 right-0 border-b p-6 space-y-6 font-bold ${isDarkMode ? 'bg-slate-900 border-white/5 text-white' : 'bg-white border-slate-200 text-slate-900'}`}
+          >
+            <a href="#ecosystem" onClick={() => setMobileMenuOpen(false)} className="block text-2xl">Ecosystem</a>
+            <a href="#vision" onClick={() => setMobileMenuOpen(false)} className="block text-2xl">Vision</a>
+            <a href="#portals" onClick={() => setMobileMenuOpen(false)} className="block text-2xl">Portals</a>
+            <a href="#portals" onClick={() => setMobileMenuOpen(false)} className="block py-4 bg-emerald-500 text-white text-center rounded-2xl">Launch Apps</a>
+          </motion.div>
+        )}
       </nav>
 
       {/* ── HERO SECTION ─────────────────────────────────────────── */}
-      <section className="relative pt-48 pb-32 px-6 flex items-center min-h-[750px]">
+      <section className="relative pt-32 md:pt-48 pb-20 md:pb-32 px-6 flex items-center min-h-[600px] md:min-h-[750px]">
         {/* Background Image Layer */}
         {/* CSS-Only Hero Visual Layer */}
         <div className="absolute inset-0 z-0 overflow-hidden">
@@ -184,11 +207,12 @@ export default function LandingPage() {
             <h3 className={`text-3xl font-black italic tracking-tight ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>How CleanFlow Connects Everything</h3>
           </div>
           
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4 md:gap-0 relative">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-12 md:gap-0 relative">
             <div className="hidden md:block absolute top-1/2 left-0 w-full h-1 bg-gradient-to-r from-emerald-500/20 via-emerald-500 to-emerald-500/20 -translate-y-1/2 z-0" />
+            <div className="md:hidden absolute top-0 bottom-0 left-1/2 w-1 h-full bg-gradient-to-b from-emerald-500/20 via-emerald-500 to-emerald-500/20 -translate-x-1/2 z-0" />
             
             {[ { i: User, t: "Households" }, { i: Truck, t: "Verification" }, { i: Building2, t: "Weaver Network" }, { i: ShieldCheck, t: "Asset Market" } ].map((step, idx) => (
-              <div key={idx} className="relative z-10 flex flex-col items-center gap-4 bg-slate-50 dark:bg-slate-900 p-2">
+              <div key={idx} className="relative z-10 flex flex-col items-center gap-4 bg-slate-100 dark:bg-slate-900 p-2 md:bg-slate-50">
                 <div className="w-16 h-16 rounded-2xl bg-emerald-500 flex items-center justify-center shadow-lg shadow-emerald-500/20 text-white">
                   <step.i className="w-8 h-8" />
                 </div>
@@ -220,7 +244,7 @@ export default function LandingPage() {
                 {[
                   { label: "Traceability", val: "100%", sub: "Source to Recycler" },
                   { label: "Rewards", val: "Instant", sub: "Digital Payouts" },
-                  { label: "AI Ops", val: "24/7", sub: "Predictive Analytics" }
+                  { label: "AI Operations", val: "24/7", sub: "Predictive Analytics" }
                 ].map((stat, i) => (
                   <div key={i} className={`p-6 rounded-2xl border ${isDarkMode ? 'bg-white/5 border-white/5' : 'bg-slate-50 border-slate-200'}`}>
                     <div className="text-2xl font-black text-emerald-500 mb-1">{stat.val}</div>
@@ -342,7 +366,7 @@ export default function LandingPage() {
                   initial={{ opacity: 0, scale: 0.8 }}
                   whileInView={{ opacity: 1, scale: 1 }}
                   transition={{ delay: i * 0.2 }}
-                  className={`group relative p-10 rounded-[3.5rem] border text-center transition-all hover:border-emerald-500/50 ${
+                  className={`group relative p-8 md:p-10 rounded-[2.5rem] md:rounded-[3.5rem] border text-center transition-all hover:border-emerald-500/50 ${
                     isDarkMode ? 'bg-slate-900 border-white/5' : 'bg-white border-slate-200'
                   }`}
                 >
@@ -511,7 +535,6 @@ export default function LandingPage() {
               { title: "CleanFlow Resident", desc: "Homeowners & Estates", icon: User, color: "emerald", url: getPortalLink('client') },
               { title: "CleanFlow Agent", desc: "Verifiers & Logistics", icon: Truck, color: "blue", url: getPortalLink('agent') },
               { title: "CleanFlow Weaver", desc: "B2B Marketplace", icon: Building2, color: "indigo", url: getPortalLink('business') },
-              { title: "CleanFlow Oracle", desc: "Network Governance", icon: ShieldCheck, color: "rose", url: getPortalLink('admin') },
             ].map((portal, i) => (
               <motion.div
                 key={i}

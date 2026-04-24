@@ -7,7 +7,7 @@ import {
   ArrowLeft, MapPin, Edit2, Scale, Calendar, Info, 
   ShoppingBag, Trash2, Wallet, Zap, Star, Plus, 
   ArrowUpRight, Info as InfoIcon, Truck, ShieldCheck, Smartphone,
-  User, Home, Lock, Shield, CheckCircle2, AlertCircle
+  User, Home, Lock, Shield, CheckCircle2, AlertCircle, TrendingUp
 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
@@ -17,7 +17,7 @@ import { toast } from 'sonner';
 
 import { 
   useBookingStore, useAuthStore, useServiceStore, usePriceStore,
-  uploadFile, MATERIAL_TYPES 
+  useSystemStore, uploadFile, MATERIAL_TYPES 
 } from '@cleanflow/core';
 
 // ── COMPACT MAP ICONS ───────────────────────────────────────────
@@ -52,6 +52,7 @@ export default function BookPickup() {
   } = useBookingStore();
   const { categories, fetchCategories } = useServiceStore();
   const { prices, fetchPrices, getPriceForMaterial } = usePriceStore();
+  const { fetchConfig, getConfigValue } = useSystemStore();
 
   const [step, setStep] = useState(1);
   const [wasteType, setWasteType] = useState(null);
@@ -63,6 +64,26 @@ export default function BookPickup() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showEscrowModal, setShowEscrowModal] = useState(false);
   
+  // New: Hybrid Model State
+  const [pickupMode, setPickupMode] = useState('pickup'); // 'pickup' | 'dropoff'
+  const [selectedHub, setSelectedHub] = useState(null);
+  
+  const query = new URLSearchParams(useLocation().search);
+  const initialMode = query.get('mode'); // 'service' | 'sell'
+
+  const HUBS = [
+    { id: 'hub-1', name: 'CleanFlow Central (Nairobi West)', lat: -1.2921, lng: 36.8219, address: 'Langata Rd, Opp T-Mall' },
+    { id: 'hub-2', name: 'CleanFlow East (Industrial Area)', lat: -1.3142, lng: 36.8524, address: 'Enterprise Rd, Near Boma' },
+    { id: 'hub-3', name: 'CleanFlow South (Syokimau)', lat: -1.4024, lng: 36.9421, address: 'Mombasa Rd, Gateway Mall' }
+  ];
+
+  const hubIcon = L.divIcon({
+    className: 'custom-hub-icon',
+    html: `<div class="w-8 h-8 rounded-xl bg-emerald-600 border-2 border-white shadow-xl flex items-center justify-center animate-bounce-slow"><span class="text-xs">🏢</span></div>`,
+    iconSize: [32, 32],
+    iconAnchor: [16, 32]
+  });
+  
   const [isManualTime, setIsManualTime] = useState(false);
   const [customDate, setCustomDate] = useState(new Date().toLocaleDateString('en-CA'));
   const [customTime, setCustomTime] = useState('09:00');
@@ -70,25 +91,49 @@ export default function BookPickup() {
 
   useEffect(() => {
     fetchCategories(); 
-    fetchPrices(); // Fetch from the live Oracle
+    fetchPrices(); 
+    fetchConfig(); // Fetch live system fees
     fetchNearbyAgents();
     generateTimeSuggestions(); 
     subscribeToAgents(); 
-    return () => cleanupAgents();
-  }, []);
+    
+    // Auto-select based on mode
+    if (initialMode === 'service') {
+      const generalCat = categories.find(c => c.id === 'general');
+      if (generalCat) {
+        setWasteType(generalCat);
+        setSelectedSubItem({ 
+          id: `cat-${generalCat.id}`, 
+          label: `${generalCat.label} (Mixed)`, 
+          price_per_unit: 0, 
+          unit: 'kg',
+          slug: generalCat.id
+        });
+      }
+    }
 
-  // ── PRICING ──
+    return () => cleanupAgents();
+  }, [initialMode, categories.length]);
+
+  // ── PRICING (Powered by Market Hub) ──
   const selected = selectedSubItem || wasteType;
   const processingFee = selected ? (selected.price_per_unit || 0) * quantity : 0;
-  const logisticsFee = 60; 
+  const logisticsFee = pickupMode === 'dropoff' ? 0 : getConfigValue('fee_pickup', 100); 
+  const minPickupFee = pickupMode === 'dropoff' ? 0 : getConfigValue('fee_min_pickup', 100);
+  
   const baseTotal = processingFee + logisticsFee;
-  const subtotal = Math.max(baseTotal, 100);
+  const subtotal = Math.max(baseTotal, minPickupFee);
   const discountAmount = selectedTime ? (subtotal * (selectedTime.discount / 100)) : 0;
   const finalPrice = Math.max(0, subtotal - discountAmount);
 
   // Live Oracle Match
-  const liveRatePerKg = getPriceForMaterial(selected?.label || '');
-  const assetValue = Math.round(quantity * liveRatePerKg);
+  const isCategory = selected?.id?.startsWith('cat-');
+  const liveRatePerKg = isCategory 
+    ? usePriceStore.getState().getCategoryPrice(wasteType?.label || '') 
+    : getPriceForMaterial(selected?.label || '');
+    
+  const hubBonus = pickupMode === 'dropoff' ? 20 : 0; // Extra KSh for dropping off
+  const assetValue = Math.round(quantity * (liveRatePerKg + hubBonus));
   const netCost = Math.max(0, finalPrice - assetValue);
 
   const handleBook = async () => {
@@ -98,10 +143,12 @@ export default function BookPickup() {
       if (photo && typeof photo !== 'string') photoUrl = await uploadFile('pickups', photo, profile?.id);
       const timeString = isManualTime ? `${customDate} @ ${customTime}` : (selectedTime?.time || 'ASAP');
       await createBooking({
-        wasteType: selected.slug, bags: quantity, estate: customLocation.estate,
-        latitude: customLocation.latitude, longitude: customLocation.longitude,
-        time: timeString, amount: finalPrice, photoUrl, agentId: selectedAgent?.id || null,
-        notes: `M-PESA Express: ${paymentNumber}`,
+        wasteType: selected.slug, bags: quantity, estate: pickupMode === 'dropoff' ? (selectedHub?.name || 'CleanFlow Hub') : customLocation.estate,
+        latitude: pickupMode === 'dropoff' ? selectedHub?.lat : customLocation.latitude, 
+        longitude: pickupMode === 'dropoff' ? selectedHub?.lng : customLocation.longitude,
+        time: pickupMode === 'dropoff' ? 'Hub Drop-off' : timeString, 
+        amount: finalPrice, photoUrl, agentId: selectedAgent?.id || null,
+        notes: `M-PESA Express: ${paymentNumber} | Mode: ${pickupMode}`,
         bookingType: selectedTime?.type || 'any',
       });
       setShowEscrowModal(false);
@@ -136,70 +183,48 @@ export default function BookPickup() {
           {step === 1 && (
             <motion.div key="p1" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-8">
                <div className="space-y-4">
-                  <h2 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Material Selection</h2>
+                  <h2 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">What are we picking up?</h2>
                   {!wasteType ? (
-                    <div className="grid grid-cols-2 gap-3">
-                       {[...new Set(prices.map(p => p.category || 'Other'))].map((catName) => {
-                         const catIcons = {
-                           'Plastics': '♻️',
-                           'Metals': '🥫',
-                           'Paper': '📦',
-                           'Electronics': '📱',
-                           'Organic': '🥬',
-                           'Glass': '🍾',
-                           'Other': '🗑️'
-                         };
-                         return (
-                           <button 
-                             key={catName} 
-                             onClick={() => setWasteType({ label: catName, icon: catIcons[catName] || '📦' })} 
-                             className="p-6 rounded-[32px] bg-white dark:bg-slate-800 border border-slate-100 flex flex-col items-center gap-3 active:scale-95 transition-all shadow-sm"
-                           >
-                             <div className="w-14 h-14 bg-slate-50 dark:bg-slate-900/50 rounded-2xl flex items-center justify-center text-3xl">
-                               {catIcons[catName] || '📦'}
-                             </div>
-                             <span className="text-[11px] font-black uppercase tracking-widest text-slate-900 dark:text-white">{catName}</span>
-                           </button>
-                         );
-                       })}
-                    </div>
+                    <div className="grid grid-cols-3 gap-3">
+                        {categories.map((cat) => (
+                          <button 
+                            key={cat.id} 
+                            onClick={() => {
+                              setWasteType(cat);
+                              setSelectedSubItem({ 
+                                id: `cat-${cat.id}`, 
+                                label: `${cat.label} (Mixed)`, 
+                                price_per_unit: cat.id === 'recyclable' ? 15 : 0, 
+                                unit: 'kg',
+                                slug: cat.id
+                              });
+                            }} 
+                            className="p-3 rounded-[24px] bg-white dark:bg-slate-800 border border-slate-100 flex flex-col items-center gap-2.5 active:scale-95 transition-all shadow-sm group hover:border-primary/30"
+                          >
+                            <div className="w-10 h-10 bg-slate-50 dark:bg-slate-900/50 rounded-xl flex items-center justify-center text-xl group-hover:bg-primary/5 transition-colors">
+                              {cat.icon || '📦'}
+                            </div>
+                            <span className="text-[8px] font-black uppercase tracking-tighter text-slate-900 dark:text-white text-center leading-tight">
+                              {cat.label}
+                            </span>
+                          </button>
+                        ))}
+                     </div>
                   ) : (
-                    <div className="bg-white dark:bg-slate-800 p-6 rounded-[32px] border border-primary/20 relative shadow-sm">
-                       <button onClick={() => { setWasteType(null); setSelectedSubItem(null); }} className="absolute top-4 right-4 text-[9px] font-black text-primary uppercase">Change</button>
-                       <div className="flex items-center gap-4 mb-6">
-                          <div className="w-12 h-12 bg-primary rounded-2xl flex items-center justify-center text-2xl text-white">{wasteType.icon}</div>
-                          <div>
-                            <h3 className="text-sm font-black dark:text-white leading-none">{wasteType.label}</h3>
-                            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Select Specific Material</span>
-                          </div>
+                    <div className="bg-white dark:bg-slate-900/50 p-4 rounded-[28px] border border-primary/20 relative shadow-sm flex items-center gap-4">
+                       <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center text-xl text-white">{wasteType.icon}</div>
+                       <div className="flex-1">
+                          <h3 className="text-xs font-black dark:text-white leading-none">{wasteType.label}</h3>
+                          <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest mt-1">Ready for pickup</p>
                        </div>
-                       <div className="grid grid-cols-2 gap-2">
-                         {prices.filter(p => (p.category || 'Other') === wasteType.label).map((material) => (
-                           <button 
-                             key={material.id} 
-                             onClick={() => setSelectedSubItem({ 
-                               id: material.id, 
-                               label: material.material_name, 
-                               price_per_unit: material.price_per_kg,
-                               unit: 'kg',
-                               slug: material.material_name.toLowerCase().replace(/ /g, '_')
-                             })} 
-                             className={`p-4 rounded-2xl border-2 transition-all text-left ${selectedSubItem?.id === material.id ? 'bg-primary/5 border-primary shadow-sm' : 'bg-slate-50 dark:bg-slate-900/50 border-transparent'}`}
-                           >
-                             <p className="text-xs font-black dark:text-white mb-1">{material.material_name}</p>
-                             <div className="flex items-center justify-between">
-                                <p className="text-[9px] font-bold text-slate-400">KSh {material.price_per_kg}/kg</p>
-                                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                             </div>
-                           </button>
-                         ))}
-                       </div>
+                       <button onClick={() => { setWasteType(null); setSelectedSubItem(null); }} className="px-3 py-1.5 bg-slate-100 dark:bg-slate-800 rounded-lg text-[8px] font-black text-primary uppercase tracking-widest">Change</button>
                     </div>
                   )}
                </div>
-               {selectedSubItem && (
+
+               {wasteType && (
                  <div className="space-y-4">
-                    <h2 className="text-xs font-black uppercase tracking-widest text-slate-400 ml-2">Quantity</h2>
+                    <h2 className="text-xs font-black uppercase tracking-widest text-slate-400 ml-2">Estimated Quantity</h2>
                     <div className="bg-white dark:bg-slate-800 p-8 rounded-[32px] border border-slate-100 flex items-center gap-8 shadow-sm">
                        <button onClick={() => setQuantity(Math.max(1, quantity - 5))} className="w-12 h-12 rounded-2xl bg-slate-50 dark:bg-slate-900/50 flex items-center justify-center text-xl font-black dark:text-white">-</button>
                        <div className="flex-1 text-center">
@@ -215,64 +240,110 @@ export default function BookPickup() {
 
           {step === 2 && (
             <motion.div key="p2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-6">
-               <div className="space-y-4">
-                  <h2 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Schedule & Select Agent</h2>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Collection Method</h2>
+                    <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
+                      <button 
+                        onClick={() => setPickupMode('pickup')}
+                        className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${pickupMode === 'pickup' ? 'bg-primary text-white shadow-md' : 'text-slate-400'}`}
+                      >
+                        Pickup
+                      </button>
+                      <button 
+                        onClick={() => { setPickupMode('dropoff'); setStep(2); }}
+                        className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${pickupMode === 'dropoff' ? 'bg-emerald-500 text-white shadow-md' : 'text-slate-400'}`}
+                      >
+                        Hub
+                      </button>
+                    </div>
+                  </div>
+
                   <div className="h-[250px] w-full rounded-[2.5rem] overflow-hidden border border-slate-100 dark:border-slate-800 relative shadow-sm group">
-                     <MapContainer center={center} zoom={15} zoomControl={false} className="h-full w-full z-0">
+                     <MapContainer center={center} zoom={13} zoomControl={false} className="h-full w-full z-0">
                         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
                         <ChangeView center={center} />
                         <Marker position={center} icon={userIcon} />
-                        {liveAgents.map(agent => (
-                           <Marker key={agent.id} position={[agent.location?.latitude || center[0], agent.location?.longitude || center[1]]} icon={agentIcon(selectedAgent?.id === agent.id)} eventHandlers={{ click: () => { setSelectedAgent(agent); toast.success(`Agent Targeted`, { icon: '🚛' }); }}}>
-                              <Popup className="compact-popup"><div className="p-1 px-2 min-w-[80px] text-center"><h4 className="text-[10px] font-black text-slate-900 leading-tight">{agent.name || 'Agent'}</h4><div className="flex items-center justify-center gap-0.5 mt-0.5 text-[8px] font-bold text-emerald-500 uppercase"><Star className="w-2 h-2 fill-emerald-500" /><span>4.9</span></div></div></Popup>
-                           </Marker>
-                        ))}
+                        
+                        {pickupMode === 'pickup' ? (
+                          liveAgents.map(agent => (
+                            <Marker key={agent.id} position={[agent.location?.latitude || center[0], agent.location?.longitude || center[1]]} icon={agentIcon(selectedAgent?.id === agent.id)} eventHandlers={{ click: () => { setSelectedAgent(agent); toast.success(`Agent Targeted`, { icon: '🚛' }); }}}>
+                               <Popup className="compact-popup"><div className="p-1 px-2 min-w-[80px] text-center"><h4 className="text-[10px] font-black text-slate-900 leading-tight">{agent.name || 'Agent'}</h4><div className="flex items-center justify-center gap-0.5 mt-0.5 text-[8px] font-bold text-emerald-500 uppercase"><Star className="w-2 h-2 fill-emerald-500" /><span>4.9</span></div></div></Popup>
+                            </Marker>
+                          ))
+                        ) : (
+                          HUBS.map(hub => (
+                            <Marker key={hub.id} position={[hub.lat, hub.lng]} icon={hubIcon} eventHandlers={{ click: () => { setSelectedHub(hub); toast.success(`${hub.name} Selected`, { icon: '🏢' }); }}}>
+                               <Popup className="compact-popup"><div className="p-3 text-center"><h4 className="text-xs font-black text-slate-900">{hub.name}</h4><p className="text-[9px] text-slate-500 mt-1 uppercase tracking-widest">{hub.address}</p></div></Popup>
+                            </Marker>
+                          ))
+                        )}
                      </MapContainer>
                   </div>
                </div>
 
-               {aiSuggestions.length > 0 ? (
-                 <div className="space-y-3">
-                    {/* SMART ASAP BUTTON */}
-                    <button 
-                      onClick={() => { selectTime(aiSuggestions[0]); setIsManualTime(false); }} 
-                      className={`w-full p-6 rounded-[2rem] border-2 transition-all text-left flex items-center gap-4 ${!isManualTime && selectedTime?.time === 'ASAP' ? 'bg-primary border-primary shadow-xl shadow-primary/20' : 'bg-white dark:bg-slate-800 border-slate-100 dark:border-white/5'}`}
-                    >
-                      <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 ${!isManualTime && selectedTime?.time === 'ASAP' ? 'bg-white/20' : 'bg-primary/10'}`}>
-                        <Zap className={`w-7 h-7 ${!isManualTime && selectedTime?.time === 'ASAP' ? 'text-white' : 'text-primary'}`} />
-                      </div>
-                      <div className="flex-1">
-                        <p className={`text-lg font-black leading-tight ${!isManualTime && selectedTime?.time === 'ASAP' ? 'text-white' : 'text-slate-900 dark:text-white'}`}>ASAP</p>
-                        <p className={`text-[11px] font-bold mt-0.5 ${!isManualTime && selectedTime?.time === 'ASAP' ? 'text-white/70' : 'text-slate-400'}`}>{aiSuggestions[0]?.label || 'Agents available'}</p>
-                      </div>
-                      <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${!isManualTime && selectedTime?.time === 'ASAP' ? 'border-white bg-white' : 'border-slate-200'}`}>
-                        {!isManualTime && selectedTime?.time === 'ASAP' && <div className="w-3 h-3 rounded-full bg-primary" />}
-                      </div>
-                    </button>
+               {pickupMode === 'pickup' ? (
+                 aiSuggestions.length > 0 ? (
+                  <div className="space-y-3">
+                     {/* SMART ASAP BUTTON */}
+                     <button 
+                       onClick={() => { selectTime(aiSuggestions[0]); setIsManualTime(false); }} 
+                       className={`w-full p-6 rounded-[2rem] border-2 transition-all text-left flex items-center gap-4 ${!isManualTime && selectedTime?.time === 'ASAP' ? 'bg-primary border-primary shadow-xl shadow-primary/20' : 'bg-white dark:bg-slate-800 border-slate-100 dark:border-white/5'}`}
+                     >
+                       <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 ${!isManualTime && selectedTime?.time === 'ASAP' ? 'bg-white/20' : 'bg-primary/10'}`}>
+                         <Zap className={`w-7 h-7 ${!isManualTime && selectedTime?.time === 'ASAP' ? 'text-white' : 'text-primary'}`} />
+                       </div>
+                       <div className="flex-1">
+                         <p className={`text-lg font-black leading-tight ${!isManualTime && selectedTime?.time === 'ASAP' ? 'text-white' : 'text-slate-900 dark:text-white'}`}>ASAP</p>
+                         <p className={`text-[11px] font-bold mt-0.5 ${!isManualTime && selectedTime?.time === 'ASAP' ? 'text-white/70' : 'text-slate-400'}`}>{aiSuggestions[0]?.label || 'Agents available'}</p>
+                       </div>
+                       <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${!isManualTime && selectedTime?.time === 'ASAP' ? 'border-white bg-white' : 'border-slate-200'}`}>
+                         {!isManualTime && selectedTime?.time === 'ASAP' && <div className="w-3 h-3 rounded-full bg-primary" />}
+                       </div>
+                     </button>
 
-                    {/* SCHEDULE LATER */}
-                    <button 
-                      onClick={() => setIsManualTime(true)} 
-                      className={`w-full p-5 rounded-[2rem] border-2 transition-all text-left flex items-center gap-4 ${isManualTime ? 'bg-slate-900 dark:bg-slate-700 border-slate-900 shadow-xl' : 'bg-white dark:bg-slate-800 border-dashed border-slate-200 dark:border-white/10'}`}
-                    >
-                      <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 ${isManualTime ? 'bg-white/10' : 'bg-slate-50 dark:bg-slate-900'}`}>
-                        <Clock className={`w-6 h-6 ${isManualTime ? 'text-primary' : 'text-slate-400'}`} />
-                      </div>
-                      <div className="flex-1">
-                        <p className={`text-sm font-black leading-tight ${isManualTime ? 'text-white' : 'text-slate-900 dark:text-white'}`}>Schedule Later</p>
-                        <p className={`text-[10px] font-bold mt-0.5 ${isManualTime ? 'text-white/50' : 'text-slate-400'}`}>Pick a date & time</p>
-                      </div>
-                      <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${isManualTime ? 'border-white bg-white' : 'border-slate-200'}`}>
-                        {isManualTime && <div className="w-3 h-3 rounded-full bg-slate-900" />}
-                      </div>
-                    </button>
-                 </div>
+                     {/* SCHEDULE LATER */}
+                     <button 
+                       onClick={() => setIsManualTime(true)} 
+                       className={`w-full p-5 rounded-[2rem] border-2 transition-all text-left flex items-center gap-4 ${isManualTime ? 'bg-slate-900 dark:bg-slate-700 border-slate-900 shadow-xl' : 'bg-white dark:bg-slate-800 border-dashed border-slate-200 dark:border-white/10'}`}
+                     >
+                       <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 ${isManualTime ? 'bg-white/10' : 'bg-slate-50 dark:bg-slate-900'}`}>
+                         <Clock className={`w-6 h-6 ${isManualTime ? 'text-primary' : 'text-slate-400'}`} />
+                       </div>
+                       <div className="flex-1">
+                         <p className={`text-sm font-black leading-tight ${isManualTime ? 'text-white' : 'text-slate-900 dark:text-white'}`}>Schedule Later</p>
+                         <p className={`text-[10px] font-bold mt-0.5 ${isManualTime ? 'text-white/50' : 'text-slate-400'}`}>Pick a date & time</p>
+                       </div>
+                       <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${isManualTime ? 'border-white bg-white' : 'border-slate-200'}`}>
+                         {isManualTime && <div className="w-3 h-3 rounded-full bg-slate-900" />}
+                       </div>
+                     </button>
+                  </div>
+                 ) : (
+                  <div className="bg-orange-50 dark:bg-orange-900/20 p-8 rounded-[2.5rem] border border-orange-100 dark:border-orange-900/30 text-center space-y-3">
+                     <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900/40 rounded-2xl flex items-center justify-center mx-auto text-orange-500"><AlertCircle className="w-6 h-6" /></div>
+                     <h3 className="text-sm font-black text-orange-900 dark:text-orange-200 uppercase tracking-widest">No Agents Online</h3>
+                     <p className="text-[11px] font-bold text-orange-700/70 dark:text-orange-400/70 leading-relaxed">All agents are currently offline. You can schedule a pickup for later!</p>
+                     <button onClick={() => setIsManualTime(true)} className="px-6 py-3 bg-orange-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-orange-500/20">Schedule a Pickup</button>
+                  </div>
+                 )
                ) : (
-                 <div className="bg-orange-50 dark:bg-orange-900/20 p-8 rounded-[2.5rem] border border-orange-100 dark:border-orange-900/30 text-center space-y-3">
-                    <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900/40 rounded-2xl flex items-center justify-center mx-auto text-orange-500"><AlertCircle className="w-6 h-6" /></div>
-                    <h3 className="text-sm font-black text-orange-900 dark:text-orange-200 uppercase tracking-widest">No Agents Online</h3>
-                    <p className="text-[11px] font-bold text-orange-700/70 dark:text-orange-400/70 leading-relaxed">All agents are currently offline. You can schedule a pickup for later!</p>
-                    <button onClick={() => setIsManualTime(true)} className="px-6 py-3 bg-orange-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-orange-500/20">Schedule a Pickup</button>
+                 <div className="space-y-3">
+                    {selectedHub ? (
+                      <div className="bg-emerald-50 dark:bg-emerald-900/20 p-6 rounded-[2rem] border border-emerald-100 dark:border-emerald-900/30 flex items-center gap-4">
+                         <div className="w-14 h-14 bg-emerald-500 text-white rounded-2xl flex items-center justify-center shadow-lg"><Plus className="w-8 h-8" /></div>
+                         <div className="flex-1">
+                            <h3 className="text-sm font-black dark:text-white">{selectedHub.name}</h3>
+                            <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest mt-1">Bring your items here 🏢</p>
+                         </div>
+                         <button onClick={() => setSelectedHub(null)} className="p-2 bg-emerald-100 dark:bg-emerald-900/40 rounded-xl text-emerald-600 font-black text-[10px]">Change</button>
+                      </div>
+                    ) : (
+                      <div className="p-8 border-2 border-dashed border-emerald-500/20 rounded-[2rem] text-center bg-emerald-50/10">
+                         <MapPin className="w-10 h-10 text-emerald-500 mx-auto mb-3 animate-bounce-slow" />
+                         <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Select a Hub on the map</p>
+                      </div>
+                    )}
                  </div>
                )}
 
@@ -363,18 +434,18 @@ export default function BookPickup() {
             </motion.div>
           )}
         </AnimatePresence>
-      </div>
 
-      {/* ── ACTION BAR ── */}
-      <div className="fixed bottom-[88px] inset-x-0 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-t border-slate-100 dark:border-slate-800 p-6 z-50 shadow-[0_-10px_40px_rgba(0,0,0,0.05)]">
-        <button
-          disabled={isSubmitting || (step === 1 && !wasteType) || (step === 2 && !selectedTime && !isManualTime)}
-          onClick={() => step < 3 ? setStep(step + 1) : setShowEscrowModal(true)}
-          className="w-full p-5 bg-primary text-white rounded-2xl font-black text-sm shadow-xl shadow-primary/30 active:scale-95 transition-all flex items-center justify-center gap-3 disabled:opacity-30"
-        >
-          <span>{step === 3 ? 'CONFIRM & PAY' : 'CONTINUE'}</span>
-          <ChevronRight className="w-5 h-5" />
-        </button>
+        {/* ── INLINE ACTION BUTTON ── */}
+        <div className="mt-8">
+          <button
+            disabled={isSubmitting || (step === 1 && !wasteType) || (step === 2 && pickupMode === 'pickup' && !selectedTime && !isManualTime) || (step === 2 && pickupMode === 'dropoff' && !selectedHub)}
+            onClick={() => step < 3 ? setStep(step + 1) : setShowEscrowModal(true)}
+            className="w-full p-5 bg-primary text-white rounded-2xl font-black text-sm shadow-xl shadow-primary/30 active:scale-95 transition-all flex items-center justify-center gap-3 disabled:opacity-30"
+          >
+            <span>{step === 3 ? 'CONFIRM & PAY' : 'CONTINUE'}</span>
+            <ChevronRight className="w-5 h-5" />
+          </button>
+        </div>
       </div>
 
       {/* ── ESCROW TRUST MODAL ── */}

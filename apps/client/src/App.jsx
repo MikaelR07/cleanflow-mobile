@@ -32,16 +32,19 @@ import Welcome from './pages/auth/Welcome.jsx';
 import Login from './pages/auth/Login.jsx';
 import Register from './pages/auth/Register.jsx';
 
-const CLIENT_NAV = [
-  { path: '/', icon: Home, label: 'Home' },
-  { path: '/book-pickup', icon: CalendarPlus, label: 'Book' },
-  { path: '/my-bookings', icon: Package, label: 'Bookings' },
-  { path: '/hygenex', icon: Brain, label: 'HygeneX' },
-  { path: '/my-iot', icon: Gauge, label: 'My IoT' },
-  { path: '/settings', icon: MoreHorizontal, label: 'More' },
-];
-
 function MobileLayout() {
+  const { clientType } = useAuthStore();
+  
+  const navItems = [
+    { path: '/', icon: Home, label: 'Home' },
+    { path: '/book-pickup', icon: CalendarPlus, label: 'Book' },
+    { path: '/my-bookings', icon: Package, label: 'Bookings' },
+    { path: '/hygenex', icon: Brain, label: 'HygeneX' },
+    // Only show IoT for residents
+    ...(clientType === 'resident' ? [{ path: '/my-iot', icon: Gauge, label: 'My IoT' }] : []),
+    { path: '/settings', icon: MoreHorizontal, label: 'More' },
+  ];
+
   return (
     <>
       <div className="max-w-lg mx-auto px-4 py-5 pb-24">
@@ -49,7 +52,7 @@ function MobileLayout() {
           <Outlet />
         </Suspense>
       </div>
-      <BottomNav items={CLIENT_NAV} />
+      <BottomNav items={navItems} />
     </>
   );
 }
@@ -112,11 +115,7 @@ export default function App() {
 
   return (
     <div className="min-h-dvh bg-slate-50 dark:bg-slate-900 transition-colors duration-200">
-      {/* Dynamic Header with Install Trigger */}
-      <Navbar 
-        canInstall={isInstallable} 
-        onInstall={() => setShowInstallModal(true)} 
-      />
+
 
       <Routes>
         <Route path="/welcome" element={isAuthenticated ? <Navigate to="/" replace /> : <Welcome />} />
