@@ -24,7 +24,7 @@ export default function Welcome() {
           >
             {/* Hero Section */}
             <div className="flex-1 flex flex-col justify-center relative z-10">
-              <img src="/logo.png" className="w-32 h-auto mb-8 animate-in zoom-in-50 duration-700 shadow-xl rounded-2xl" alt="Brand Logo" />
+
               <div className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-500/10 rounded-full border border-emerald-500/20 mb-6 w-fit">
                 <Sparkles className="w-4 h-4 text-emerald-500" />
                 <span className="text-[10px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest">Recycle & Earn Cashback</span>
