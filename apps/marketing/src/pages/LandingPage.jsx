@@ -193,12 +193,12 @@ export default function LandingPage() {
           <div className="grid lg:grid-cols-3 gap-8">
             {/* Resident Persona */}
             <motion.div 
-              className={`p-10 rounded-[3.5rem] border relative overflow-hidden group transition-all duration-500 md:hover:-translate-y-2 ${isDarkMode ? 'bg-slate-900 border-white/5 hover:border-emerald-500/50' : 'bg-white border-slate-200 hover:border-emerald-500/50 shadow-xl'}`}
+              className={`p-10 rounded-[3.5rem] border relative overflow-hidden group transition-all duration-500 md:hover:-translate-y-2 ${isDarkMode ? 'bg-slate-900 border-white/5 md:hover:border-emerald-500/50' : 'bg-white border-slate-200 md:hover:border-emerald-500/50 shadow-xl'}`}
             >
-              <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
+              <div className="absolute top-0 right-0 p-8 opacity-5 md:group-hover:opacity-10 transition-opacity">
                 <HomeIcon className="w-48 h-48" />
               </div>
-              <div className="w-16 h-16 bg-emerald-500 text-white rounded-2xl flex items-center justify-center mb-8 shadow-2xl shadow-emerald-500/30 group-hover:rotate-12 transition-transform">
+              <div className="w-16 h-16 bg-emerald-500 text-white rounded-2xl flex items-center justify-center mb-8 shadow-2xl shadow-emerald-500/30 md:group-hover:rotate-12 transition-transform">
                 <HomeIcon className="w-8 h-8" />
               </div>
               <h4 className={`text-2xl font-black mb-3 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>The Home Resident</h4>
@@ -221,12 +221,12 @@ export default function LandingPage() {
 
             {/* Seller Persona */}
             <motion.div 
-              className={`p-10 rounded-[3.5rem] border relative overflow-hidden group transition-all duration-500 md:hover:-translate-y-2 ${isDarkMode ? 'bg-slate-900 border-white/5 hover:border-indigo-500/50' : 'bg-white border-slate-200 hover:border-indigo-500/50 shadow-xl'}`}
+              className={`p-10 rounded-[3.5rem] border relative overflow-hidden group transition-all duration-500 md:hover:-translate-y-2 ${isDarkMode ? 'bg-slate-900 border-white/5 md:hover:border-indigo-500/50' : 'bg-white border-slate-200 md:hover:border-indigo-500/50 shadow-xl'}`}
             >
-              <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
+              <div className="absolute top-0 right-0 p-8 opacity-5 md:group-hover:opacity-10 transition-opacity">
                 <ShoppingBag className="w-48 h-48" />
               </div>
-              <div className="w-16 h-16 bg-indigo-600 text-white rounded-2xl flex items-center justify-center mb-8 shadow-2xl shadow-indigo-500/30 group-hover:-rotate-12 transition-transform">
+              <div className="w-16 h-16 bg-indigo-600 text-white rounded-2xl flex items-center justify-center mb-8 shadow-2xl shadow-indigo-500/30 md:group-hover:-rotate-12 transition-transform">
                 <ShoppingBag className="w-8 h-8" />
               </div>
               <h4 className={`text-2xl font-black mb-3 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>The Professional Seller</h4>
@@ -249,12 +249,12 @@ export default function LandingPage() {
 
             {/* Agent Persona */}
             <motion.div 
-              className={`p-10 rounded-[3.5rem] border relative overflow-hidden group transition-all duration-500 md:hover:-translate-y-2 ${isDarkMode ? 'bg-slate-900 border-white/5 hover:border-blue-500/50' : 'bg-white border-slate-200 hover:border-blue-500/50 shadow-xl'}`}
+              className={`p-10 rounded-[3.5rem] border relative overflow-hidden group transition-all duration-500 md:hover:-translate-y-2 ${isDarkMode ? 'bg-slate-900 border-white/5 md:hover:border-blue-500/50' : 'bg-white border-slate-200 md:hover:border-blue-500/50 shadow-xl'}`}
             >
-              <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
+              <div className="absolute top-0 right-0 p-8 opacity-5 md:group-hover:opacity-10 transition-opacity">
                 <Truck className="w-48 h-48" />
               </div>
-              <div className="w-16 h-16 bg-blue-600 text-white rounded-2xl flex items-center justify-center mb-8 shadow-2xl shadow-blue-500/30 group-hover:rotate-12 transition-transform">
+              <div className="w-16 h-16 bg-blue-600 text-white rounded-2xl flex items-center justify-center mb-8 shadow-2xl shadow-blue-500/30 md:group-hover:rotate-12 transition-transform">
                 <Truck className="w-8 h-8" />
               </div>
               <h4 className={`text-2xl font-black mb-3 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>The Collection Agent</h4>
