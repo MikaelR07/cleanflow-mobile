@@ -121,7 +121,7 @@ export default function HygeneXPage() {
   };
 
   return (
-    <div className={`flex flex-col lg:flex-row absolute inset-0 bg-slate-950 text-white ${role === ROLES.ADMIN ? 'lg:static lg:h-[calc(100dvh-56px)]' : 'lg:static lg:h-[calc(100dvh-56px-70px)]'}`}>
+    <div className="flex flex-col lg:flex-row relative bg-slate-950 text-white overflow-hidden shadow-2xl h-[calc(100dvh-140px)] lg:h-[calc(100dvh-56px-70px)] rounded-[2rem] lg:rounded-[2.5rem] border border-slate-800">
       
       {/* 1. OVERSIGHT PANEL (LEFT) */}
       <div className="hidden lg:flex flex-col w-80 border-r border-white/5 bg-slate-900/50 backdrop-blur-xl">
@@ -237,7 +237,7 @@ export default function HygeneXPage() {
         </div>
 
         {/* Input Control */}
-        <div className="p-8 border-t border-white/5 bg-slate-900/30 backdrop-blur-3xl">
+        <div className="p-4 sm:p-8 border-t border-white/5 bg-slate-900/30 backdrop-blur-3xl">
           <div className="max-w-3xl mx-auto">
             <div className="relative group">
               <textarea
@@ -245,7 +245,7 @@ export default function HygeneXPage() {
                 onChange={(e) => setInputText(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder={isListening ? "I'm listening..." : "Ask HygeneX about the ecosystem..."}
-                className="w-full bg-white/[0.03] border border-white/10 rounded-[2.5rem] py-6 px-16 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-emerald-500/50 focus:bg-white/[0.05] transition-all resize-none min-h-[72px]"
+                className="w-full bg-white/[0.03] border border-white/10 rounded-[2rem] py-4 px-14 sm:py-6 sm:px-16 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-emerald-500/50 focus:bg-white/[0.05] transition-all resize-none min-h-[56px] sm:min-h-[72px]"
                 rows={1}
               />
               
