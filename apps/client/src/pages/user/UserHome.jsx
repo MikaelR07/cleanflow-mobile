@@ -252,7 +252,7 @@ export default function UserHome() {
         <div className="relative bg-slate-100/30 dark:bg-slate-900 rounded-[2.5rem] border border-slate-200/50 dark:border-slate-800 p-5 sm:p-6 shadow-xl overflow-hidden backdrop-blur-xl">
           <div className="absolute -top-10 -right-10 w-40 h-40 bg-primary/5 rounded-full blur-3xl" />
           
-          <div className="flex flex-col gap-4 relative z-10">
+          <div className="flex flex-col gap-3 relative z-10">
             <div className="flex items-end justify-between">
               <div>
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 flex items-center gap-1.5">
@@ -282,7 +282,7 @@ export default function UserHome() {
               </div>
             </div>
 
-            <div className="grid grid-cols-3 gap-4 pt-4 border-t border-slate-200/50 dark:border-slate-800/50">
+            <div className="grid grid-cols-3 gap-4 pt-3 border-t border-slate-200/50 dark:border-slate-800/50">
               <div className="text-center">
                 <p className="text-[9px] font-black text-blue-600 uppercase tracking-widest mb-1">Pickups</p>
                 <p className="text-xl font-black text-slate-900 dark:text-white leading-none flex items-center justify-center gap-1">

@@ -187,7 +187,7 @@ export default function AgentHome() {
         <div className="relative bg-slate-100/30 dark:bg-slate-900 rounded-[2.5rem] border border-slate-200/50 dark:border-slate-800 p-5 sm:p-6 shadow-xl overflow-hidden backdrop-blur-xl">
           <div className="absolute -top-10 -right-10 w-40 h-40 bg-emerald-500/5 rounded-full blur-3xl" />
           
-          <div className="flex flex-col gap-4 relative z-10">
+          <div className="flex flex-col gap-5 relative z-10">
             <div className="flex items-end justify-between">
               <div>
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 flex items-center gap-1.5">
