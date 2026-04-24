@@ -125,11 +125,28 @@ export default function Register() {
     }
   };
 
+  const personaConfig = {
+    resident: { 
+      label: 'Home Resident', 
+      icon: HomeIcon, 
+      color: 'emerald', 
+      sub: 'Convenience & Community Rewards' 
+    },
+    seller: { 
+      label: 'Professional Seller', 
+      icon: ShoppingBag, 
+      color: 'indigo', 
+      sub: 'High-Margin Inventory & Profits' 
+    }
+  };
+
+  const currentPersona = personaConfig[formData.clientType] || personaConfig.resident;
+
   return (
     <div className="min-h-dvh flex flex-col justify-center bg-slate-50 dark:bg-slate-950 px-4 py-12 relative transition-colors duration-500 overflow-x-hidden">
       {/* Visual Accents */}
       <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary via-green-400 to-secondary" />
-      <div className="absolute -top-24 -left-24 w-64 h-64 bg-primary/5 rounded-full blur-3xl opacity-50" />
+      <div className={`absolute -top-24 -left-24 w-64 h-64 bg-${currentPersona.color}-500/10 rounded-full blur-3xl opacity-50`} />
       
       <div className="max-w-md w-full mx-auto relative z-10 animate-fade-in">
         
@@ -139,13 +156,22 @@ export default function Register() {
             <Link to="/login" className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-primary transition-colors">
               <ArrowLeft className="w-4 h-4" /> Back to Sign In
             </Link>
+
+            <div className={`flex items-center gap-2 px-3 py-1 rounded-full border border-${currentPersona.color}-500/20 bg-${currentPersona.color}-500/10 text-${currentPersona.color}-500 animate-in slide-in-from-right duration-700`}>
+               <currentPersona.icon className="w-3 h-3" />
+               <span className="text-[9px] font-black uppercase tracking-widest">{currentPersona.label} Mode</span>
+            </div>
           </div>
           <img src="/logo.png" className="w-56 h-auto shadow-2xl rounded-3xl" alt="Logo" />
         </div>
 
         <div className="mb-10 text-center sm:text-left">
-          <h1 className="text-3xl font-black text-slate-900 dark:text-white tracking-tighter">Join the Ecosystem</h1>
-          <p className="text-xs text-slate-500 font-bold uppercase tracking-widest mt-2">Professional Environmental Registration</p>
+          <div className="flex items-center gap-3 mb-2 justify-center sm:justify-start">
+             <h1 className="text-3xl font-black text-slate-900 dark:text-white tracking-tighter">Join the Ecosystem</h1>
+          </div>
+          <p className={`text-[10px] text-${currentPersona.color}-500 font-black uppercase tracking-widest flex items-center gap-2 justify-center sm:justify-start`}>
+             <Sparkles className="w-3 h-3" /> {currentPersona.sub}
+          </p>
         </div>
 
         {/* Global Registration Form */}

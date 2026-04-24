@@ -249,18 +249,17 @@ export default function UserHome() {
           </button>
 
           <button 
-            onClick={() => navigate('/settings/notifications')}
-            className="relative w-12 h-12 rounded-2xl bg-slate-100/50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center shadow-sm hover:shadow-md transition-all active:scale-95 group"
+            onClick={() => navigate('/notifications')}
+            className="w-10 h-10 rounded-2xl bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 flex items-center justify-center relative active:scale-90 transition-all shadow-sm group"
           >
-            <Bell className="w-6 h-6 text-slate-400 group-hover:text-primary transition-colors" />
+            <Bell className="w-5 h-5 text-slate-500 group-hover:text-primary transition-colors" />
             {unreadCount > 0 && (
-              <span className="absolute -top-1.5 -right-1.5 min-w-[20px] h-[20px] px-1 bg-red-600 text-white text-[10px] font-black rounded-full flex items-center justify-center ring-2 ring-slate-50 dark:ring-slate-950 shadow-md animate-in zoom-in">
-                {unreadCount}
-              </span>
+              <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-rose-500 border-2 border-white dark:border-slate-800 rounded-full animate-pulse" />
             )}
           </button>
         </div>
       </div>
+
 
       {/* ── IMPACT HERO CARD ── */}
       <div className="relative group perspective-1000">
