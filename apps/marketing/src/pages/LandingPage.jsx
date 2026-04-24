@@ -192,11 +192,11 @@ export default function LandingPage() {
 
           <div className="grid lg:grid-cols-3 gap-8">
             {/* Resident Persona */}
-            <motion.div 
-              className={`p-10 rounded-[3.5rem] border relative overflow-hidden group transition-all duration-500 md:hover:-translate-y-2 ${isDarkMode ? 'bg-slate-900 border-white/5 md:hover:border-emerald-500/50' : 'bg-white border-slate-200 md:hover:border-emerald-500/50 shadow-xl'}`}
+            <div 
+              className={`p-8 md:p-10 rounded-[3.5rem] border relative overflow-hidden group transition-all duration-500 md:hover:-translate-y-2 ${isDarkMode ? 'bg-slate-900 border-white/5 md:hover:border-emerald-500/50' : 'bg-white border-slate-200 md:hover:border-emerald-500/50 shadow-xl'}`}
             >
               <div className="absolute top-0 right-0 p-8 opacity-5 md:group-hover:opacity-10 transition-opacity">
-                <HomeIcon className="w-48 h-48" />
+                <HomeIcon className="w-32 h-32 md:w-48 md:h-48" />
               </div>
               <div className="w-16 h-16 bg-emerald-500 text-white rounded-2xl flex items-center justify-center mb-8 shadow-2xl shadow-emerald-500/30 md:group-hover:rotate-12 transition-transform">
                 <HomeIcon className="w-8 h-8" />
@@ -217,14 +217,14 @@ export default function LandingPage() {
                   </li>
                 ))}
               </ul>
-            </motion.div>
+            </div>
 
             {/* Seller Persona */}
-            <motion.div 
-              className={`p-10 rounded-[3.5rem] border relative overflow-hidden group transition-all duration-500 md:hover:-translate-y-2 ${isDarkMode ? 'bg-slate-900 border-white/5 md:hover:border-indigo-500/50' : 'bg-white border-slate-200 md:hover:border-indigo-500/50 shadow-xl'}`}
+            <div 
+              className={`p-8 md:p-10 rounded-[3.5rem] border relative overflow-hidden group transition-all duration-500 md:hover:-translate-y-2 ${isDarkMode ? 'bg-slate-900 border-white/5 md:hover:border-indigo-500/50' : 'bg-white border-slate-200 md:hover:border-indigo-500/50 shadow-xl'}`}
             >
               <div className="absolute top-0 right-0 p-8 opacity-5 md:group-hover:opacity-10 transition-opacity">
-                <ShoppingBag className="w-48 h-48" />
+                <ShoppingBag className="w-32 h-32 md:w-48 md:h-48" />
               </div>
               <div className="w-16 h-16 bg-indigo-600 text-white rounded-2xl flex items-center justify-center mb-8 shadow-2xl shadow-indigo-500/30 md:group-hover:-rotate-12 transition-transform">
                 <ShoppingBag className="w-8 h-8" />
@@ -245,14 +245,14 @@ export default function LandingPage() {
                   </li>
                 ))}
               </ul>
-            </motion.div>
+            </div>
 
             {/* Agent Persona */}
-            <motion.div 
-              className={`p-10 rounded-[3.5rem] border relative overflow-hidden group transition-all duration-500 md:hover:-translate-y-2 ${isDarkMode ? 'bg-slate-900 border-white/5 md:hover:border-blue-500/50' : 'bg-white border-slate-200 md:hover:border-blue-500/50 shadow-xl'}`}
+            <div 
+              className={`p-8 md:p-10 rounded-[3.5rem] border relative overflow-hidden group transition-all duration-500 md:hover:-translate-y-2 ${isDarkMode ? 'bg-slate-900 border-white/5 md:hover:border-blue-500/50' : 'bg-white border-slate-200 md:hover:border-blue-500/50 shadow-xl'}`}
             >
               <div className="absolute top-0 right-0 p-8 opacity-5 md:group-hover:opacity-10 transition-opacity">
-                <Truck className="w-48 h-48" />
+                <Truck className="w-32 h-32 md:w-48 md:h-48" />
               </div>
               <div className="w-16 h-16 bg-blue-600 text-white rounded-2xl flex items-center justify-center mb-8 shadow-2xl shadow-blue-500/30 md:group-hover:rotate-12 transition-transform">
                 <Truck className="w-8 h-8" />
@@ -273,7 +273,7 @@ export default function LandingPage() {
                   </li>
                 ))}
               </ul>
-            </motion.div>
+            </div>
           </div>
         </div>
       </section>
