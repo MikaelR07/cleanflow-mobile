@@ -16,6 +16,37 @@ export const useBookingStore = create((set, get) => ({
   activeReleaseBooking: null, 
   bookingSubscription: null,
   agentSubscription: null,
+
+  // ── Voice Booking State ───────────────────────────────
+  voiceModalOpen: false,
+  voiceStep: 'idle', // 'idle' | 'listening' | 'processing' | 'done'
+  voiceResult: null,
+
+  openVoiceModal: () => set({ voiceModalOpen: true, voiceStep: 'idle', voiceResult: null }),
+  closeVoiceModal: () => set({ voiceModalOpen: false, voiceStep: 'idle', voiceResult: null }),
+  
+  startVoiceRecognition: async () => {
+    set({ voiceStep: 'listening' });
+    
+    // Simulate listening for 2 seconds
+    setTimeout(() => {
+      set({ voiceStep: 'processing' });
+      
+      // Simulate AI processing for 1.5 seconds
+      setTimeout(() => {
+        set({ 
+          voiceStep: 'done',
+          voiceResult: {
+            transcript: "I need a pickup for 3 bags of recyclables tomorrow morning",
+            wasteType: "recyclable",
+            bags: 3,
+            estate: useAuthStore.getState().profile?.location?.estate || "South B",
+            time: "Tomorrow, 09:00 AM"
+          }
+        });
+      }, 1500);
+    }, 2000);
+  },
   
   setActiveReleaseBooking: (booking) => set({ activeReleaseBooking: booking }),
   clearActiveRelease: () => set({ activeReleaseBooking: null }),

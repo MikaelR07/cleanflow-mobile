@@ -75,12 +75,8 @@ export default function App() {
     const hasPrompted = sessionStorage.getItem('pwa_prompted');
     
     if (isInstallable && !hasPrompted) {
-      const timer = setTimeout(() => {
-        setShowInstallModal(true);
-        sessionStorage.setItem('pwa_prompted', 'true');
-      }, 10000); // 10 second delay
-      
-      return () => clearTimeout(timer);
+      setShowInstallModal(true);
+      sessionStorage.setItem('pwa_prompted', 'true');
     }
   }, [isInstallable]);
 
