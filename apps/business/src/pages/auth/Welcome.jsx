@@ -12,7 +12,7 @@ export default function Welcome() {
 
       {/* Hero Section */}
       <div className="flex-1 flex flex-col justify-center relative z-10">
-        <img src="/logo.png" className="w-48 h-auto mb-6 animate-in zoom-in-50 duration-700 shadow-xl rounded-3xl" alt="Brand Logo" />
+
         <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/10 rounded-full border border-primary/20 mb-6 w-fit animate-bounce-slow">
           <Sparkles className="w-4 h-4 text-primary" />
           <span className="text-[10px] font-black text-primary uppercase tracking-widest">Africa's #1 B2B Waste Exchange</span>
