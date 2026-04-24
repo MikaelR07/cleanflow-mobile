@@ -299,7 +299,7 @@ export const useAuthStore = create(
       },
 
       register: async (userData) => {
-        const { name, phone, pin, location, clientType } = userData;
+        const { name, phone, pin, location, clientType, role, businessType, specializations } = userData;
         const email = phoneToEmail(phone);
         
         // 1. Sign up the user in Supabase Auth
@@ -322,7 +322,9 @@ export const useAuthStore = create(
             phone,
             location,
             estate: location?.estate,
-            role: ROLES.USER,
+            role: role || ROLES.USER,
+            business_type: businessType || null,
+            specializations: specializations || [],
             client_type: clientType || 'resident',
             wallet_balance: 0,
             reward_points: 0,
@@ -334,7 +336,10 @@ export const useAuthStore = create(
         // 3. Update local state
         const profile = { 
           id: user.id, name, phone, email, location, 
-          role: ROLES.USER, clientType: clientType || 'resident',
+          role: role || ROLES.USER, 
+          businessType: businessType || null,
+          specializations: specializations || [],
+          clientType: clientType || 'resident',
           walletBalance: 0, rewardPoints: 0 
         };
         
@@ -342,7 +347,7 @@ export const useAuthStore = create(
           isAuthenticated: true, 
           userId: user.id, 
           profile, 
-          role: ROLES.USER,
+          role: role || ROLES.USER,
           clientType: clientType || 'resident'
         });
         

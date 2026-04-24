@@ -103,7 +103,7 @@ export default function Welcome() {
                 </div>
                 <h3 className="text-xl font-black text-slate-900 dark:text-white mb-2">Home Resident</h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400 font-medium leading-relaxed max-w-[200px]">
-                  I want a clean home, smart bins, and community rewards.
+                  I want a clean home, smart IOTs, and community rewards.
                 </p>
                 <div className="mt-6 flex items-center gap-2 text-emerald-500 font-black text-[10px] uppercase tracking-widest">
                    Select Path <ChevronRight className="w-4 h-4" />
@@ -122,7 +122,7 @@ export default function Welcome() {
                 </div>
                 <h3 className="text-xl font-black text-slate-900 dark:text-white mb-2">Professional Seller</h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400 font-medium leading-relaxed max-w-[200px]">
-                  I want to earn maximum profit from my recyclable inventory.
+                  I want to earn maximum profit from my recyclable materials.
                 </p>
                 <div className="mt-6 flex items-center gap-2 text-indigo-500 font-black text-[10px] uppercase tracking-widest">
                    Select Path <ChevronRight className="w-4 h-4" />

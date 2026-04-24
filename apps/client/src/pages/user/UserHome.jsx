@@ -27,7 +27,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { useBookingStore, useAuthStore, useIotStore, useAdminStore, useNotificationStore, supabase } from '@cleanflow/core';
 import { SkeletonCard } from '@cleanflow/ui/components/Skeletons';
-import { RatingModal, TopUpModal } from '@cleanflow/ui';
+import { RatingModal } from '@cleanflow/ui';
 import ReleaseFundsModal from '../../components/user/ReleaseFundsModal';
 import { toast } from 'sonner';
 
@@ -38,8 +38,7 @@ export default function UserHome() {
     role, 
     clientType,
     toggleClientType,
-    subscribeToProfileChanges,
-    topUpBalance 
+    subscribeToProfileChanges
   } = useAuthStore();
   
   const { 
@@ -63,7 +62,7 @@ export default function UserHome() {
   const navigate = useNavigate();
 
   const unreadCount = getUnreadCount();
-  const [isToppingUp, setIsToppingUp] = useState(false);
+
   const [isWithdrawing, setIsWithdrawing] = useState(false);
 
   const pendingPayment = bookings.find(b => b.paymentStatus === 'authorized');
@@ -121,7 +120,7 @@ export default function UserHome() {
 
   const [ratingBooking, setRatingBooking] = useState(null);
   const [dismissedRatingIds, setDismissedRatingIds] = useState([]);
-  const [showTopUpModal, setShowTopUpModal] = useState(false);
+
 
   useEffect(() => {
     if (bookings.length > 0) {
@@ -202,21 +201,7 @@ export default function UserHome() {
     }
   };
 
-  const handleConfirmTopUp = async (amount) => {
-    setIsToppingUp(true);
-    try {
-      const success = await topUpBalance(amount);
-      if (success) {
-        toast.success("STK Push Success! 💸", {
-          description: `KSh ${Number(amount).toLocaleString()} added to your wallet.`
-        });
-      }
-    } catch (err) {
-      toast.error("Top Up Failed");
-    } finally {
-      setIsToppingUp(false);
-    }
-  };
+
 
   return (
     <div className="space-y-6 animate-fade-in pb-10">
@@ -286,13 +271,7 @@ export default function UserHome() {
                 </div>
               </div>
               <div className="flex flex-col gap-2">
-                <button 
-                  onClick={() => setShowTopUpModal(true)}
-                  disabled={isToppingUp}
-                  className="bg-white/50 dark:bg-white/10 text-slate-900 dark:text-white px-5 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest border border-slate-200 dark:border-white/10 active:scale-95 transition-all disabled:opacity-50"
-                >
-                  {isToppingUp ? 'Pushing...' : 'Top Up'}
-                </button>
+
                 <button 
                   onClick={handleWithdraw}
                   disabled={isWithdrawing}
@@ -545,12 +524,7 @@ export default function UserHome() {
 
       <ReleaseFundsModal />
 
-      <TopUpModal 
-        isOpen={showTopUpModal} 
-        onClose={() => setShowTopUpModal(false)}
-        onConfirm={handleConfirmTopUp}
-        balance={profile?.walletBalance || 0}
-      />
+
     </div>
   );
 }
