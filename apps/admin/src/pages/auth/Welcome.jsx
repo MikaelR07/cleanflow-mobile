@@ -12,7 +12,7 @@ export default function Welcome() {
 
       {/* Hero Section */}
       <div className="flex-1 flex flex-col justify-center relative z-10 max-w-md mx-auto w-full">
-        <img src="/logo.png" className="w-48 h-auto mb-6 animate-in zoom-in-50 duration-700 shadow-xl rounded-3xl" alt="Brand Logo" />
+
         <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 rounded-full border border-white/20 mb-6 w-fit backdrop-blur-md">
           <Sparkles className="w-4 h-4 text-primary" />
           <span className="text-[10px] font-black text-slate-200 uppercase tracking-widest">Admin Command Center</span>

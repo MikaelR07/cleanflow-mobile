@@ -1,6 +1,6 @@
 import { useEffect, useState, lazy, Suspense } from 'react';
 import { Routes, Route, Navigate, Outlet } from 'react-router-dom';
-import { Home, Briefcase, Brain, Wallet, MoreHorizontal } from 'lucide-react';
+import { Home, Briefcase, Brain, Wallet, MoreHorizontal, Package } from 'lucide-react';
 
 // Shared Packages
 import { useAuthStore, useThemeStore, useNotificationStore, usePWA, ROLES } from '@cleanflow/core';
@@ -15,6 +15,7 @@ const EarningsPage = lazy(() => import('./pages/agent/EarningsPage.jsx'));
 const MyRoutes = lazy(() => import('./pages/agent/MyRoutes.jsx'));
 const ReviewsPage = lazy(() => import('./pages/agent/ReviewsPage.jsx'));
 const NavigateJobPage = lazy(() => import('./pages/agent/NavigateJobPage.jsx'));
+const AgentWarehouse = lazy(() => import('./pages/agent/AgentWarehouse.jsx'));
 const HygeneXPage = lazy(() => import('./pages/shared/HygeneXPage.jsx'));
 
 // Settings Pages
@@ -37,6 +38,7 @@ function MobileLayout() {
   const AGENT_NAV = [
     { path: '/', icon: Home, label: 'Home' },
     { path: '/jobs', icon: Briefcase, label: 'Jobs', badge: availableJobs.length },
+    { path: '/warehouse', icon: Package, label: 'Warehouse' },
     { path: '/hygenex', icon: Brain, label: 'HygeneX' },
     { path: '/earnings', icon: Wallet, label: 'Earnings' },
     { path: '/settings', icon: MoreHorizontal, label: 'More' },
@@ -111,6 +113,7 @@ export default function App() {
             <Route path="/jobs" element={<AvailableJobs />} />
             <Route path="/jobs/navigate/:id" element={<NavigateJobPage />} />
             <Route path="/routes" element={<MyRoutes />} />
+            <Route path="/warehouse" element={<AgentWarehouse />} />
             <Route path="/earnings" element={<EarningsPage />} />
             <Route path="/reviews" element={<ReviewsPage />} />
             <Route path="/hygenex" element={<HygeneXPage />} />

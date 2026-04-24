@@ -144,7 +144,7 @@ export default function EarningsPage() {
       <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] p-6 border border-slate-200 dark:border-slate-800">
         <div className="flex items-center justify-between mb-8 px-2">
           <div>
-            <h3 className="font-black text-xs uppercase tracking-widest text-slate-400">Inventory Liquidation</h3>
+            <h3 className="font-black text-xs uppercase tracking-widest text-slate-400">Material Sales</h3>
             <p className="text-lg font-black text-slate-900 dark:text-white">Weaver Payouts</p>
           </div>
           <Package className="w-5 h-5 text-indigo-400" />
