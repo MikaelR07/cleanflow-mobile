@@ -83,7 +83,7 @@ export default function EarningsPage() {
   };
 
   return (
-    <div className="space-y-6 animate-fade-in pb-24 bg-slate-50 dark:bg-slate-950 min-h-screen p-4 pt-6">
+    <div className="space-y-6 animate-fade-in pb-10">
       
       {/* ── HEADER ── */}
       <div className="flex items-center justify-between px-1">
