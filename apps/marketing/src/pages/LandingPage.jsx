@@ -193,8 +193,7 @@ export default function LandingPage() {
           <div className="grid lg:grid-cols-3 gap-8">
             {/* Resident Persona */}
             <motion.div 
-              whileHover={{ y: -10 }}
-              className={`p-10 rounded-[3.5rem] border relative overflow-hidden group transition-all duration-500 ${isDarkMode ? 'bg-slate-900 border-white/5 hover:border-emerald-500/50' : 'bg-white border-slate-200 hover:border-emerald-500/50 shadow-xl'}`}
+              className={`p-10 rounded-[3.5rem] border relative overflow-hidden group transition-all duration-500 md:hover:-translate-y-2 ${isDarkMode ? 'bg-slate-900 border-white/5 hover:border-emerald-500/50' : 'bg-white border-slate-200 hover:border-emerald-500/50 shadow-xl'}`}
             >
               <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
                 <HomeIcon className="w-48 h-48" />
@@ -222,8 +221,7 @@ export default function LandingPage() {
 
             {/* Seller Persona */}
             <motion.div 
-              whileHover={{ y: -10 }}
-              className={`p-10 rounded-[3.5rem] border relative overflow-hidden group transition-all duration-500 ${isDarkMode ? 'bg-slate-900 border-white/5 hover:border-indigo-500/50' : 'bg-white border-slate-200 hover:border-indigo-500/50 shadow-xl'}`}
+              className={`p-10 rounded-[3.5rem] border relative overflow-hidden group transition-all duration-500 md:hover:-translate-y-2 ${isDarkMode ? 'bg-slate-900 border-white/5 hover:border-indigo-500/50' : 'bg-white border-slate-200 hover:border-indigo-500/50 shadow-xl'}`}
             >
               <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
                 <ShoppingBag className="w-48 h-48" />
@@ -251,8 +249,7 @@ export default function LandingPage() {
 
             {/* Agent Persona */}
             <motion.div 
-              whileHover={{ y: -10 }}
-              className={`p-10 rounded-[3.5rem] border relative overflow-hidden group transition-all duration-500 ${isDarkMode ? 'bg-slate-900 border-white/5 hover:border-blue-500/50' : 'bg-white border-slate-200 hover:border-blue-500/50 shadow-xl'}`}
+              className={`p-10 rounded-[3.5rem] border relative overflow-hidden group transition-all duration-500 md:hover:-translate-y-2 ${isDarkMode ? 'bg-slate-900 border-white/5 hover:border-blue-500/50' : 'bg-white border-slate-200 hover:border-blue-500/50 shadow-xl'}`}
             >
               <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
                 <Truck className="w-48 h-48" />
@@ -520,8 +517,7 @@ export default function LandingPage() {
             ].map((portal, i) => (
               <motion.div
                 key={i}
-                whileHover={{ y: -10 }}
-                className={`p-10 rounded-[3.5rem] border transition-all group relative overflow-hidden ${
+                className={`p-10 rounded-[3.5rem] border transition-all md:hover:-translate-y-2 group relative overflow-hidden ${
                   isDarkMode ? 'bg-slate-800/50 border-white/5 hover:border-emerald-500/50' : 'bg-slate-50 border-slate-200 hover:border-emerald-500/50 shadow-xl'
                 }`}
               >
