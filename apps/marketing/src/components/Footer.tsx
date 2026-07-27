@@ -45,9 +45,7 @@ export default function Footer() {
             <p
               className={`text-sm sm:text-base font-medium leading-relaxed max-w-sm italic mb-5 ${isDarkMode ? "text-slate-300" : "text-slate-600"}`}
             >
-              The financial engine for the circular economy. Transforming
-              Africa's waste management into a high-yield digital asset
-              ecosystem.
+             Powering the digital transformation of the recycling industry through connected technology, intelligent operations, and seamless collaboration.
             </p>
             <div className="flex items-center gap-6">
               <Globe

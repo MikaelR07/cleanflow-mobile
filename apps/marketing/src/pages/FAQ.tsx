@@ -95,9 +95,7 @@ export default function FAQ() {
         {/* Hero */}
         <div className="max-w-5xl mx-auto px-6 pt-16 pb-12">
           <div className="text-center">
-            <div className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold tracking-widest uppercase mb-8 border ${isDarkMode ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-emerald-50 text-emerald-700 border-emerald-200'}`}>
-              <HelpCircle className="w-3.5 h-3.5" /> Knowledge Base
-            </div>
+            
             <h1 className={`text-4xl md:text-6xl font-black tracking-tighter mb-5 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
               Frequently Asked Questions
             </h1>

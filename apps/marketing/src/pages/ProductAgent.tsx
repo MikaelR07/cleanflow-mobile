@@ -32,10 +32,7 @@ import Layout from "../layouts/Layout";
 export default function ProductAgent() {
   const { isDarkMode } = useThemeStore();
   const [activeFeature, setActiveFeature] = useState(0);
-  const [activeShowcase, setActiveShowcase] = useState(0);
-  const [isShowcasePaused, setIsShowcasePaused] = useState(false);
-  const [activeShowcase2, setActiveShowcase2] = useState(0);
-  const [isShowcasePaused2, setIsShowcasePaused2] = useState(false);
+  const [activeDeepDive, setActiveDeepDive] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
@@ -55,7 +52,7 @@ export default function ProductAgent() {
     "/products/agent/agent-dashboard.webp",
   ];
 
-  const showcaseCards = [
+  const agentDeepDiveFeatures = [
     {
       subtitle: "Mission Control",
       subtitleColor: "text-blue-500",
@@ -70,6 +67,7 @@ export default function ProductAgent() {
       featureColor: "text-blue-500",
       bgFeatureColor: "bg-blue-500/20",
       image: agentImages[0],
+      icon: Target,
     },
     {
       subtitle: "Smart Routing",
@@ -85,6 +83,7 @@ export default function ProductAgent() {
       featureColor: "text-cyan-500",
       bgFeatureColor: "bg-cyan-500/20",
       image: agentImages[1],
+      icon: Route,
     },
     {
       subtitle: "Market Intelligence",
@@ -100,10 +99,8 @@ export default function ProductAgent() {
       featureColor: "text-indigo-500",
       bgFeatureColor: "bg-indigo-500/20",
       image: agentImages[2],
+      icon: TrendingUp,
     },
-  ];
-
-  const showcaseCards2 = [
     {
       subtitle: "Verification Engine",
       subtitleColor: "text-violet-500",
@@ -118,6 +115,7 @@ export default function ProductAgent() {
       featureColor: "text-violet-500",
       bgFeatureColor: "bg-violet-500/20",
       image: agentImages[3],
+      icon: Shield,
     },
     {
       subtitle: "Agent Wallet",
@@ -133,6 +131,7 @@ export default function ProductAgent() {
       featureColor: "text-emerald-500",
       bgFeatureColor: "bg-emerald-500/20",
       image: agentImages[4],
+      icon: Wallet,
     },
   ];
 
@@ -191,104 +190,67 @@ export default function ProductAgent() {
     },
   ];
 
-  useEffect(() => {
-    if (isShowcasePaused) return;
-    const timer = setInterval(() => {
-      setActiveShowcase((prev) => (prev + 1) % showcaseCards.length);
-    }, 6000);
-    return () => clearInterval(timer);
-  }, [isShowcasePaused, showcaseCards.length]);
 
-  useEffect(() => {
-    if (isShowcasePaused2) return;
-    const timer = setInterval(() => {
-      setActiveShowcase2((prev) => (prev + 1) % showcaseCards2.length);
-    }, 6000);
-    return () => clearInterval(timer);
-  }, [isShowcasePaused2, showcaseCards2.length]);
 
   return (
     <Layout>
       {/* ═══════════════════════════════════════════════════════════════════
           1. HERO SECTION
       ═══════════════════════════════════════════════════════════════════ */}
-      <section className="relative pt-24 pb-16 md:pt-40 md:pb-32 min-h-[90vh] flex items-center overflow-hidden">
+      <section className="relative pt-24 pb-16 md:pt-40 md:pb-32 min-h-[100vh] flex items-center overflow-hidden">
         {/* Background */}
         <div className="absolute inset-0 z-0">
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-700 to-indigo-600" />
           <div
-            className={`absolute inset-0 ${isDarkMode ? "bg-surface-950" : "bg-transparent"}`}
-          />
-          <div
-            className={`absolute inset-0 ${isDarkMode ? "opacity-[0.3]" : "opacity-[0.8]"}`}
+            className="absolute inset-0 opacity-[0.15] text-white"
             style={{
-              backgroundImage: `linear-gradient(${isDarkMode ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.04)"} 1px, transparent 1px), linear-gradient(90deg, ${isDarkMode ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.04)"} 1px, transparent 1px)`,
-              backgroundSize: "60px 60px",
+              backgroundImage: "radial-gradient(circle, currentColor 1px, transparent 1px)",
+              backgroundSize: "32px 32px",
             }}
           />
-          <div className="absolute top-20 right-20 w-[500px] h-[500px] bg-blue-500/10 blur-[150px] rounded-full" />
-          <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-indigo-500/8 blur-[120px] rounded-full" />
+          <div className="absolute top-20 right-20 w-[500px] h-[500px] bg-white/10 blur-[150px] rounded-full pointer-events-none" />
+          <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-blue-500/10 blur-[120px] rounded-full pointer-events-none" />
         </div>
 
         <div className="max-w-[90rem] mx-auto px-6 md:px-12 lg:px-16 relative z-10 w-full mt-4 lg:-mt-40">
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
             {/* Left: Text */}
             <div className="max-w-2xl">
-              <div
-                className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium mb-8 ${isDarkMode ? "bg-blue-500/10 text-blue-400 border border-blue-500/20" : "bg-blue-50 text-blue-600 border border-blue-100"}`}
-              >
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium mb-8 bg-white/10 backdrop-blur-md text-white border border-white/20">
                 <Truck className="w-4 h-4" />
                 Agent Mission Control
               </div>
 
-              <h1
-                className={`text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-6 leading-[1.1] ${isDarkMode ? "text-white" : "text-[#0f172a]"}`}
-              >
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-6 leading-[1.1] text-white">
                 Collect and
                 <br />
                 Earn More.
                 <br />
-                <span className="text-blue-500">with Klinflow.</span>
+                <span className="text-cyan-400">with Klinflow.</span>
               </h1>
 
-              <p
-                className={`text-base md:text-lg font-medium leading-relaxed mb-10 max-w-xl ${isDarkMode ? "text-slate-300" : "text-slate-600"}`}
-              >
+              <p className="text-base md:text-lg font-medium leading-relaxed mb-10 max-w-xl text-blue-50">
                 Whether you're an independent agent, a fleet driver, or managing an entire collection company, Klinflow equips you with the tools and insights to streamline your operations, boost your income, and unlock the full potential of the circular economy. Klinflow streamlines dispatch, pickup verification, route optimization, and payouts through one intelligent platform built for circular logistics.
               </p>
 
               <div className="flex flex-row flex-wrap gap-3 sm:gap-4">
-                <Link to="/contact" className="flex-1 sm:flex-none px-4 py-3 sm:px-8 sm:py-4 bg-blue-600 text-white font-bold rounded-full shadow-lg shadow-blue-600/30 hover:bg-blue-700 hover:-translate-y-0.5 active:scale-95 transition-all flex items-center justify-center gap-2 text-sm sm:text-base whitespace-nowrap">
+                <Link to="/contact" className="flex-1 sm:flex-none px-4 py-3 sm:px-8 sm:py-4 bg-white text-blue-600 hover:bg-slate-50 font-bold rounded-full active:scale-95 transition-all flex items-center justify-center gap-2 text-sm sm:text-base whitespace-nowrap shadow-xl shadow-black/10">
                   Apply to Join Fleet{" "}
                   <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
                 </Link>
-                <Link to="/contact"
-                  className={`flex-1 sm:flex-none px-4 py-3 sm:px-8 sm:py-4 rounded-full font-bold transition-all flex items-center justify-center gap-2 text-sm sm:text-base whitespace-nowrap ${
-                    isDarkMode
-                      ? "bg-surface-800 text-white hover:bg-surface-700 border border-white/10"
-                      : "bg-white text-slate-900 shadow-sm hover:bg-slate-50 border border-slate-200"
-                  }`}
-                >
+                <Link to="/contact" className="flex-1 sm:flex-none px-4 py-3 sm:px-8 sm:py-4 rounded-full font-bold transition-all flex items-center justify-center gap-2 text-sm sm:text-base whitespace-nowrap bg-white/10 text-white hover:bg-white/20 border border-white/20">
                   Earning Calculator(coming soon) 
                 </Link>
               </div>
             </div>
 
             {/* Right: Two static images */}
-            <div className="relative flex justify-center lg:justify-end mt-16 lg:mt-0 perspective-[1000px] h-[450px] sm:h-[550px] md:h-[600px] items-center">
+            <div className="relative flex justify-center lg:justify-end mt-16 lg:mt-0 perspective-[1000px] h-[500px] sm:h-[600px] md:h-[700px] items-center">
               <motion.div
-                initial={{ opacity: 0, x: isMobile ? -15 : -30, y: 0 }}
-                animate={{
-                  opacity: 1,
-                  x: isMobile ? "-20%" : "-45%",
-                  y: isMobile ? -15 : -30,
-                }}
-                transition={{
-                  duration: 0.8,
-                  type: "spring",
-                  bounce: 0.3,
-                  delay: 0.2,
-                }}
-                className={`absolute w-[200px] sm:w-[240px] md:w-[280px] aspect-[1/2] rounded-[2rem] overflow-hidden border shadow-2xl z-10 ${isDarkMode ? "border-white/10 bg-surface-900" : "border-slate-200 bg-white"}`}
+                initial={{ opacity: 0, x: isMobile ? -15 : -30, rotate: 0, y: 0 }}
+                animate={{ opacity: 1, x: isMobile ? "-25%" : "-45%", rotate: 0, y: isMobile ? -15 : -30 }}
+                transition={{ duration: 0.8, type: "spring", bounce: 0.3, delay: 0.2 }}
+                className="absolute w-[220px] sm:w-[260px] md:w-[320px] aspect-[1/2] rounded-[2rem] overflow-hidden border shadow-2xl z-10 border-white/20 bg-black/20 backdrop-blur-md"
               >
                 <img
                   src={agentImages[0]}
@@ -299,19 +261,10 @@ export default function ProductAgent() {
               </motion.div>
 
               <motion.div
-                initial={{ opacity: 0, x: isMobile ? 15 : 30, y: 20 }}
-                animate={{
-                  opacity: 1,
-                  x: isMobile ? "20%" : "45%",
-                  y: isMobile ? 15 : 30,
-                }}
-                transition={{
-                  duration: 0.8,
-                  type: "spring",
-                  bounce: 0.3,
-                  delay: 0.4,
-                }}
-                className={`absolute w-[200px] sm:w-[240px] md:w-[280px] aspect-[1/2] rounded-[2rem] overflow-hidden border z-20 ${isDarkMode ? "border-white/10 bg-surface-900 shadow-[0_20px_40px_rgba(0,0,0,0.4)]" : "border-slate-200 bg-white shadow-[0_20px_40px_rgba(0,0,0,0.15)]"}`}
+                initial={{ opacity: 0, x: isMobile ? 15 : 30, rotate: 0, y: 20 }}
+                animate={{ opacity: 1, x: isMobile ? "25%" : "45%", rotate: 0, y: isMobile ? 15 : 30 }}
+                transition={{ duration: 0.8, type: "spring", bounce: 0.3, delay: 0.4 }}
+                className="absolute w-[220px] sm:w-[260px] md:w-[320px] aspect-[1/2] rounded-[2rem] overflow-hidden border z-20 border-white/20 bg-black/20 backdrop-blur-md shadow-[0_20px_50px_rgba(0,0,0,0.5)]"
               >
                 <img
                   src={agentImages[1]}
@@ -435,260 +388,111 @@ export default function ProductAgent() {
       </section>
 
       {/* ═══════════════════════════════════════════════════════════════════
-          4. DEEP DIVE FEATURE SHOWCASE — Tabbed Layout (unique from Client's carousel)
+          4. DEEP DIVE FEATURE SHOWCASE (INTERACTIVE SIDEBAR)
       ═══════════════════════════════════════════════════════════════════ */}
-      <section
-        className={`py-20 md:py-32 px-6 overflow-hidden relative ${isDarkMode ? "bg-surface-950" : "bg-white"}`}
-      >
+      <section className="py-20 md:py-24 px-6 overflow-hidden relative bg-gradient-to-br from-blue-700 to-indigo-600">
+        {/* LINE GRID background */}
         <div
-          className={`absolute inset-0 ${isDarkMode ? "opacity-[0.3]" : "opacity-[0.7]"}`}
+          className="absolute inset-0 opacity-[0.15]"
           style={{
-            backgroundImage: `linear-gradient(${isDarkMode ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.04)"} 1px, transparent 1px), linear-gradient(90deg, ${isDarkMode ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.04)"} 1px, transparent 1px)`,
+            backgroundImage: "linear-gradient(rgba(255,255,255,0.15) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.15) 1px, transparent 1px)",
             backgroundSize: "60px 60px",
           }}
         />
         <div className="max-w-7xl mx-auto relative z-10">
-          {/* Section Header */}
-          <div className="max-w-3xl mx-auto text-center mb-16 md:mb-20">
-            <div className="inline-flex items-center justify-center rounded-full border border-blue-500/20 bg-blue-500/5 px-4 py-1.5 text-sm font-medium text-blue-500 mb-6">
-              Deep Dive
-            </div>
-            <h2
-              className={`text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight leading-[1.1] mb-6 ${isDarkMode ? "text-white" : "text-slate-900"}`}
-            >
+          <div className="text-center mb-16">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight mb-4 text-white">
               Every screen, purpose-built for agents.
             </h2>
+            <p className="text-lg max-w-2xl mx-auto text-blue-50">
+              Explore the powerful features built into the Klinflow Agent App.
+            </p>
           </div>
 
-          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-start">
-            {/* Left: Tabbed feature list */}
-            <div className="order-2 lg:order-1 space-y-3">
-              {showcaseCards.map((card, i) => (
-                <button
-                  key={i}
-                  onClick={() => {
-                    setActiveShowcase(i);
-                    setIsShowcasePaused(true);
-                  }}
-                  className={`w-full text-left p-5 sm:p-6 rounded-2xl border transition-all duration-300 ${
-                    activeShowcase === i
-                      ? isDarkMode
-                        ? "bg-surface-950 border-blue-500/40 shadow-lg"
-                        : "bg-white border-blue-500 shadow-lg shadow-blue-500/5"
-                      : isDarkMode
-                        ? "bg-surface-900 border-surface-900"
-                        : "bg-slate-50/50 border-slate-200"
-                  }`}
+          <div className="flex flex-col lg:flex-row gap-12 lg:gap-16 items-start">
+            {/* Left Main Stage */}
+            <div className="w-full lg:w-2/3 order-1 lg:order-1">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={activeDeepDive}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  transition={{ duration: 0.4 }}
+                  className="p-8 lg:p-12 rounded-[2.5rem] border shadow-2xl flex flex-col lg:flex-row items-center gap-10 lg:gap-16 bg-blue-800 backdrop-blur-md border-white/20 "
                 >
-                  <div className="flex items-start gap-4">
-                    {/* Progress indicator */}
-                    <div className="flex-shrink-0 mt-1">
-                      <div
-                        className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold transition-colors ${
-                          activeShowcase === i
-                            ? "bg-blue-500 text-white"
-                            : isDarkMode
-                              ? "bg-surface-800 text-slate-500"
-                              : "bg-slate-100 text-slate-400"
-                        }`}
-                      >
-                        {String(i + 1).padStart(2, "0")}
-                      </div>
+                  {/* Stage Text */}
+                  <div className="flex-1 order-2 lg:order-1">
+                    <div className="text-cyan-400 font-bold tracking-widest text-sm uppercase mb-3">
+                      {agentDeepDiveFeatures[activeDeepDive].subtitle}
                     </div>
-                    <div className="min-w-0">
-                      <span
-                        className={`text-xs font-bold uppercase tracking-wider ${card.subtitleColor}`}
-                      >
-                        {card.subtitle}
-                      </span>
-                      <h3
-                        className={`text-sm sm:text-base font-bold mt-1 ${isDarkMode ? "text-white" : "text-slate-900"}`}
-                      >
-                        {card.title}
-                      </h3>
-                      <div className="mt-3">
-                        <p
-                          className={`text-xs sm:text-sm leading-relaxed ${isDarkMode ? "text-slate-400" : "text-slate-600"}`}
-                        >
-                          {card.description}
-                        </p>
-                        <div className="flex flex-wrap gap-2 mt-4">
-                          {card.features.map((feat) => (
-                            <span
-                              key={feat}
-                              className={`px-3 py-1 rounded-full text-[10px] sm:text-xs font-bold ${card.featureColor} ${card.bgFeatureColor}`}
-                            >
-                              {feat}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
+                    <h2 className="text-2xl sm:text-3xl font-bold mb-4 tracking-tight text-white">
+                      {agentDeepDiveFeatures[activeDeepDive].title}
+                    </h2>
+                    <p className="text-base mb-8 leading-relaxed text-blue-50/90">
+                      {agentDeepDiveFeatures[activeDeepDive].description}
+                    </p>
+                    <ul className="space-y-4">
+                      {agentDeepDiveFeatures[activeDeepDive].features.map((feat, i) => (
+                        <li key={i} className="flex items-center gap-3">
+                          <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-white shrink-0">
+                            <CheckCircle2 className="w-4 h-4" />
+                          </div>
+                          <span className="font-medium text-blue-50">{feat}</span>
+                        </li>
+                      ))}
+                    </ul>
                   </div>
-                </button>
-              ))}
-            </div>
 
-            {/* Right: Phone mockup */}
-            <div className="order-1 lg:order-2 relative flex justify-center lg:justify-end perspective-[1000px] min-h-[500px]">
-              <div className="relative max-w-[280px] md:max-w-[320px] w-full flex items-center aspect-[1/2]">
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={activeShowcase}
-                    initial={{ opacity: 0, scale: 0.9, y: 20 }}
-                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.9, y: -20 }}
-                    transition={{ duration: 0.4 }}
-                    className="absolute inset-0 flex items-center w-full"
-                  >
-                    <div
-                      className={`rounded-[2rem] overflow-hidden border transition-all duration-500 shadow-2xl ${isDarkMode ? "border-white/5 bg-surface-950" : "border-slate-200 bg-white"}`}
+                  {/* Stage Image */}
+                  <div className="w-[220px] sm:w-[280px] md:w-[300px] shrink-0 perspective-[1000px] order-1 lg:order-2">
+                    <motion.div 
+                      initial={{ rotateY: 15 }}
+                      animate={{ rotateY: 0 }}
+                      className="rounded-[2rem] overflow-hidden border border-white/20 shadow-2xl bg-white/5"
                     >
-                      <img
-                        src={showcaseCards[activeShowcase].image}
-                        alt={showcaseCards[activeShowcase].subtitle}
-                        className="w-full h-auto object-cover"
+                      <img 
+                        src={agentDeepDiveFeatures[activeDeepDive].image} 
+                        alt={agentDeepDiveFeatures[activeDeepDive].subtitle} 
+                        className="w-full h-auto object-cover" 
                       />
-                    </div>
-                  </motion.div>
-                </AnimatePresence>
-
-                {/* Pause / Play */}
-                <button
-                  onClick={() => setIsShowcasePaused(!isShowcasePaused)}
-                  className={`absolute top-4 right-4 z-30 w-10 h-10 rounded-full flex items-center justify-center backdrop-blur-md border transition-all ${isDarkMode ? "bg-black/40 border-white/10 text-white hover:bg-black/60" : "bg-white/40 border-white/40 text-slate-900 hover:bg-white/60"}`}
-                >
-                  {isShowcasePaused ? (
-                    <Play className="w-4 h-4 ml-0.5" />
-                  ) : (
-                    <Pause className="w-4 h-4" />
-                  )}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ═══════════════════════════════════════════════════════════════════
-          4.5. DEEP DIVE FEATURE SHOWCASE 2 — Flipped Alignment
-      ═══════════════════════════════════════════════════════════════════ */}
-      <section
-        className={`py-20 md:py-24 px-6 overflow-hidden relative ${isDarkMode ? "bg-surface-950" : "bg-white"}`}
-      >
-        <div
-          className={`absolute inset-0 ${isDarkMode ? "opacity-[0.3]" : "opacity-[0.5]"}`}
-          style={{
-            backgroundImage: `linear-gradient(${isDarkMode ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.04)"} 1px, transparent 1px), linear-gradient(90deg, ${isDarkMode ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.04)"} 1px, transparent 1px)`,
-            backgroundSize: "60px 60px",
-          }}
-        />
-        <div className="max-w-7xl mx-auto relative z-10">
-          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-start">
-            {/* Left: Phone mockup (Flipped) */}
-            <div className="order-1 lg:order-1 relative flex justify-center lg:justify-start perspective-[1000px] min-h-[500px]">
-              <div className="relative max-w-[280px] md:max-w-[320px] w-full flex items-center aspect-[1/2]">
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={activeShowcase2}
-                    initial={{ opacity: 0, scale: 0.9, y: 20 }}
-                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.9, y: -20 }}
-                    transition={{ duration: 0.4 }}
-                    className="absolute inset-0 flex items-center w-full"
-                  >
-                    <div
-                      className={`rounded-[2rem] overflow-hidden border transition-all duration-500 shadow-2xl ${isDarkMode ? "border-white/5 bg-surface-950" : "border-slate-200 bg-white"}`}
-                    >
-                      <img
-                        src={showcaseCards2[activeShowcase2].image}
-                        alt={showcaseCards2[activeShowcase2].subtitle}
-                        className="w-full h-auto object-cover"
-                      />
-                    </div>
-                  </motion.div>
-                </AnimatePresence>
-
-                {/* Pause / Play */}
-                <button
-                  onClick={() => setIsShowcasePaused2(!isShowcasePaused2)}
-                  className={`absolute top-4 right-4 z-30 w-10 h-10 rounded-full flex items-center justify-center backdrop-blur-md border transition-all ${isDarkMode ? "bg-black/40 border-white/10 text-white hover:bg-black/60" : "bg-white/40 border-white/40 text-slate-900 hover:bg-white/60"}`}
-                >
-                  {isShowcasePaused2 ? (
-                    <Play className="w-4 h-4 ml-0.5" />
-                  ) : (
-                    <Pause className="w-4 h-4" />
-                  )}
-                </button>
-              </div>
-            </div>
-
-            {/* Right: Tabbed feature list (Flipped) */}
-            <div className="order-2 lg:order-2 space-y-3">
-              {showcaseCards2.map((card, i) => (
-                <button
-                  key={i}
-                  onClick={() => {
-                    setActiveShowcase2(i);
-                    setIsShowcasePaused2(true);
-                  }}
-                  className={`w-full text-left p-5 sm:p-6 rounded-2xl border transition-all duration-300 ${
-                    activeShowcase2 === i
-                      ? isDarkMode
-                        ? "bg-surface-950 border-blue-500/40 shadow-lg"
-                        : "bg-white border-blue-500 shadow-lg shadow-blue-500/5"
-                      : isDarkMode
-                        ? "bg-surface-900 border-surface-900"
-                        : "bg-slate-50/50 border-slate-200 hover:bg-white"
-                  }`}
-                >
-                  <div className="flex items-start gap-4">
-                    {/* Progress indicator */}
-                    <div className="flex-shrink-0 mt-1">
-                      <div
-                        className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold transition-colors ${
-                          activeShowcase2 === i
-                            ? "bg-blue-500 text-white"
-                            : isDarkMode
-                              ? "bg-surface-800 text-slate-500"
-                              : "bg-slate-100 text-slate-400"
-                        }`}
-                      >
-                        {String(i + 1).padStart(2, "0")}
-                      </div>
-                    </div>
-                    <div className="min-w-0">
-                      <span
-                        className={`text-xs font-bold uppercase tracking-wider ${card.subtitleColor}`}
-                      >
-                        {card.subtitle}
-                      </span>
-                      <h3
-                        className={`text-sm sm:text-base font-bold mt-1 ${isDarkMode ? "text-white" : "text-slate-900"}`}
-                      >
-                        {card.title}
-                      </h3>
-                      <div className="mt-3">
-                        <p
-                          className={`text-xs sm:text-sm leading-relaxed ${isDarkMode ? "text-slate-400" : "text-slate-600"}`}
-                        >
-                          {card.description}
-                        </p>
-                        <div className="flex flex-wrap gap-2 mt-4">
-                          {card.features.map((feat) => (
-                            <span
-                              key={feat}
-                              className={`px-3 py-1 rounded-full text-[10px] sm:text-xs font-bold ${card.featureColor} ${card.bgFeatureColor}`}
-                            >
-                              {feat}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
+                    </motion.div>
                   </div>
-                </button>
-              ))}
+                </motion.div>
+              </AnimatePresence>
+            </div>
+            
+            {/* Right Sidebar (Tabs) */}
+            <div className="w-full lg:w-1/3 flex flex-col gap-2 order-2 lg:order-2">
+              {agentDeepDiveFeatures.map((item, i) => {
+                const isActive = activeDeepDive === i;
+                const Icon = item.icon;
+                return (
+                  <button
+                    key={i}
+                    onClick={() => setActiveDeepDive(i)}
+                    className={`flex items-center gap-4 p-4 rounded-2xl transition-all duration-300 text-left border ${
+                      isActive 
+                        ? "bg-blue-800 border-white/20 shadow-lg backdrop-blur-md" 
+                        : "bg-transparent border-transparent hover:bg-white/5"
+                    }`}
+                  >
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-colors ${
+                      isActive ? "bg-white text-blue-600 shadow-md" : "bg-white/10 text-blue-100"
+                    }`}>
+                      <Icon className="w-5 h-5" />
+                    </div>
+                    <div className="flex flex-col">
+                      <span className={`text-xs font-bold uppercase tracking-wider ${isActive ? "text-cyan-400" : "text-blue-200/60"}`}>
+                        {item.subtitle}
+                      </span>
+                      <span className={`font-semibold ${isActive ? "text-white" : "text-blue-100/70"}`}>
+                        {item.title.split('.')[0]}
+                      </span>
+                    </div>
+                  </button>
+                );
+              })}
             </div>
           </div>
         </div>

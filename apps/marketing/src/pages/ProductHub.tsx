@@ -243,6 +243,39 @@ function Plug(props: any) {
   );
 }
 
+// Static Feature List Component
+function FeatureList({ details, isHighlighted }: { details: string[], isHighlighted?: boolean }) {
+  const { isDarkMode } = useThemeStore();
+  const effectivelyDark = isDarkMode || isHighlighted;
+
+  return (
+    <div className={`space-y-4 pt-6 border-t ${effectivelyDark ? 'border-white/10' : 'border-slate-200'}`}>
+      {details.map((text, i) => {
+        const activeBg = 'bg-primary shadow-sm shadow-primary/20';
+        const activeBorder = 'border-white/20';
+        
+        return (
+          <div 
+            key={i} 
+            className={`border rounded-xl p-4 overflow-hidden ${activeBg} ${activeBorder}`}
+          >
+            <div className="flex items-start gap-4">
+              <div className={`w-5 h-5 mt-0.5 rounded-full flex items-center justify-center shrink-0 bg-white/20 text-white`}>
+                <CheckCircle2 className="w-3.5 h-3.5" />
+              </div>
+              <div>
+                <p className={`text-sm leading-relaxed text-emerald-50/90`}>
+                  {text}
+                </p>
+              </div>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 export default function ProductHub() {
   const { isDarkMode } = useThemeStore();
   const [activeMaterial, setActiveMaterial] = useState(materialCategories[0].id);
@@ -250,16 +283,20 @@ export default function ProductHub() {
   return (
     <Layout>
       {/* ── 1. HERO SECTION ─────────────────────────────────────────── */}
-      <section className="relative pt-20 pb-16 md:pt-28 md:pb-32 overflow-hidden min-h-[80vh] flex items-center">
+      <section className="relative pt-20 pb-16 md:pt-28 md:pb-32 overflow-hidden min-h-[100vh] flex items-center">
         {/* Background Elements */}
         <div className="absolute inset-0 z-0">
-          <div className={`absolute inset-0 ${isDarkMode ? "bg-surface-950" : "bg-slate-50"}`} />
-          {/* Tech Grid Pattern */}
-          <div className={`absolute inset-0 opacity-[0.03] ${isDarkMode ? "invert" : ""}`}
-            style={{ backgroundImage: "linear-gradient(#000 1px, transparent 1px), linear-gradient(90deg, #000 1px, transparent 1px)", backgroundSize: "40px 40px" }}
+          <div className="absolute inset-0 bg-gradient-to-br from-teal-700 to-emerald-800" />
+          {/* Dotted Pattern */}
+          <div
+            className="absolute inset-0 opacity-[0.15] text-white"
+            style={{
+              backgroundImage: "radial-gradient(circle, currentColor 1px, transparent 1px)",
+              backgroundSize: "32px 32px",
+            }}
           />
           {/* Glows */}
-          <div className="absolute top-[-10%] right-[-5%] w-[800px] h-[800px] bg-emerald-500/10 blur-[150px] rounded-full pointer-events-none" />
+          <div className="absolute top-[-10%] right-[-5%] w-[800px] h-[800px] bg-emerald-500/20 blur-[150px] rounded-full pointer-events-none" />
         </div>
         
         <div className="max-w-[90rem] mx-auto px-6 relative z-10 w-full mt-[-2rem] md:mt-[-4rem]">
@@ -272,22 +309,22 @@ export default function ProductHub() {
               transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
               className="lg:col-span-5 flex flex-col justify-center text-center lg:text-left"
             >
-              <div className="inline-flex items-center justify-center lg:justify-start gap-2 px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-mono text-[10px] uppercase tracking-[0.2em] mb-8 w-fit mx-auto lg:mx-0">
+              <div className="inline-flex items-center justify-center lg:justify-start gap-2 px-3 py-1.5 rounded-lg bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 font-mono text-[10px] uppercase tracking-[0.2em] mb-8 w-fit mx-auto lg:mx-0 backdrop-blur-sm">
                 <Warehouse className="w-3.5 h-3.5" /> Core Infrastructure
               </div>
 
-              <h1 className={`text-5xl md:text-6xl xl:text-6xl font-bold tracking-tight mb-6 leading-[1.1] ${isDarkMode ? "text-white" : "text-slate-900"}`}>
+              <h1 className="text-5xl md:text-6xl xl:text-6xl font-bold tracking-tight mb-6 leading-[1.1] text-white">
                 The Operating System for <br className="hidden lg:block" />
-                <span className="text-slate-500 dark:text-blue-600">Modern Recycling.</span>
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-400">Modern Recycling.</span>
               </h1>
-              <p className={`text-lg md:text-xl font-medium max-w-2xl mx-auto lg:mx-0 mb-10 leading-relaxed ${isDarkMode ? "text-slate-400" : "text-slate-600"}`}>
+              <p className="text-lg md:text-xl font-medium max-w-2xl mx-auto lg:mx-0 mb-10 leading-relaxed text-slate-300">
                 Digitize intake, automate supplier payments, manage inventory, optimize material flows, and fulfill enterprise contracts from a single platform. Built for high-volume operations, Klinflow Hub eliminates paperwork and brings total financial and operational transparency to your facility.
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
-                <Link to="/contact" className={`px-8 py-4 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 shadow-lg shadow-black/10 active:scale-95 ${isDarkMode ? "bg-white text-black hover:bg-slate-200 shadow-white/10" : "bg-black text-white hover:bg-slate-800"}`}>
+                <Link to="/contact" className="px-8 py-4 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 shadow-lg shadow-black/10 active:scale-95 bg-emerald-500 text-white hover:bg-emerald-600">
                   Book a Demo <ArrowRight className="w-4 h-4" />
                 </Link>
-                <button className={`px-8 py-4 rounded-xl font-bold text-sm border transition-all flex items-center justify-center gap-2 active:scale-95 ${isDarkMode ? "border-white/20 text-white hover:bg-white/5" : "border-slate-300 text-slate-900 hover:bg-slate-50"}`}>
+                <button className="px-8 py-4 rounded-xl font-bold text-sm border transition-all flex items-center justify-center gap-2 active:scale-95 border-white/20 text-white hover:bg-white/5 backdrop-blur-sm">
                   Explore the Platform
                 </button>
               </div>
@@ -302,16 +339,7 @@ export default function ProductHub() {
             >
               <div className="relative transform rotate-y-[-10deg] rotate-x-[5deg] scale-105 md:scale-110 lg:scale-[1.2] hover:rotate-y-0 hover:rotate-x-0 hover:scale-[1.25] transition-all duration-700 ease-out mt-12 lg:mt-0 lg:ml-12 origin-center lg:origin-left">
                 
-                <div 
-                  className={`relative rounded-2xl overflow-hidden border shadow-2xl ${isDarkMode ? "bg-surface-900 border-white/10 shadow-black/50" : "bg-white border-slate-200 shadow-slate-300/50"}`}
-                >
-                  <div className={`h-10 border-b flex items-center px-4 gap-2 ${isDarkMode ? "border-white/5 bg-surface-950" : "border-slate-100 bg-slate-50"}`}>
-                    <div className="flex gap-1.5">
-                      <div className="w-2.5 h-2.5 rounded-full bg-slate-400/50" />
-                      <div className="w-2.5 h-2.5 rounded-full bg-slate-400/50" />
-                      <div className="w-2.5 h-2.5 rounded-full bg-slate-400/50" />
-                    </div>
-                  </div>
+                <div className="relative rounded-2xl overflow-hidden border shadow-2xl bg-surface-900 border-white/20 shadow-emerald-500/20">
                   <img
                     src="/products/hub/hub-home2.webp"
                     alt="Klinflow Hub Operating System"
@@ -325,11 +353,9 @@ export default function ProductHub() {
       </section>
 
       {/* ── 2. SCALING OPERATIONS (Alternating Layout) ─────────────── */}
-      <section className={`relative py-20 lg:py-32 overflow-hidden ${isDarkMode ? "bg-surface-900" : "bg-slate-50"}`}>
-        <div className="max-w-[90rem] mx-auto px-6 space-y-20 lg:space-y-28 relative z-10">
-          
-          {/* Section Header */}
-          <div className="text-center max-w-3xl mx-auto mb-12 lg:mb-20">
+      <div className={`${isDarkMode ? "bg-surface-950" : "bg-slate-50"}`}>
+        <div className="pt-20 lg:pt-16 pb-10 max-w-[90rem] mx-auto px-6">
+          <div className="text-center max-w-3xl mx-auto">
             <h2 className={`text-[10px] font-mono font-bold uppercase tracking-[0.3em] mb-4 ${isDarkMode ? "text-slate-500" : "text-slate-400"}`}>Scaling Operations</h2>
             <h3 className={`text-4xl md:text-5xl font-bold tracking-tighter mb-6 ${isDarkMode ? "text-white" : "text-slate-900"}`}>
               Everything a modern recycling facility <br className="hidden md:block" /> needs to operate at scale.
@@ -338,63 +364,67 @@ export default function ProductHub() {
               Most facilities run on paper manifests, cash payouts, and disconnected spreadsheets. Klinflow Hub replaces all of it with a single, integrated operating system purpose-built for high-volume material recovery.
             </p>
           </div>
+        </div>
 
+        <div className="flex flex-col">
           {operationalCapabilities.map((cap, index) => {
+            const isHighlighted = index === 1 || index === 3 || index === 5;
+            const effectivelyDark = isDarkMode || isHighlighted;
             const CapIcon = cap.icon;
+            
             return (
-              <div key={cap.number} className="grid lg:grid-cols-12 gap-12 lg:gap-24 items-center">
-                
-                {/* Text Content */}
-                <div className={`lg:col-span-5 ${index % 2 === 1 ? 'lg:order-2' : 'lg:order-1'}`}>
-                  <div className={`w-12 h-12 rounded-xl ${cap.bg} flex items-center justify-center mb-8 border ${cap.color.replace('text-', 'border-').replace('500', '500/20')}`}>
-                    <CapIcon className={`w-5 h-5 ${cap.color}`} />
-                  </div>
-                  
-                  <h4 className={`text-[10px] font-mono font-bold uppercase tracking-[0.2em] mb-3 ${cap.color}`}>
-                    Module {cap.number} // {cap.title}
-                  </h4>
-                  
-                  <h3 className={`text-3xl md:text-4xl font-bold tracking-tighter mb-6 leading-tight ${isDarkMode ? "text-white" : "text-slate-900"}`}>
-                    {cap.subtitle}
-                  </h3>
-                  
-                  <p className={`text-lg leading-relaxed mb-8 ${isDarkMode ? "text-slate-400" : "text-slate-600"}`}>
-                    {cap.description}
-                  </p>
-
-                  {/* Capability Bullets */}
-                  <div className="space-y-4">
-                    {cap.capabilities.map((item, i) => (
-                      <div key={i} className="flex items-start gap-3">
-                        <div className={`w-6 h-6 rounded-md shrink-0 mt-0.5 flex items-center justify-center ${cap.bg}`}>
-                          <CheckCircle2 className={`w-3.5 h-3.5 ${cap.color}`} />
-                        </div>
-                        <p className={`text-sm leading-relaxed ${isDarkMode ? "text-slate-400" : "text-slate-600"}`}>
-                          {item}
-                        </p>
+              <section 
+                key={cap.number} 
+                className={`py-20 lg:py-12 ${
+                  isHighlighted 
+                    ? "bg-gradient-to-br from-emerald-600 to-primary text-white" 
+                    : ""
+                }`}
+              >
+                <div className="max-w-[90rem] mx-auto px-6">
+                  <div className={`grid lg:grid-cols-12 gap-12 lg:gap-12 items-center`}>
+                    
+                    {/* Text Content */}
+                    <div className={`lg:col-span-5 xl:col-span-4 ${index % 2 === 1 ? 'lg:order-2' : 'lg:order-1'}`}>
+                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-6 border ${isHighlighted ? 'bg-white/10 border-white/20' : `${cap.bg} border-${cap.color.replace('text-', '')}/20`}`}>
+                        <CapIcon className={`w-5 h-5 ${isHighlighted ? 'text-white' : cap.color}`} />
                       </div>
-                    ))}
+                      
+                      <h4 className={`text-[10px] font-mono font-bold uppercase tracking-[0.2em] mb-3 ${isHighlighted ? 'text-emerald-300' : cap.color}`}>
+                        Module {cap.number} // {cap.title}
+                      </h4>
+                      
+                      <h3 className={`text-3xl md:text-4xl font-bold tracking-tighter mb-6 leading-tight ${effectivelyDark ? "text-white" : "text-slate-900"}`}>
+                        {cap.subtitle}
+                      </h3>
+                      
+                      <p className={`text-lg leading-relaxed mb-8 ${isHighlighted ? "text-emerald-50" : (isDarkMode ? "text-slate-400" : "text-slate-600")}`}>
+                        {cap.description}
+                      </p>
+
+                      {/* Capability Bullets */}
+                      <FeatureList details={cap.capabilities} isHighlighted={isHighlighted} />
+                    </div>
+
+                    {/* Image Content */}
+                    <div className={`lg:col-span-7 xl:col-span-8 ${index % 2 === 1 ? 'lg:order-1' : 'lg:order-2'}`}>
+                      <div className={`relative transform lg:scale-105 transition-transform duration-500 rounded-xl overflow-hidden shadow-2xl border ${effectivelyDark ? "bg-surface-900 border-white/10" : "bg-white border-slate-200"}`}>
+                        <img
+                          src={cap.image}
+                          alt={cap.title}
+                          loading="lazy"
+                          className="w-full h-auto block"
+                        />
+                      </div>
+                    </div>
+
                   </div>
                 </div>
-
-                {/* Image Content */}
-                <div className={`lg:col-span-7 ${index % 2 === 1 ? 'lg:order-1' : 'lg:order-2'}`}>
-                  <div className={`rounded-xl overflow-hidden shadow-2xl border ${isDarkMode ? "bg-surface-900 border-white/10" : "bg-white border-slate-200"}`}>
-                    <img
-                      src={cap.image}
-                      alt={cap.title}
-                      loading="lazy"
-                      className="w-full h-auto block"
-                    />
-                  </div>
-                </div>
-
-              </div>
+              </section>
             );
           })}
-
         </div>
-      </section>
+      </div>
 
       {/* ── 3. PLATFORM & IMPACT COMBINED ──────────────────────────────────────── */}
       <section className={`relative py-24 px-6 overflow-hidden ${isDarkMode ? "bg-surface-900" : "bg-emerald-50/50"}`}>
@@ -572,153 +602,33 @@ export default function ProductHub() {
         </div>
       </section>
 
-      {/* ── 6. ECOSYSTEM VISUALIZATION (Dynamic Hub-and-Spoke) ───────────────────────────────── */}
-      <section className="relative py-24 md:py-24 px-6 overflow-hidden bg-[#064E3B] border-t border-emerald-800">
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-[1000px] h-full opacity-40 blur-[120px] bg-emerald-400 rounded-full mix-blend-overlay" />
-        </div>
-        
-        <div className="max-w-[1200px] mx-auto text-center relative z-10 mb-8 md:mb-2">
-          <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-6 text-white">
-            Connected Across the Ecosystem.
-          </h2>
-          <p className="text-lg md:text-xl max-w-2xl mx-auto text-emerald-100/80">
-            The intelligence layer connecting upstream collection with downstream demand. Klinflow orchestrates data, materials, and money across the entire supply chain.
-          </p>
-        </div>
-
-        {/* The Hub-and-Spoke Network Map (Desktop) */}
-        <div className="relative w-full max-w-[1200px] mx-auto h-[500px] hidden md:block">
-          
-          {/* SVG Connection Lines */}
-          <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 1000 600" preserveAspectRatio="none">
-            {/* Background Paths */}
-            <path d="M 150 150 C 300 150, 350 300, 500 300" fill="none" stroke="rgba(52, 211, 153, 0.2)" strokeWidth="3" strokeDasharray="6 6" />
-            <path d="M 150 300 L 500 300" fill="none" stroke="rgba(52, 211, 153, 0.2)" strokeWidth="3" strokeDasharray="6 6" />
-            <path d="M 150 450 C 300 450, 350 300, 500 300" fill="none" stroke="rgba(52, 211, 153, 0.2)" strokeWidth="3" strokeDasharray="6 6" />
-            
-            <path d="M 500 300 C 650 300, 700 200, 850 200" fill="none" stroke="rgba(52, 211, 153, 0.2)" strokeWidth="3" strokeDasharray="6 6" />
-            <path d="M 500 300 C 650 300, 700 400, 850 400" fill="none" stroke="rgba(52, 211, 153, 0.2)" strokeWidth="3" strokeDasharray="6 6" />
-
-            {/* Animated Particles flowing In */}
-            <circle r="4" fill="#6ee7b7" filter="drop-shadow(0 0 4px #6ee7b7)">
-              <animateMotion dur="3s" repeatCount="indefinite" path="M 150 150 C 300 150, 350 300, 500 300" />
-            </circle>
-            <circle r="4" fill="#6ee7b7" filter="drop-shadow(0 0 4px #6ee7b7)">
-              <animateMotion dur="2.5s" repeatCount="indefinite" path="M 150 300 L 500 300" />
-            </circle>
-            <circle r="4" fill="#6ee7b7" filter="drop-shadow(0 0 4px #6ee7b7)">
-              <animateMotion dur="3.5s" repeatCount="indefinite" path="M 150 450 C 300 450, 350 300, 500 300" />
-            </circle>
-
-            {/* Animated Particles flowing Out */}
-            <circle r="4" fill="#10b981" filter="drop-shadow(0 0 6px #10b981)">
-              <animateMotion dur="3s" repeatCount="indefinite" path="M 500 300 C 650 300, 700 200, 850 200" />
-            </circle>
-            <circle r="4" fill="#10b981" filter="drop-shadow(0 0 6px #10b981)">
-              <animateMotion dur="2.8s" repeatCount="indefinite" path="M 500 300 C 650 300, 700 400, 850 400" />
-            </circle>
-          </svg>
-
-          {/* Floating Data Labels */}
-          <div className="absolute left-[32.5%] top-[37.5%] -translate-x-1/2 -translate-y-1/2 px-3 py-1 bg-emerald-900/80 border border-emerald-500/30 rounded-full text-[10px] font-bold text-emerald-300 uppercase tracking-wider backdrop-blur-md">Material Intake</div>
-          <div className="absolute left-[32.5%] top-[50%] -translate-x-1/2 -translate-y-1/2 px-3 py-1 bg-emerald-900/80 border border-emerald-500/30 rounded-full text-[10px] font-bold text-emerald-300 uppercase tracking-wider backdrop-blur-md">Agent Payouts</div>
-          <div className="absolute left-[32.5%] top-[62.5%] -translate-x-1/2 -translate-y-1/2 px-3 py-1 bg-emerald-900/80 border border-emerald-500/30 rounded-full text-[10px] font-bold text-emerald-300 uppercase tracking-wider backdrop-blur-md">Fleet Logistics</div>
-
-          <div className="absolute left-[67.5%] top-[41.6%] -translate-x-1/2 -translate-y-1/2 px-3 py-1 bg-emerald-900/80 border border-emerald-500/30 rounded-full text-[10px] font-bold text-emerald-300 uppercase tracking-wider backdrop-blur-md">Market Intelligence</div>
-          <div className="absolute left-[67.5%] top-[58.3%] -translate-x-1/2 -translate-y-1/2 px-3 py-1 bg-emerald-900/80 border border-emerald-500/30 rounded-full text-[10px] font-bold text-emerald-300 uppercase tracking-wider backdrop-blur-md">Contract Fulfillment</div>
-
-          {/* Supply (Upstream) Nodes */}
-          <div className="absolute left-[15%] top-[25%] -translate-x-1/2 -translate-y-1/2 w-48 bg-[#043d2e] border border-emerald-700/50 rounded-2xl p-4 flex flex-col items-center text-center shadow-2xl z-20 hover:scale-105 transition-transform">
-            <div className="w-10 h-10 bg-emerald-900 rounded-full flex items-center justify-center mb-2"><Users className="w-5 h-5 text-emerald-400" /></div>
-            <h4 className="font-bold text-white text-sm mb-1">Sellers</h4>
-            <p className="text-[10px] text-emerald-200/70">Households & Businesses</p>
-          </div>
-
-          <div className="absolute left-[15%] top-[50%] -translate-x-1/2 -translate-y-1/2 w-48 bg-[#043d2e] border border-emerald-700/50 rounded-2xl p-4 flex flex-col items-center text-center shadow-2xl z-20 hover:scale-105 transition-transform">
-            <div className="w-10 h-10 bg-emerald-900 rounded-full flex items-center justify-center mb-2"><UserCircle className="w-5 h-5 text-blue-400" /></div>
-            <h4 className="font-bold text-white text-sm mb-1">Agents</h4>
-            <p className="text-[10px] text-emerald-200/70">Independent Collectors</p>
-          </div>
-
-          <div className="absolute left-[15%] top-[75%] -translate-x-1/2 -translate-y-1/2 w-48 bg-[#043d2e] border border-emerald-700/50 rounded-2xl p-4 flex flex-col items-center text-center shadow-2xl z-20 hover:scale-105 transition-transform">
-            <div className="w-10 h-10 bg-emerald-900 rounded-full flex items-center justify-center mb-2"><Truck className="w-5 h-5 text-emerald-400" /></div>
-            <h4 className="font-bold text-white text-sm mb-1">Fleets</h4>
-            <p className="text-[10px] text-emerald-200/70">Company Vehicles</p>
-          </div>
-
-          {/* Core Processing Hub */}
-          <div className="absolute left-[50%] top-[50%] -translate-x-1/2 -translate-y-1/2 w-56 h-56 bg-white dark:bg-surface-900 rounded-full flex flex-col items-center justify-center shadow-[0_0_80px_rgba(16,185,129,0.5)] border-8 border-emerald-200 z-30">
-            <div className="absolute inset-0 rounded-full border border-emerald-400 animate-ping opacity-30" />
-            <Warehouse className="w-12 h-12 text-emerald-900 mb-2" />
-            <h4 className="font-black text-emerald-900 dark:text-white text-xl tracking-tight">Klinflow MOS</h4>
-            <p className="text-[10px] text-emerald-700 dark:text-emerald-200 font-bold tracking-widest uppercase mt-1">Intelligence Layer</p>
-          </div>
-
-          {/* Demand (Downstream) Nodes */}
-          <div className="absolute left-[85%] top-[33.3%] -translate-x-1/2 -translate-y-1/2 w-48 bg-[#043d2e] border border-emerald-700/50 rounded-2xl p-4 flex flex-col items-center text-center shadow-2xl z-20 hover:scale-105 transition-transform">
-            <div className="w-10 h-10 bg-emerald-900 rounded-full flex items-center justify-center mb-2"><Globe className="w-5 h-5 text-indigo-400" /></div>
-            <h4 className="font-bold text-white text-sm mb-1">The Market</h4>
-            <p className="text-[10px] text-emerald-200/70">Global Price Signals</p>
-          </div>
-
-          <div className="absolute left-[85%] top-[66.6%] -translate-x-1/2 -translate-y-1/2 w-48 bg-[#043d2e] border border-emerald-700/50 rounded-2xl p-4 flex flex-col items-center text-center shadow-2xl z-20 hover:scale-105 transition-transform">
-            <div className="w-10 h-10 bg-emerald-900 rounded-full flex items-center justify-center mb-2"><Factory className="w-5 h-5 text-amber-400" /></div>
-            <h4 className="font-bold text-white text-sm mb-1">Industrial Buyers</h4>
-            <p className="text-[10px] text-emerald-200/70">Factories & Exporters</p>
-          </div>
-
-        </div>
-
-        {/* Mobile Fallback (Vertical List) */}
-        <div className="md:hidden flex flex-col gap-6 relative z-10 mt-12">
-          <div className="flex flex-col items-center gap-4">
-             <div className="w-full bg-[#043d2e] border border-emerald-700/50 rounded-2xl p-4 flex items-center gap-4 shadow-xl">
-                <div className="w-12 h-12 bg-emerald-900 rounded-full flex items-center justify-center shrink-0"><Users className="w-6 h-6 text-emerald-400" /></div>
-                <div className="text-left">
-                  <h4 className="font-bold text-white text-lg">Supply Network</h4>
-                  <p className="text-sm text-emerald-200/70">Sellers, Agents, and Fleets</p>
-                </div>
-             </div>
-             
-             <div className="h-10 w-0.5 bg-emerald-500/50" />
-
-             <div className="w-full bg-white border-4 border-emerald-200 rounded-3xl p-4 flex items-center gap-4 shadow-[0_0_40px_rgba(16,185,129,0.3)]">
-                <div className="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center shrink-0"><Warehouse className="w-6 h-6 text-emerald-900" /></div>
-                <div className="text-left">
-                  <h4 className="font-black text-emerald-900 text-xl">Klinflow Hub</h4>
-                  <p className="text-xs text-emerald-700 font-bold uppercase tracking-wider">Intelligence Layer</p>
-                </div>
-             </div>
-
-             <div className="h-10 w-0.5 bg-emerald-500/50" />
-
-             <div className="w-full bg-[#043d2e] border border-emerald-700/50 rounded-2xl p-4 flex items-center gap-4 shadow-xl">
-                <div className="w-12 h-12 bg-emerald-900 rounded-full flex items-center justify-center shrink-0"><Factory className="w-6 h-6 text-amber-400" /></div>
-                <div className="text-left">
-                  <h4 className="font-bold text-white text-lg">Demand Network</h4>
-                  <p className="text-sm text-emerald-200/70">Markets and Industrial Buyers</p>
-                </div>
-             </div>
-          </div>
-        </div>
-      </section>
-
-     
-
       {/* ── 8. FINAL CTA ─────────────────────────────────────────────── */}
-      <section className={`py-24 px-6 text-center ${isDarkMode ? "bg-surface-950" : "bg-slate-900"}`}>
-        <div className="max-w-3xl mx-auto">
-          <h2 className={`text-4xl md:text-6xl font-black tracking-tighter mb-8 leading-[1.1] ${isDarkMode ? "text-white" : "text-slate-50"}`}>
-            Build the Digital Backbone of Your Recycling Operation.
-          </h2>
-          <p className={`text-lg md:text-xl font-medium mb-12 max-w-2xl mx-auto ${isDarkMode ? "text-slate-400" : "text-slate-500"}`}>
-            Join the next generation of recycling businesses using Klinflow to manage material intake, supplier networks, inventory, payments, and buyer fulfillment from a single platform.
-          </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link to="/contact" className={`px-10 py-5 rounded-full font-bold transition-all flex items-center justify-center gap-2 ${isDarkMode ? "bg-white text-black hover:bg-slate-200" : "bg-black text-white hover:bg-slate-800"}`}>
-              Book a Demo <ArrowRight className="w-5 h-5" />
-            </Link>
+      <section className={`py-20 md:py-12 ${isDarkMode ? "bg-surface-950" : "bg-slate-50"}`}>
+        <div className="max-w-[70rem] mx-auto px-6">
+          <div className={`rounded-3xl p-10 md:p-16 text-center flex flex-col items-center shadow-2xl relative overflow-hidden ${isDarkMode ? "bg-surface-900 border border-white/10" : "bg-gradient-to-br from-emerald-800 to-teal-900"}`}>
+            
+            {/* CTA Background Pattern */}
+            <div className="absolute inset-0 opacity-[0.15] text-white" style={{ backgroundImage: "radial-gradient(circle, currentColor 1px, transparent 1px)", backgroundSize: "32px 32px" }} />
+            
+            <div className="relative z-10 flex flex-col items-center w-full">
+              <div className="inline-flex items-center justify-center w-16 h-16 md:w-20 md:h-20 rounded-2xl bg-white/10 text-white mb-8 border border-white/20 shadow-[0_0_40px_rgba(255,255,255,0.1)]">
+                <Warehouse className="w-8 h-8 md:w-10 md:h-10" />
+              </div>
+              
+              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tighter mb-6 leading-[1.1] text-white">
+                Build the Digital Backbone of Your Recycling Operation.
+              </h2>
+              
+              <p className="text-lg md:text-xl font-medium mb-10 max-w-2xl mx-auto leading-relaxed text-emerald-100">
+                Join the next generation of recycling businesses using Klinflow to manage material intake, supplier networks, inventory, payments, and buyer fulfillment from a single platform.
+              </p>
+              
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                <Link to="/contact" className="w-full sm:w-auto px-8 py-4 bg-white text-emerald-700 hover:bg-emerald-50 font-bold rounded-xl shadow-lg shadow-black/10 active:scale-95 transition-all md:text-lg">
+                  Book a Demo
+                </Link>
+              </div>
+            </div>
           </div>
         </div>
       </section>

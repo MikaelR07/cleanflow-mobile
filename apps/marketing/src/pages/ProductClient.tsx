@@ -270,11 +270,8 @@ function ProblemSolutionPair({
 
 export default function ProductClient() {
   const { isDarkMode } = useThemeStore();
-  const [activeCard, setActiveCard] = useState(0);
-  const [isCardPaused, setIsCardPaused] = useState(false);
-  const [activeCard2, setActiveCard2] = useState(0);
-  const [isCardPaused2, setIsCardPaused2] = useState(false);
-  const [activeIssue, setActiveIssue] = useState(0);
+  const [activeFeature, setActiveFeature] = useState(0);
+  const [activeIssue, setActiveIssue] = useState<string | null>(null);
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
@@ -293,7 +290,7 @@ export default function ProductClient() {
     "/products/client/collective-hub.webp"
   ];
 
-  const deepDiveCards = [
+  const deepDiveFeatures = [
     {
       subtitle: "Market Intelligence",
       subtitleColor: "text-primary",
@@ -302,7 +299,8 @@ export default function ProductClient() {
       features: ['Live Price Tickers', 'Historical Trend Graphs', 'Automated AI Valuation Estimates'],
       featureColor: "text-primary",
       bgFeatureColor: "bg-primary/20",
-      image: "/products/client/market-price.webp"
+      image: "/products/client/market-price.webp",
+      icon: LineChart
     },
     {
       subtitle: "B2B Trading & RFQs",
@@ -312,7 +310,8 @@ export default function ProductClient() {
       features: ['Direct Listing Creation', 'Real-time Bid Management', 'RFQ Proposal Tracking'],
       featureColor: "text-blue-500",
       bgFeatureColor: "bg-blue-500/20",
-      image: "/products/client/RFQ.webp"
+      image: "/products/client/RFQ.webp",
+      icon: Handshake
     },
     {
       subtitle: "Frictionless Logistics",
@@ -322,7 +321,8 @@ export default function ProductClient() {
       features: ['Geo-fenced Agent Tracking', 'On-site Digital Weighing Integration', 'Secure QR Handshake'],
       featureColor: "text-purple-500",
       bgFeatureColor: "bg-purple-500/20",
-      image: "/products/client/book-pickup.webp"
+      image: "/products/client/book-pickup.webp",
+      icon: Truck
     },
     {
       subtitle: "FinTech Integration",
@@ -332,20 +332,9 @@ export default function ProductClient() {
       features: ['In-app Digital Wallet', 'Instant M-Pesa Integration', 'Detailed Transaction Ledgers'],
       featureColor: "text-emerald-500",
       bgFeatureColor: "bg-emerald-500/20",
-      image: "/products/client/client-wallet.webp"
+      image: "/products/client/client-wallet.webp",
+      icon: Wallet
     },
-   
-  ];
-
-  useEffect(() => {
-    if (isCardPaused) return;
-    const timer = setInterval(() => {
-      setActiveCard((prev) => (prev + 1) % deepDiveCards.length);
-    }, 5000);
-    return () => clearInterval(timer);
-  }, [isCardPaused, deepDiveCards.length]);
-
-  const deepDiveCards2 = [
     {
       subtitle: "AI Analysis",
       subtitleColor: "text-blue-500",
@@ -354,7 +343,8 @@ export default function ProductClient() {
       features: ['Real-time Image Analysis', 'Material Classification', 'Value Estimation'],
       featureColor: "text-blue-500",
       bgFeatureColor: "bg-blue-500/20",
-      image: "/products/client/ai-analysis.webp"
+      image: "/products/client/ai-analysis.webp",
+      icon: Brain
     },
     {
       subtitle: "Impact Analysis",
@@ -364,7 +354,8 @@ export default function ProductClient() {
       features: ['Carbon Offset Tracking', 'Waste Reduction Metrics', 'Personalized Impact Reports'],
       featureColor: "text-emerald-500",
       bgFeatureColor: "bg-emerald-500/20",
-      image: "/products/client/impact-analysis.webp"
+      image: "/products/client/impact-analysis.webp",
+      icon: Leaf
     },
     {
       subtitle: "Smart Contracts",
@@ -374,7 +365,8 @@ export default function ProductClient() {
       features: ['Immutable Records', 'Automated Execution', 'Dispute Resolution'],
       featureColor: "text-amber-500",
       bgFeatureColor: "bg-amber-500/20",
-      image: "/products/client/contracts.webp"
+      image: "/products/client/contracts.webp",
+      icon: ShieldCheck
     },
      {
       subtitle: "Collaborative Growth",
@@ -384,32 +376,25 @@ export default function ProductClient() {
       features: ['Swarm Creation & Discovery', 'Group Chat & Negotiation', 'Pro-rata Payout Distribution'],
       featureColor: "text-amber-500",
       bgFeatureColor: "bg-amber-500/20",
-      image: "/products/client/collective-hub.webp"
+      image: "/products/client/collective-hub.webp",
+      icon: Users
     }
   ];
-
-  useEffect(() => {
-    if (isCardPaused2) return;
-    const timer = setInterval(() => {
-      setActiveCard2((prev) => (prev + 1) % deepDiveCards2.length);
-    }, 5000);
-    return () => clearInterval(timer);
-  }, [isCardPaused2, deepDiveCards2.length]);
 
   return (
     <Layout>
       {/* 1. HERO SECTION */}
-      <section className="relative pt-24 pb-16 md:pt-40 md:pb-32 min-h-[90vh] flex items-center overflow-hidden">
+      <section className="relative pt-24 pb-16 md:pt-40 md:pb-32 min-h-[100vh] flex items-center overflow-hidden">
         {/* Background Layer */}
         <div className="absolute inset-0 z-0">
           <div
-            className={`absolute inset-0 ${isDarkMode ? "bg-surface-950" : "bg-transparent"}`}
+            className="absolute inset-0 bg-gradient-to-br from-emerald-700 to-primary"
           />
           <div
-            className={`absolute inset-0 ${isDarkMode ? "opacity-[0.3]" : "opacity-[0.8]"}`}
+            className="absolute inset-0 opacity-[0.15] text-white"
             style={{
-              backgroundImage: `linear-gradient(${isDarkMode ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.04)"} 1px, transparent 1px), linear-gradient(90deg, ${isDarkMode ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.04)"} 1px, transparent 1px)`,
-              backgroundSize: "60px 60px",
+              backgroundImage: "radial-gradient(circle, currentColor 1px, transparent 1px)",
+              backgroundSize: "32px 32px",
             }}
           />
           <div className="absolute top-20 right-20 w-[500px] h-[500px] bg-primary/10 blur-[150px] rounded-full pointer-events-none" />
@@ -421,38 +406,34 @@ export default function ProductClient() {
             {/* Left side: Text */}
             <div className="max-w-2xl">
               {/* Pill */}
-              <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium mb-8 ${isDarkMode ? "bg-surface-900 text-slate-200 border border-white/10" : "bg-white/80 backdrop-blur-sm text-slate-600 shadow-sm border border-slate-100"}`}>
-                <div className="w-2 h-2 rounded-full bg-primary" />
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium mb-8 bg-white/10 backdrop-blur-md text-white border border-white/20">
+                <div className="w-2 h-2 rounded-full bg-lime-400" />
                 Multi Persona Application
               </div>
               
               {/* Heading */}
               <h1
-                className={`text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-6 leading-[1.1] ${isDarkMode ? "text-white" : "text-[#0f172a]"}`}
+                className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-6 leading-[1.1] text-white"
               >
                 Recycling Made,<br />
                  Rewarding<br />
-                <span className="text-primary">and Transparent.</span>
+                <span className="text-lime-400">and Transparent.</span>
               </h1>
               
               {/* Subheading */}
               <p
-                className={`text-base md:text-lg font-medium leading-relaxed mb-10 max-w-xl ${isDarkMode ? "text-slate-300" : "text-slate-600"}`}
+                className="text-base md:text-lg font-medium leading-relaxed mb-10 max-w-xl text-emerald-50"
               >
-               The Klinflow Client App empowers residents,Businesses, and material sellers to participate in the circular economy through a seamless digital experience. Schedule collections, access real-time market prices, connect with verified buyers, join community Group Pickups, track your environmental impact, and receive secure payouts—all from a single, intelligent platform designed to make recycling simple, transparent, and rewarding.
+               The Klinflow Client App empowers residents,small businesses, scrappers, and micro sellers to participate in the circular economy through a seamless digital experience. Schedule collections, access real-time market prices, connect with verified buyers, join community Group Pickups, track your environmental impact, and receive secure payouts—all from a single, intelligent platform designed to make recycling simple, transparent, and rewarding.
               </p>
               
               {/* Buttons */}
               <div className="flex flex-row flex-wrap gap-3 sm:gap-4">
-                <Link to="/contact" className="flex-1 sm:flex-none px-4 py-3 sm:px-8 sm:py-4 bg-primary text-white font-bold rounded-full  active:scale-95 transition-all flex items-center justify-center gap-2 text-sm sm:text-base whitespace-nowrap">
+                <Link to="/contact" className="flex-1 sm:flex-none px-4 py-3 sm:px-8 sm:py-4 bg-white text-primary hover:bg-slate-50 font-bold rounded-full active:scale-95 transition-all flex items-center justify-center gap-2 text-sm sm:text-base whitespace-nowrap shadow-xl shadow-black/10">
                   Get Started <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
                 </Link>
                 <button
-                  className={`flex-1 sm:flex-none px-4 py-3 sm:px-8 sm:py-4 rounded-full font-bold transition-all flex items-center justify-center gap-2 text-sm sm:text-base whitespace-nowrap ${
-                    isDarkMode 
-                      ? "bg-surface-900 text-white hover:bg-surface-700 border border-white/10" 
-                      : "bg-white text-slate-900 shadow-sm hover:bg-slate-50 border border-slate-200"
-                  }`}
+                  className="flex-1 sm:flex-none px-4 py-3 sm:px-8 sm:py-4 rounded-full font-bold transition-all flex items-center justify-center gap-2 text-sm sm:text-base whitespace-nowrap bg-white/10 text-white hover:bg-white/20 border border-white/20"
                 >
                   Watch Demo <svg className="w-4 h-4 sm:w-5 sm:h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
                 </button>
@@ -460,13 +441,13 @@ export default function ProductClient() {
             </div>
 
             {/* Right side: Static Images Side by Side */}
-            <div className="relative flex justify-center lg:justify-end mt-16 lg:mt-0 perspective-[1000px] h-[450px] sm:h-[550px] md:h-[600px] items-center">
+            <div className="relative flex justify-center lg:justify-end mt-16 lg:mt-0 perspective-[1000px] h-[500px] sm:h-[600px] md:h-[700px] items-center">
               {/* Image 1 (Left/Back) */}
               <motion.div
                 initial={{ opacity: 0, x: isMobile ? -15 : -30, rotate: 0, y: 0 }}
                 animate={{ opacity: 1, x: isMobile ? "-25%" : "-45%", rotate: 0, y: isMobile ? -15 : -30 }}
                 transition={{ duration: 0.8, type: "spring", bounce: 0.3, delay: 0.2 }}
-                className={`absolute w-[200px] sm:w-[240px] md:w-[280px] aspect-[1/2] rounded-[2rem] overflow-hidden border shadow-2xl z-10 ${isDarkMode ? "border-white/10 bg-surface-900" : "border-slate-200 bg-white"}`}
+                className="absolute w-[220px] sm:w-[260px] md:w-[320px] aspect-[1/2] rounded-[2rem] overflow-hidden border shadow-2xl z-10 border-white/20 bg-black/20 backdrop-blur-md"
               >
                  <img src={sliderImages[2]} alt="Client App Home" className="w-full h-full object-cover" />
                  <div className="absolute inset-0 bg-black/5" />
@@ -477,7 +458,7 @@ export default function ProductClient() {
                 initial={{ opacity: 0, x: isMobile ? 15 : 30, rotate: 0, y: 20 }}
                 animate={{ opacity: 1, x: isMobile ? "25%" : "45%", rotate: 0, y: isMobile ? 15 : 30 }}
                 transition={{ duration: 0.8, type: "spring", bounce: 0.3, delay: 0.4 }}
-                className={`absolute w-[200px] sm:w-[240px] md:w-[280px] aspect-[1/2] rounded-[2rem] overflow-hidden border z-20 ${isDarkMode ? "border-white/10 bg-surface-900 shadow-[0_20px_40px_rgba(0,0,0,0.4)]" : "border-slate-200 bg-white shadow-[0_20px_40px_rgba(0,0,0,0.15)]"}`}
+                className="absolute w-[220px] sm:w-[260px] md:w-[320px] aspect-[1/2] rounded-[2rem] overflow-hidden border z-20 border-white/20 bg-black/20 backdrop-blur-md shadow-[0_20px_50px_rgba(0,0,0,0.5)]"
               >
                  <img src={sliderImages[1]} alt="Client App Seller" className="w-full h-full object-cover" />
               </motion.div>
@@ -537,76 +518,48 @@ export default function ProductClient() {
   </p>
 </div>
 
-{/* Interactive Bento Grid & Flipping Solution */}
-<div className="grid lg:grid-cols-12 gap-8 lg:gap-16 items-center relative">
-  {/* Animated SVG Lines Background */}
-  <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="hidden lg:block absolute inset-0 w-full h-full pointer-events-none z-0">
-    {[
-      "M 25 25 C 40 25, 50 50, 65 50",
-      "M 45 25 C 55 25, 60 50, 65 50",
-      "M 45 75 C 55 75, 60 50, 65 50"
-    ].map((d, i) => (
-      <g key={i}>
-        <path d={d} stroke={isDarkMode ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)"} strokeWidth="1" fill="none" vectorEffect="non-scaling-stroke" />
-        {activeIssue === i && (
-          <motion.path 
-            d={d} 
-            stroke="#10b981" 
-            strokeWidth="3" 
-            fill="none" 
-            vectorEffect="non-scaling-stroke"
-            initial={{ pathLength: 0, opacity: 0 }} 
-            animate={{ pathLength: 1, opacity: [0, 1, 0] }} 
-            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }} 
-          />
-        )}
-      </g>
-    ))}
-  </svg>
-
-  {/* LEFT SIDE: Issues Bento Grid */}
-  <div className="lg:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 relative z-10">
-    {problemSolutionPairs.map((item, i) => (
-      <button
+{/* Problem / Solution Grid */}
+<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 relative z-10">
+  {problemSolutionPairs.map((item) => {
+    const ProblemIcon = item.problem.icon;
+    const SolutionIcon = item.solution.icon;
+    const isFlipped = activeIssue === item.id;
+    return (
+      <div
         key={item.id}
-        onClick={() => setActiveIssue(i)}
-        className={`text-left p-4 sm:p-6 lg:p-8 rounded-2xl sm:rounded-3xl border transition-all duration-300 flex flex-col ${activeIssue === i ? (isDarkMode ? "bg-surface-950 border-primary" : "bg-white border-primary shadow-lg shadow-primary/10 scale-[1.02]") : (isDarkMode ? "bg-surface-900/50 border-slate-600 " : "bg-slate-50 border-slate-200")}`}
+        onClick={() => setActiveIssue(isFlipped ? null : item.id)}
+        className={`group cursor-pointer relative overflow-hidden p-6 lg:p-8 rounded-3xl border transition-all duration-500 flex flex-col min-h-[300px] ${isDarkMode ? "bg-surface-900/50 border-slate-700 hover:border-primary" : "bg-white border-slate-200 hover:border-primary hover:shadow-xl shadow-primary/10"}`}
       >
-        <div className={`w-8 h-8 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl flex items-center justify-center mb-3 sm:mb-5 transition-colors duration-300 ${activeIssue === i ? "bg-primary text-white shadow-lg shadow-primary/30" : (isDarkMode ? "bg-rose-500/10 text-rose-400" : "bg-rose-100 text-rose-600")}`}>
-          <item.problem.icon className="w-4 h-4 sm:w-6 sm:h-6" />
+        {/* PROBLEM LAYER (Default View) */}
+        <div className={`relative z-10 flex flex-col h-full transition-transform duration-500 ${isFlipped ? "-translate-y-8 opacity-0 pointer-events-none" : "lg:group-hover:-translate-y-8 lg:group-hover:opacity-0"}`}>
+          <div className="flex items-center justify-between mb-5">
+            <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${isDarkMode ? "bg-rose-500/10 text-rose-400" : "bg-rose-100 text-rose-600"}`}>
+              <ProblemIcon className="w-6 h-6" />
+            </div>
+            <div className={`text-xs font-black tracking-widest ${isDarkMode ? "text-slate-600" : "text-slate-300"}`}>
+              {item.number}
+            </div>
+          </div>
+          <h4 className={`text-lg font-bold mb-3 ${isDarkMode ? "text-white" : "text-slate-900"}`}>{item.problem.title}</h4>
+          <p className={`text-sm leading-relaxed ${isDarkMode ? "text-slate-400" : "text-slate-500"}`}>{item.problem.desc}</p>
+          
+          <div className={`mt-auto pt-6 flex items-center gap-2 text-primary text-xs font-bold uppercase tracking-wider transition-opacity ${isFlipped ? "opacity-100" : "opacity-60 lg:group-hover:opacity-100"}`}>
+            <span>Click for Solution</span> <ArrowRight className="w-4 h-4" />
+          </div>
         </div>
-        <h4 className={`text-sm sm:text-lg font-bold mb-1.5 sm:mb-3 ${isDarkMode ? "text-white" : "text-slate-900"}`}>{item.problem.title}</h4>
-        <p className={`text-[10px] sm:text-sm leading-relaxed line-clamp-3 sm:line-clamp-none ${isDarkMode ? "text-slate-400" : "text-slate-500"}`}>{item.problem.desc}</p>
-      </button>
-    ))}
-  </div>
 
-  {/* RIGHT SIDE: Solution Card */}
-  <div className="lg:col-span-4 relative z-10 perspective-[1000px] mt-6 lg:mt-0 flex flex-col justify-center">
-    <AnimatePresence mode="wait">
-      {(() => {
-         const activeItem = problemSolutionPairs[activeIssue];
-         const SolutionIcon = activeItem.solution.icon;
-         return (
-           <motion.div
-             key={activeIssue}
-             initial={{ rotateY: -90, opacity: 0, scale: 0.9 }}
-             animate={{ rotateY: 0, opacity: 1, scale: 1 }}
-             exit={{ rotateY: 90, opacity: 0, scale: 0.9 }}
-             transition={{ duration: 0.5, type: "spring", bounce: 0.3 }}
-             className={`w-full max-w-[400px] mx-auto lg:ml-auto lg:mr-0 p-5 sm:p-6 lg:p-7 rounded-2xl sm:rounded-3xl border shadow-xl flex flex-col ${isDarkMode ? "bg-emerald-900/20 border-emerald-500/30 shadow-emerald-900/20" : "bg-emerald-50 border-emerald-200 shadow-emerald-500/10"}`}
-           >
-             <div className="w-9 h-9 lg:w-10 lg:h-10 rounded-xl bg-primary text-white flex items-center justify-center mb-3 lg:mb-4 shadow-lg shadow-primary/30">
-               <SolutionIcon className="w-4 h-4 lg:w-5 lg:h-5" />
-             </div>
-             <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary mb-1.5 lg:mb-2">The Klinflow Solution</div>
-             <h3 className={`text-base lg:text-lg font-bold mb-1.5 lg:mb-2 ${isDarkMode ? "text-white" : "text-slate-900"}`}>{activeItem.solution.label}</h3>
-             <p className={`text-xs sm:text-sm leading-relaxed ${isDarkMode ? "text-emerald-100/70" : "text-emerald-900/70"}`}>{activeItem.solution.desc}</p>
-           </motion.div>
-         );
-      })()}
-    </AnimatePresence>
-  </div>
+        {/* SOLUTION LAYER (Slide Up on Hover/Click) */}
+        <div className={`absolute inset-0 p-6 lg:p-8 flex flex-col h-full transition-transform duration-500 ease-[cubic-bezier(0.2,0.8,0.2,1)] z-20 ${isFlipped ? "translate-y-0" : "translate-y-[110%] lg:group-hover:translate-y-0"} ${isDarkMode ? "bg-emerald-950/95 backdrop-blur-md" : "bg-emerald-50/95 backdrop-blur-md"}`}>
+          <div className="w-12 h-12 rounded-xl bg-primary text-white flex items-center justify-center mb-5 shadow-lg shadow-primary/30 shrink-0">
+            <SolutionIcon className="w-6 h-6" />
+          </div>
+          <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary mb-2 shrink-0">The Solution</div>
+          <h4 className={`text-lg font-bold mb-3 shrink-0 ${isDarkMode ? "text-white" : "text-slate-900"}`}>{item.solution.label}</h4>
+          <p className={`text-sm leading-relaxed overflow-y-auto ${isDarkMode ? "text-emerald-100/70" : "text-emerald-900/70"}`}>{item.solution.desc}</p>
+        </div>
+      </div>
+    );
+  })}
 </div>
 
 
@@ -614,175 +567,110 @@ export default function ProductClient() {
 </section>
 
 
-      {/* 4. DEEP DIVE CAROUSEL */}
-      <section className={`py-20 md:py-24 px-6 overflow-hidden relative ${isDarkMode ? "bg-surface-950" : "bg-white"}`}>
+      {/* 4. UNIFIED PLATFORM FEATURES (INTERACTIVE SIDEBAR) */}
+      <section className="py-20 md:py-24 px-6 overflow-hidden relative bg-gradient-to-br from-emerald-700 to-primary">
         {/* LINE GRID background */}
         <div
-          className={`absolute inset-0 ${isDarkMode ? "opacity-[0.05]" : "opacity-[0.3]"}`}
+          className="absolute inset-0 opacity-[0.1]"
           style={{
-            backgroundImage: `linear-gradient(${isDarkMode ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.06)"} 1px, transparent 1px), linear-gradient(90deg, ${isDarkMode ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.06)"} 1px, transparent 1px)`,
+            backgroundImage: "linear-gradient(rgba(255,255,255,0.15) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.15) 1px, transparent 1px)",
             backgroundSize: "60px 60px",
           }}
         />
         <div className="max-w-7xl mx-auto relative z-10">
-          <div className="grid lg:grid-cols-2 gap-16 items-start">
-            {/* Left side: Text that updates based on activeCard */}
-            <div className="order-2 lg:order-1 relative flex flex-col justify-between">
-              <div className="relative min-h-[550px] sm:min-h-[450px] md:min-h-[380px] lg:min-h-[420px]">
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={activeCard}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                    transition={{ duration: 0.4 }}
-                    className="absolute inset-0"
-                  >
-                  <div className={`${deepDiveCards[activeCard].subtitleColor} font-bold tracking-widest text-sm uppercase mb-4`}>{deepDiveCards[activeCard].subtitle}</div>
-                  <h2 className={`text-3xl sm:text-4xl md:text-5xl font-bold mb-6 tracking-tight ${isDarkMode ? "text-white" : "text-slate-900"}`}>
-                    {deepDiveCards[activeCard].title}
-                  </h2>
-                  <p className={`text-lg mb-8 leading-relaxed ${isDarkMode ? "text-slate-400" : "text-slate-600"}`}>
-                    {deepDiveCards[activeCard].description}
-                  </p>
-                  <ul className="space-y-4 mb-8">
-                    {deepDiveCards[activeCard].features.map((item, i) => (
-                      <li key={i} className="flex items-center gap-3">
-                        <div className={`w-6 h-6 rounded-full ${deepDiveCards[activeCard].bgFeatureColor} flex items-center justify-center ${deepDiveCards[activeCard].featureColor}`}>
-                          <CheckCircle2 className="w-4 h-4" />
-                        </div>
-                        <span className={`font-medium ${isDarkMode ? "text-slate-300" : "text-slate-700"}`}>{item}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </motion.div>
-              </AnimatePresence>
-              </div>
-            </div>
-
-            {/* Right side: Image that updates based on activeCard */}
-            <div className="order-1 lg:order-2 relative flex justify-center lg:justify-end perspective-[1000px] min-h-[500px]">
-              <div className="relative max-w-[280px] md:max-w-[320px] w-full flex items-center aspect-[1/2]">
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={activeCard}
-                    initial={{ opacity: 0, scale: 0.9, rotateY: -10 }}
-                    animate={{ opacity: 1, scale: 1, rotateY: 0 }}
-                    exit={{ opacity: 0, scale: 0.9, rotateY: 10 }}
-                    transition={{ duration: 0.4 }}
-                    className="absolute inset-0 flex items-center w-full"
-                  >
-                    <div className={`rounded-[2rem] overflow-hidden border transition-all duration-500 shadow-2xl ${isDarkMode ? "border-white/5 bg-surface-950" : "border-slate-200 bg-white"}`}>
-                      <img src={deepDiveCards[activeCard].image} alt={deepDiveCards[activeCard].subtitle} className="w-full h-auto object-cover" />
-                    </div>
-                  </motion.div>
-                </AnimatePresence>
-
-                {/* Controls overlay */}
-                <button 
-                  onClick={() => setIsCardPaused(!isCardPaused)}
-                  className={`absolute top-4 right-4 z-20 w-10 h-10 rounded-full flex items-center justify-center backdrop-blur-md border transition-all ${isDarkMode ? "bg-black/40 border-white/10 text-white hover:bg-black/60" : "bg-white/40 border-white/40 text-slate-900 hover:bg-white/60"}`}
-                >
-                  {isCardPaused ? <Play className="w-4 h-4 ml-0.5" /> : <Pause className="w-4 h-4" />}
-                </button>
-
-                <div className="absolute -bottom-10 left-0 right-0 flex justify-center gap-2 z-20">
-                  {deepDiveCards.map((_, i) => (
-                    <button
-                      key={i}
-                      onClick={() => setActiveCard(i)}
-                      className={`w-2 h-2 rounded-full transition-all ${activeCard === i ? "w-6 bg-primary" : "bg-primary/30"}`}
-                    />
-                  ))}
-                </div>
-              </div>
-            </div>
+          <div className="text-center mb-16">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight mb-4 text-white">
+              Everything you need to thrive.
+            </h2>
+            <p className="text-lg max-w-2xl mx-auto text-emerald-50">
+              Explore the powerful features built into the Klinflow Client App.
+            </p>
           </div>
-        </div>
-      </section>
 
-      {/* 5. DEEP DIVE CAROUSEL 2 */}
-      <section className={`py-20 md:py-24 px-6 overflow-hidden relative ${isDarkMode ? "bg-surface-950" : "bg-slate-50"}`}>
-        {/* LINE GRID background */}
-        <div
-          className={`absolute inset-0 ${isDarkMode ? "opacity-[0.05]" : "opacity-[0.3]"}`}
-          style={{
-            backgroundImage: `linear-gradient(${isDarkMode ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.06)"} 1px, transparent 1px), linear-gradient(90deg, ${isDarkMode ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.06)"} 1px, transparent 1px)`,
-            backgroundSize: "60px 60px",
-          }}
-        />
-        <div className="max-w-7xl mx-auto relative z-10">
-          <div className="grid lg:grid-cols-2 gap-16 items-start">
-            {/* Left side: Image that updates based on activeCard2 */}
-            <div className="order-1 lg:order-1 relative flex justify-center lg:justify-start perspective-[1000px] min-h-[500px]">
-              <div className="relative max-w-[280px] md:max-w-[320px] w-full flex items-center aspect-[1/2]">
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={activeCard2}
-                    initial={{ opacity: 0, scale: 0.9, rotateY: 10 }}
-                    animate={{ opacity: 1, scale: 1, rotateY: 0 }}
-                    exit={{ opacity: 0, scale: 0.9, rotateY: -10 }}
-                    transition={{ duration: 0.4 }}
-                    className="absolute inset-0 flex items-center w-full"
+          <div className="flex flex-col lg:flex-row gap-12 lg:gap-16 items-start">
+            {/* Left Sidebar (Tabs) */}
+            <div className="w-full lg:w-1/3 flex flex-col gap-2">
+              {deepDiveFeatures.map((item, i) => {
+                const isActive = activeFeature === i;
+                const Icon = item.icon;
+                return (
+                  <button
+                    key={i}
+                    onClick={() => setActiveFeature(i)}
+                    className={`flex items-center gap-4 p-4 rounded-2xl transition-all duration-300 text-left border ${
+                      isActive 
+                        ? "bg-primary border-white/20 shadow-lg" 
+                        : "bg-transparent border-transparent hover:bg-white/5"
+                    }`}
                   >
-                    <div className={`rounded-[2rem] overflow-hidden border transition-all duration-500 shadow-2xl ${isDarkMode ? "border-white/5 bg-surface-950" : "border-slate-200 bg-white"}`}>
-                      <img src={deepDiveCards2[activeCard2].image} alt={deepDiveCards2[activeCard2].subtitle} className="w-full h-auto object-cover" />
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-colors ${
+                      isActive ? "bg-white text-primary shadow-md" : "bg-white/10 text-emerald-100"
+                    }`}>
+                      <Icon className="w-5 h-5" />
                     </div>
-                  </motion.div>
-                </AnimatePresence>
-
-                {/* Controls overlay */}
-                <button 
-                  onClick={() => setIsCardPaused2(!isCardPaused2)}
-                  className={`absolute top-4 right-4 z-20 w-10 h-10 rounded-full flex items-center justify-center backdrop-blur-md border transition-all ${isDarkMode ? "bg-black/40 border-white/10 text-white hover:bg-black/60" : "bg-white/40 border-white/40 text-slate-900 hover:bg-white/60"}`}
-                >
-                  {isCardPaused2 ? <Play className="w-4 h-4 ml-0.5" /> : <Pause className="w-4 h-4" />}
-                </button>
-
-                <div className="absolute -bottom-10 left-0 right-0 flex justify-center gap-2 z-20">
-                  {deepDiveCards2.map((_, i) => (
-                    <button
-                      key={i}
-                      onClick={() => setActiveCard2(i)}
-                      className={`w-2 h-2 rounded-full transition-all ${activeCard2 === i ? "w-6 bg-primary" : "bg-primary/30"}`}
-                    />
-                  ))}
-                </div>
-              </div>
+                    <div className="flex flex-col">
+                      <span className={`text-xs font-bold uppercase tracking-wider ${isActive ? "text-emerald-100" : "text-emerald-200/60"}`}>
+                        {item.subtitle}
+                      </span>
+                      <span className={`font-semibold ${isActive ? "text-white" : "text-emerald-100/70"}`}>
+                        {item.title.split('.')[0]}
+                      </span>
+                    </div>
+                  </button>
+                );
+              })}
             </div>
 
-            {/* Right side: Text that updates based on activeCard2 */}
-            <div className="order-2 lg:order-2 relative flex flex-col justify-between">
-              <div className="relative min-h-[550px] sm:min-h-[450px] md:min-h-[380px] lg:min-h-[420px]">
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={activeCard2}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                    transition={{ duration: 0.4 }}
-                    className="absolute inset-0"
-                  >
-                  <div className={`${deepDiveCards2[activeCard2].subtitleColor} font-bold tracking-widest text-sm uppercase mb-4`}>{deepDiveCards2[activeCard2].subtitle}</div>
-                  <h2 className={`text-3xl sm:text-4xl md:text-5xl font-bold mb-6 tracking-tight ${isDarkMode ? "text-white" : "text-slate-900"}`}>
-                    {deepDiveCards2[activeCard2].title}
-                  </h2>
-                  <p className={`text-lg mb-8 leading-relaxed ${isDarkMode ? "text-slate-400" : "text-slate-600"}`}>
-                    {deepDiveCards2[activeCard2].description}
-                  </p>
-                  <ul className="space-y-4 mb-8">
-                    {deepDiveCards2[activeCard2].features.map((item, i) => (
-                      <li key={i} className="flex items-center gap-3">
-                        <div className={`w-6 h-6 rounded-full ${deepDiveCards2[activeCard2].bgFeatureColor} flex items-center justify-center ${deepDiveCards2[activeCard2].featureColor}`}>
-                          <CheckCircle2 className="w-4 h-4" />
-                        </div>
-                        <span className={`font-medium ${isDarkMode ? "text-slate-300" : "text-slate-700"}`}>{item}</span>
-                      </li>
-                    ))}
-                  </ul>
+            {/* Right Main Stage */}
+            <div className="w-full lg:w-2/3">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={activeFeature}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  transition={{ duration: 0.4 }}
+                  className="p-8 lg:p-12 rounded-[2.5rem] border shadow-2xl flex flex-col lg:flex-row items-center gap-10 lg:gap-16 bg-primary border-white/20 "
+                >
+                  {/* Stage Text */}
+                  <div className="flex-1">
+                    <div className="text-emerald-300 font-bold tracking-widest text-sm uppercase mb-3">
+                      {deepDiveFeatures[activeFeature].subtitle}
+                    </div>
+                    <h2 className="text-2xl sm:text-3xl font-bold mb-4 tracking-tight text-white">
+                      {deepDiveFeatures[activeFeature].title}
+                    </h2>
+                    <p className="text-base mb-8 leading-relaxed text-emerald-50/90">
+                      {deepDiveFeatures[activeFeature].description}
+                    </p>
+                    <ul className="space-y-4">
+                      {deepDiveFeatures[activeFeature].features.map((feat, i) => (
+                        <li key={i} className="flex items-center gap-3">
+                          <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-white">
+                            <CheckCircle2 className="w-4 h-4" />
+                          </div>
+                          <span className="font-medium text-emerald-50">{feat}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  {/* Stage Image */}
+                  <div className="w-[220px] sm:w-[280px] md:w-[300px] shrink-0 perspective-[1000px]">
+                    <motion.div 
+                      initial={{ rotateY: 15 }}
+                      animate={{ rotateY: 0 }}
+                      className="rounded-[2rem] overflow-hidden border border-white/20 shadow-2xl bg-white/5"
+                    >
+                      <img 
+                        src={deepDiveFeatures[activeFeature].image} 
+                        alt={deepDiveFeatures[activeFeature].subtitle} 
+                        className="w-full h-auto object-cover" 
+                      />
+                    </motion.div>
+                  </div>
                 </motion.div>
               </AnimatePresence>
-              </div>
             </div>
           </div>
         </div>

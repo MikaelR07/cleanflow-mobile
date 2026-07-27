@@ -48,35 +48,35 @@ export default function AboutUs() {
           <div className="relative z-10 max-w-7xl mx-auto px-6">
             <div className="max-w-4xl">
               <div className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold tracking-widest uppercase mb-8 border ${isDarkMode ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-emerald-50 text-emerald-700 border-emerald-200'}`}>
-                <Globe2 className="w-3.5 h-3.5" /> About Klinflow
+                <Globe2 className="w-3.5 h-3.5" /> Our Sole Purpose
               </div>
               <h1 className={`text-4xl md:text-6xl lg:text-7xl font-black tracking-tighter mb-8 leading-[1.05] ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
-                Industrializing the{' '}
-                <span className="text-emerald-500">circular economy</span>, one transaction at a time.
+                Building the{' '}
+                <span className="text-emerald-500">Operating System </span>, for the Modern Circular Economy.
               </h1>
               <p className={`text-xl leading-relaxed max-w-3xl ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>
-                Klinflow is the operating system for the global waste-to-value supply chain. We provide the infrastructure, intelligence, and financial rails that transform scattered informal recycling networks into efficient, traceable, and profitable operations.
+                Klinflow is the AI-powered operating system for Africa's waste-to-value supply chain. We provide the infrastructure, intelligence, and financial rails that transform scattered informal recycling networks into efficient, traceable, and profitable operations.
+                We aim to modernize the recycling industry by equipping every participant with the technology needed to operate more efficiently, collaborate seamlessly, and create greater value from recyclable materials.
               </p>
             </div>
           </div>
         </div>
 
         {/* Stats Banner */}
-        <div className={`w-full relative py-20 overflow-hidden ${isDarkMode ? 'bg-surface-900' : 'bg-slate-900'}`}>
-          <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?q=80&w=2070&auto=format&fit=crop')] bg-cover bg-center opacity-20 mix-blend-luminosity"></div>
-          <div className={`absolute inset-0 bg-gradient-to-r ${isDarkMode ? 'from-surface-900 via-surface-900/90 to-surface-900' : 'from-slate-900 via-slate-900/90 to-slate-900'}`}></div>
+        <div className={`w-full relative py-10 overflow-hidden ${isDarkMode ? 'bg-emerald-700' : 'bg-primary'}`}>
+         
           <div className="relative z-10 max-w-7xl mx-auto px-6">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12">
+            <div className="grid grid-cols-4 gap-2 sm:gap-4 md:gap-12">
               {[
                 { value: "50M+", label: "Tons Tracked", sub: "Across all hubs" },
                 { value: "120K", label: "Active Agents", sub: "In 4 countries" },
                 { value: "$85M", label: "Payouts Processed", sub: "Direct to wallets" },
                 { value: "99.95%", label: "Platform Uptime", sub: "Enterprise SLA" },
               ].map((stat, i) => (
-                <div key={i} className="text-center md:text-left">
-                  <p className="text-4xl md:text-5xl font-black text-white mb-1 tracking-tight">{stat.value}</p>
-                  <p className="text-sm font-bold text-emerald-400 uppercase tracking-widest">{stat.label}</p>
-                  <p className="text-xs text-slate-500 mt-1">{stat.sub}</p>
+                <div key={i} className="text-center md:text-left flex flex-col justify-start">
+                  <p className="text-lg sm:text-xl md:text-5xl font-black text-white mb-0.5 md:mb-1 tracking-tight">{stat.value}</p>
+                  <p className="text-[8px] sm:text-[10px] md:text-sm font-bold text-emerald-100 dark:text-emerald-300 uppercase tracking-wider md:tracking-widest leading-tight">{stat.label}</p>
+                  <p className="text-[8px] sm:text-[10px] md:text-xs text-slate-700 dark:text-slate-100 mt-0.5 md:mt-1 leading-tight">{stat.sub}</p>
                 </div>
               ))}
             </div>
@@ -184,9 +184,8 @@ export default function AboutUs() {
           </div>
 
           {/* CTA */}
-          <div className={`p-12 md:p-16 rounded-[2rem] text-center border relative overflow-hidden ${isDarkMode ? 'bg-surface-900 border-white/5' : 'bg-slate-900 border-slate-800'}`}>
-            <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/20 rounded-full blur-[100px]"></div>
-            <div className="absolute bottom-0 left-0 w-64 h-64 bg-blue-500/15 rounded-full blur-[80px]"></div>
+          <div className={`p-12 md:p-16 rounded-[2rem] text-center border relative overflow-hidden ${isDarkMode ? 'bg-emerald-800 border-emerald-800' : 'bg-emerald-800 border-emerald-800'}`}>
+            
             <div className="relative z-10">
               <Zap className="w-10 h-10 mx-auto mb-5 text-emerald-400" />
               <h2 className="text-3xl md:text-4xl font-bold mb-4 text-white tracking-tight">Ready to industrialize your operations?</h2>
@@ -194,7 +193,7 @@ export default function AboutUs() {
                 Join the largest network of automated material processing hubs and collection agents in Africa.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link to="/contact" className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl text-sm font-bold bg-emerald-500 text-white hover:bg-emerald-600 transition-all shadow-xl shadow-emerald-500/20">
+                <Link to="/contact" className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl text-sm font-bold bg-emerald-500 text-white hover:bg-emerald-600 transition-all">
                   Request a Demo <ArrowRight className="w-4 h-4" />
                 </Link>
                 <Link to="/faq" className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl text-sm font-bold bg-white/10 text-white hover:bg-white/15 transition-all border border-white/10">

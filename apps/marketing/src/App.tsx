@@ -14,6 +14,7 @@ const Ecosystem = lazy(() => import('./pages/Ecosystem'));
 const EcosystemGallery = lazy(() => import('./pages/EcosystemGallery'));
 const AboutUs = lazy(() => import('./pages/AboutUs'));
 const FAQ = lazy(() => import('./pages/FAQ'));
+const Pricing = lazy(() => import('./pages/Pricing'));
 
 const Loader = () => (
   <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center">
@@ -50,6 +51,7 @@ function App() {
             <Route path="/gallery" element={<EcosystemGallery />} />
             <Route path="/about" element={<AboutUs />} />
             <Route path="/faq" element={<FAQ />} />
+            <Route path="/pricing" element={<Pricing />} />
           </Routes>
         </Suspense>
       </div>
