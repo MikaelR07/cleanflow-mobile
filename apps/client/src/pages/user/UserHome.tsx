@@ -1,67 +1,70 @@
 /**
- * User Home — Aggregator/Marketplace Discovery Mode
- * Connects residents to verified agents & companies near them
+ * User Home — Resident Dashboard
+ * An e-commerce and on-demand hybrid layout for everyday recycling.
  */
 import { useEffect, useState, useMemo } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
-  Bell,
-  MapPin,
-  Zap,
-  Wallet,
-  Truck,
-  Recycle,
-  TrendingUp,
-  ArrowRight,
-  ChevronRight,
-  Trophy,
-  Building2,
-  Users,
-  ShieldCheck,
-  X,
-  Sparkles,
-  Search,
-  Brain,
-  BarChart2,
-  BarChart2Icon,
-  BarChart3Icon,
-  LeafyGreen,
-  Leaf,
-  BrainCog,
-  TrainFront,
-  BrainCircuit,
+  Bell, MapPin, Wallet, Truck, Recycle, TrendingUp, ChevronRight,
+  Sparkles, BrainCircuit, Leaf, Users, BarChart3Icon, Search, Package,
+  Info, DollarSign, Calendar, Clock, Star, ShieldCheck, ArrowRight,
+  BarChart3,
+  BarChart,
+  RecycleIcon,
+  ChevronDownCircle
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useBookingStore } from "@klinflow/core/stores/bookingStore";
 import { useAuthStore } from "@klinflow/core/stores/authStore";
 import { useNotificationStore } from "@klinflow/core/stores/notificationStore";
+import { useServiceStore } from "@klinflow/core/stores/serviceStore";
 import { supabase } from "@klinflow/supabase";
 import { getThumbnailUrl } from "@klinflow/core/utils/imageUtils";
-
 import { toast } from "sonner";
 import PushNotificationModal from "@klinflow/ui/components/PushNotificationModal";
 import { LoadingScreen } from "@klinflow/ui/components/Loading";
 import SellerHome from "./SellerHome";
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 15 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.3, ease: 'easeOut' } }
+};
+
+const catalogItems = [
+  { id: 'plastic', name: 'Plastics', desc: 'PET Bottles, HDPE', price: '25/KG', icon: '🥤', color: 'from-blue-500/10 to-blue-500/5', border: 'border-blue-500/20', text: 'text-blue-600 dark:text-blue-400' },
+  { id: 'paper', name: 'Paper & Carton', desc: 'Cardboard, Books', price: '10/KG', icon: '📦', color: 'from-amber-500/10 to-amber-500/5', border: 'border-amber-500/20', text: 'text-amber-600 dark:text-amber-400' },
+  { id: 'metal', name: 'Metals', desc: 'Aluminum, Steel', price: '60/KG', icon: '🥫', color: 'from-slate-500/10 to-slate-500/5', border: 'border-slate-500/20', text: 'text-slate-600 dark:text-slate-400' },
+  { id: 'ewaste', name: 'E-Waste', desc: 'Phones, Cables', price: 'VARIES', icon: '📱', color: 'from-purple-500/10 to-purple-500/5', border: 'border-purple-500/20', text: 'text-purple-600 dark:text-purple-400' },
+  { id: 'glass', name: 'Glass', desc: 'Bottles, Jars', price: '3/KG', icon: '🍾', color: 'from-emerald-500/10 to-emerald-500/5', border: 'border-emerald-500/20', text: 'text-emerald-600 dark:text-emerald-400' },
+];
+
+const COLOR_PALETTES = [
+  { color: 'from-blue-500/10 to-blue-500/5', border: 'border-blue-500/20', text: 'text-blue-600 dark:text-blue-400' },
+  { color: 'from-amber-500/10 to-amber-500/5', border: 'border-amber-500/20', text: 'text-amber-600 dark:text-amber-400' },
+  { color: 'from-slate-500/10 to-slate-500/5', border: 'border-slate-500/20', text: 'text-slate-600 dark:text-slate-400' },
+  { color: 'from-purple-500/10 to-purple-500/5', border: 'border-purple-500/20', text: 'text-purple-600 dark:text-purple-400' },
+  { color: 'from-emerald-500/10 to-emerald-500/5', border: 'border-emerald-500/20', text: 'text-emerald-600 dark:text-emerald-400' },
+];
 
 export default function UserHome() {
   const profile = useAuthStore((s) => s.profile);
   const walletBalance = useAuthStore((s) => s.walletBalance);
   const rewardPoints = useAuthStore((s) => s.rewardPoints);
   const role = useAuthStore((s) => s.role);
-  const withdrawRewards = useAuthStore((s) => s.withdrawRewards);
-  const subscribeToProfileChanges = useAuthStore(
-    (s) => s.subscribeToProfileChanges,
-  );
+  const subscribeToProfileChanges = useAuthStore((s) => s.subscribeToProfileChanges);
   const fetchProfile = useAuthStore((s) => s.fetchProfile);
   const isInitializing = useAuthStore((s) => s.isInitializing);
 
   const bookings = useBookingStore((s) => s.bookings);
   const fetchBookings = useBookingStore((s) => s.fetchBookings);
 
-  // NOTE: Realtime subscription is managed globally in App.tsx — do NOT subscribe/cleanup here
   const getUnreadCount = useNotificationStore((s) => s.getUnreadCount);
   const fetchNotifications = useNotificationStore((s) => s.fetchNotifications);
   const subscribeToPush = useNotificationStore((s) => s.subscribeToPush);
+  
+  const categories = useServiceStore((s) => s.categories);
+  const fetchCategories = useServiceStore((s) => s.fetchCategories);
+  
   const navigate = useNavigate();
 
   const unreadCount = getUnreadCount();
@@ -70,29 +73,20 @@ export default function UserHome() {
 
   useEffect(() => {
     fetchBookings();
+    fetchCategories();
     if (profile?.id) {
-      fetchProfile(); // Force refresh balance/points on mount
+      fetchProfile();
       fetchNotifications(profile.id, role);
       subscribeToProfileChanges(profile.id);
-      // Realtime subscription handled globally by App.tsx
     }
 
-    // Check if prompt was dismissed
     const dismissed = localStorage.getItem("push_prompt_dismissed");
-    if (
-      !dismissed &&
-      typeof window !== "undefined" &&
-      "Notification" in window &&
-      Notification.permission === "default"
-    ) {
+    if (!dismissed && typeof window !== "undefined" && "Notification" in window && Notification.permission === "default") {
       setShowPushPrompt(true);
     }
-
-    // NOTE: Do NOT call cleanupNotifications() or cleanupBookings() here — it destroys the global subscription
     return () => {};
   }, [profile?.id, role]);
 
-  // Fetch dynamic global rank
   useEffect(() => {
     const fetchRank = async () => {
       if (!profile?.id) return;
@@ -111,26 +105,10 @@ export default function UserHome() {
     fetchRank();
   }, [profile?.id, profile?.rewardPoints]);
 
-
-
-  const handleDismissPush = () => {
-    setShowPushPrompt(false);
-    localStorage.setItem("push_prompt_dismissed", "true");
-  };
-
-  const handleEnablePush = async () => {
-    const success = await subscribeToPush();
-    if (success) {
-      setShowPushPrompt(false);
-      toast.success("Alerts Enabled!");
-    }
-  };
-
   const handleWithdraw = () => {
     if (walletBalance < 100) {
       toast.warning(`You need KSh ${100 - walletBalance} more to withdraw.`, {
-        description:
-          "Klinflow requires a minimum of KSh 100 for settlement processing.",
+        description: "Klinflow requires a minimum of KSh 100 for settlement processing.",
       });
       return;
     }
@@ -140,44 +118,9 @@ export default function UserHome() {
   const metrics = useMemo(() => {
     const completed = bookings.filter((b) => b.status === "completed");
     const totalPickups = completed.length;
-    const kgRecovered = completed.reduce(
-      (sum: number, b: any) =>
-        sum + (Number(b.actualWeightKg) || Number(b.weightKg) || 0),
-      0,
-    );
-    const treesSaved = (kgRecovered * 0.1).toFixed(2);
-    const co2OffsetTonnes = ((kgRecovered * 1.2) / 1000).toFixed(3);
-    return { totalPickups, kgRecovered, treesSaved, co2OffsetTonnes };
+    const kgRecovered = completed.reduce((sum: number, b: any) => sum + (Number(b.actualWeightKg) || Number(b.weightKg) || 0), 0);
+    return { totalPickups, kgRecovered };
   }, [bookings]);
-
-  const { totalPickups, kgRecovered, treesSaved, co2OffsetTonnes } = metrics; // 1kg = 1.2kg CO2, divide by 1000 for tonnes
-
-  const getImpactLevel = (count: number) => {
-    if (count >= 50)
-      return {
-        label: "Climate Guardian",
-        icon: "🏆",
-        color: "text-indigo-600 bg-indigo-50 border-indigo-100",
-      };
-    if (count >= 20)
-      return {
-        label: "Eco Warrior",
-        icon: "🛡️",
-        color: "text-emerald-600 bg-emerald-50 border-emerald-100",
-      };
-    if (count >= 5)
-      return {
-        label: "Green Scout",
-        icon: "🌱",
-        color: "text-amber-600 bg-amber-50 border-amber-100",
-      };
-    return {
-      label: "Seedling",
-      icon: "🥚",
-      color: "text-slate-600 bg-slate-50 border-slate-100",
-    };
-  };
-  const impact = getImpactLevel(totalPickups);
 
   if (isInitializing && !profile) {
     return <LoadingScreen message="Hydrating Profile..." />;
@@ -192,277 +135,250 @@ export default function UserHome() {
   }
 
   return (
-    <div className="space-y-6 px-1.5">
-      {/* ── PUSH ENROLLMENT MODAL ── */}
-      <PushNotificationModal
-        isOpen={showPushPrompt}
-        onClose={() => setShowPushPrompt(false)}
-      />
+    <div className="pb-4 bg-[#f8fafc] dark:bg-[#0f172a]  font-sans">
+      <PushNotificationModal isOpen={showPushPrompt} onClose={() => setShowPushPrompt(false)} />
 
-      {/* ── TOP NAV & HERO ── */}
-      <div className="space-y-3 pt-[calc(env(safe-area-inset-top,1rem)+4rem)]">
-        {/* Header Section - Edge to Edge - DYNAMIC STICKY */}
-        <div className="fixed top-0 left-0 right-0 z-50 max-w-lg mx-auto bg-white dark:bg-slate-800 pt-[calc(env(safe-area-inset-top,1rem)+1.5rem)] pb-2 px-4 border-b border-slate-200 dark:border-slate-900/50 ">
-          <div className="flex items-center justify-between px-1">
-            <div className="flex items-center gap-2">
-              {/* Profile Avatar */}
-              <div className="shrink-0">
-                <div className="w-12 h-12  rounded-full bg-gradient-to-br from-emerald-500 to-emerald-700 flex items-center justify-center text-2xl shadow-lg border-2 border-white dark:border-slate-700 transition-all overflow-hidden">
-                  {profile?.avatarUrl ? (
-                    <img
-                      src={getThumbnailUrl(profile.avatarUrl, { width: 300 })}
-                      className="w-full h-full object-cover"
-                      alt="Profile"
-                    />
-                  ) : (
-                    profile?.avatarUrl || "👤"
-                  )}
-                </div>
-              </div>
-              <div>
-                <h1 className="text-lg font-normal italic tracking-wide text-slate-900 dark:text-white leading-tight">
-                  Hello{" "}
-                  {
-                    (profile?.fullName || profile?.name || "Resident").split(
-                      " ",
-                    )[0]
-                  }
-                  👋
-                </h1>
-                <div className="flex items-center gap-1.5  text-[10px] text-primary font-semibold capitalize tracking-wider bg-primary/10 px-0.5 py-0.5 rounded-full border border-primary/20 w-fit">
-                  <MapPin className="w-3 h-3" />{" "}
-                  {profile?.location?.estate ||
-                    profile?.estate ||
-                    "searching..."}
-                </div>
+      {/* ── TOP NAV (FIXED) ── */}
+      <div className="fixed top-0 left-0 right-0 z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-slate-200/50 dark:border-slate-800/50 pt-[calc(env(safe-area-inset-top,1rem)+1.5rem)] pb-3 px-4">
+        <div className="max-w-xl mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 p-[2px] shadow-sm">
+              <div className="w-full h-full rounded-full bg-white dark:bg-slate-900 flex items-center justify-center overflow-hidden">
+                {profile?.avatarUrl ? (
+                  <img src={getThumbnailUrl(profile.avatarUrl, { width: 100 })} className="w-full h-full object-cover" alt="Profile" />
+                ) : (
+                  <span className="text-xl">👤</span>
+                )}
               </div>
             </div>
-            <button
-              onClick={() => navigate("/notifications")}
-              className="relative w-11 h-11 shrink-0 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center  transition-all active:scale-95 group"
-            >
-              <Bell className="w-5 h-5 text-slate-400 group-hover:text-primary transition-colors" />
-              {Number(unreadCount) > 0 && (
-                <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-red-600 text-white text-[10px] font-bold rounded-full flex items-center justify-center ring-2 ring-white dark:ring-slate-800 shadow-md animate-in zoom-in">
-                  {unreadCount}
-                </span>
-              )}
-            </button>
-          </div>
-        </div>
-
-        {/* Wallet Hero */}
-        <div className="bg-gradient-to-bl  from-[#064e3b] to-primary rounded-xl p-6 gpu-layer">
-          <div className="flex flex-col gap-6 relative z-10">
-            <div className="flex items-end justify-between">
-              <div>
-                <p className="text-[12px] font-semibold text-emerald-200/90 Capitalise tracking-widest mb-1.5 flex items-center gap-1.5">
-                  <Wallet className="w-3 h-3" /> Wallet Balance
-                </p>
-                <h2 className="text-2xl sm:text-5xl font-semibold  text-white tracking-tighter leading-none">
-                  KSh {Number(walletBalance).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                </h2>
+            <div>
+              <h1 className="text-lg font-black text-slate-900 dark:text-white tracking-wide leading-none">
+                Hi, {(profile?.fullName || profile?.name || "Resident").split(" ")[0]}!👋
+              </h1>
+              <div className="flex items-center gap-1.5 mt-1 text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold capitalize tracking-wider bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20 w-fit">
+                <MapPin className="w-3 h-3" />
+                {profile?.location?.estate || profile?.estate || "Location not set"}
               </div>
+            </div>
+          </div>
+          <button
+            onClick={() => navigate("/notifications")}
+            className="relative w-11 h-11 shrink-0 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center shadow-sm hover:shadow-md transition-all active:scale-95 group"
+          >
+            <Bell className="w-5 h-5 text-slate-400 group-hover:text-emerald-500 transition-colors" />
+            {Number(unreadCount) > 0 && (
+              <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-red-600 text-white text-[10px] font-bold rounded-full flex items-center justify-center ring-2 ring-white dark:ring-slate-800 shadow-md animate-in zoom-in">
+                {unreadCount}
+              </span>
+            )}
+          </button>
+        </div>
+      </div>
 
-              <button
-                onClick={handleWithdraw}
-                className="bg-primary  text-white px-5 py-3 rounded-xl text-xs font-semibold Capitalise tracking-widest active:scale-95 transition-all "
-              >
+      <div className="max-w-xl mx-auto px-1.5 space-y-6 pt-16">
+        
+        {/* ── ECO-REWARDS HERO CARD ── */}
+        <motion.div variants={itemVariants} initial="hidden" animate="visible" className="relative group overflow-hidden rounded-[24px] bg-gradient-to-br from-[#064e3b] to-emerald-600 p-6 shadow-lg shadow-emerald-900/20">
+          <div className="absolute top-0 right-0 p-4 opacity-20 pointer-events-none">
+            <Leaf className="w-28 h-28 text-white transform rotate-12" />
+          </div>
+          
+          <div className="relative z-10 flex flex-col gap-5">
+            <div className="flex justify-between items-start">
+              <div>
+                <p className="text-[10px] font-black text-emerald-300 uppercase tracking-widest mb-1.5 flex items-center gap-1">
+                  <Wallet className="w-4 h-4" /> Available Balance
+                </p>
+                <div className="flex items-baseline gap-1">
+                  <span className="text-xl font-bold text-emerald-100">KSh</span>
+                  <h2 className="text-4xl font-black text-white tracking-tighter leading-none">
+                    {Number(walletBalance).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </h2>
+                </div>
+              </div>
+              <button onClick={handleWithdraw} className="bg-primary  mt-2 backdrop-blur-md border border-white/20 text-white px-6 py-3 rounded-2xl text-sm font-bold capitalize tracking-widest transition-all active:scale-95 shadow-sm">
                 Withdraw
               </button>
             </div>
 
-            <div className="pt-4 border-t border-white/50 px-1">
-              <div className="flex items-center justify-between w-full">
-                <div className="flex flex-col items-center">
-                  <p className="text-sm sm:text-base font-semibold text-white leading-none text-center mb-1">
-                    {totalPickups}
-                  </p>
-                  <p className="text-[11px] font-semibold text-emerald-300 capitalize tracking-widest flex items-center gap-1">
-                    <Truck className="w-3 h-3" /> Pickups
-                  </p>
-                </div>
-
-                <div className="w-px h-10 bg-white/60" />
-
-                <div className="flex flex-col items-center">
-                  <p className="text-sm sm:text-base font-semibold text-white leading-none mb-1 text-center">
-                    {kgRecovered}kg
-                  </p>
-                  <p className="text-[11px] font-semibold text-emerald-300 capitalize tracking-widest flex items-center gap-1">
-                    <Recycle className="w-3 h-3" /> Recovered
-                  </p>
-                </div>
-
-                <div className="w-px h-10 bg-white/60" />
-                <div
-                  onClick={() => navigate("/impact-hub")}
-                  className="flex flex-col items-center cursor-pointer"
-                >
-                  <p className="text-sm sm:text-base font-semibold text-white leading-none text-center mb-1">
-                    {rewardPoints}
-                  </p>
-                  <p className="text-[11px] font-semibold text-emerald-300 capitalize tracking-widest flex items-center gap-1">
-                    <Leaf className="w-3 h-3" />
-                    Green Points
-                  </p>
-                </div>
+            <div className="flex items-center gap-1.5 pt-4 border-t border-white/10">
+              <div className="flex-1 bg-black/20 rounded-xl p-3 flex flex-col items-center justify-center">
+                <span className="text-lg font-black text-white">{metrics.totalPickups}</span>
+                <span className="text-[10px] font-bold text-emerald-200 capitalize tracking-widest mt-0.5 flex items-center gap-1 whitespace-nowrap"><Truck className="w-3 h-3" /> Pickups</span>
+              </div>
+              <div className="flex-1 bg-black/20 rounded-xl p-3 flex flex-col items-center justify-center">
+                <span className="text-lg font-black text-white">{metrics.kgRecovered}</span>
+                <span className="text-[10px] font-bold text-emerald-200 capitalize tracking-widest mt-0.5 flex items-center gap-1 whitespace-nowrap"><Recycle className="w-3 h-3" /> KG Recycled</span>
+              </div>
+              <div onClick={() => navigate("/impact-hub")} className="flex-1 bg-black/20  rounded-xl p-3 flex flex-col items-center justify-center cursor-pointer hover:bg-amber-500/30 transition-colors">
+                <span className="text-lg font-black text-amber-300">{rewardPoints}</span>
+                <span className="text-[10px] font-bold text-amber-200 capitalize tracking-widest mt-0.5 flex items-center gap-1 whitespace-nowrap"><Sparkles className="w-3 h-3 shrink-0" /> Green Points</span>
               </div>
             </div>
           </div>
-        </div>
+        </motion.div>
 
-        {/* Subscription Tier Card Hidden for Launch */}
-        <div className="bg-white dark:bg-slate-900/60 mt-3 rounded-[1rem] p-2 border border-slate-200 dark:border-slate-700 shadow-sm space-y-2">
-          {/* Quick Actions */}
-          <p className="text-[12px] font-semibold text-slate-500 dark:text-slate-400 tracking-wide px-1">
-            Quick Actions
-          </p>
+        {/* ── ACTION HUB (QUICK LINKS + CTA) ── */}
+        <motion.div variants={itemVariants} initial="hidden" animate="visible" transition={{ delay: 0.1 }} className="bg-slate-100 dark:bg-slate-800/40 rounded-[12px] p-1.5 !mt-2 shadow-sm border border-slate-200/50 dark:border-slate-800/60 space-y-3">
+          {/* ── APP SERVICES GRID ── */}
+          <div className="space-y-2">
+            <h3 className="text-[13px] font-black text-slate-700 dark:text-white capitalize tracking-widest px-1">Quick Actions</h3>
+            <div className="grid grid-cols-4 gap-2 !mt-1">
+              {[
+                { label: 'Wallet', icon: <Wallet className="w-6 h-6" />, route: '/resident-wallet', color: 'bg-amber-50 dark:bg-amber-500/10 text-amber-600' },
+                { label: 'Bookings', icon: <RecycleIcon className="w-6 h-6" />, route: '/my-bookings', color: 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600' },
+                { label: 'Dashboard', icon: <BarChart className="w-6 h-6" />, route: '/Analytics', color: 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600' },
+                { label: 'Discover', icon: <Search className="w-6 h-6" />, route: '/discovery', color: 'bg-blue-50 dark:bg-blue-500/10 text-blue-600' },
+              ].map((service) => (
+                <button 
+                  key={service.label} 
+                  onClick={() => navigate(service.route)}
+                  className="bg-white dark:bg-slate-700/50 border border-white dark:border-slate-700/50 rounded-2xl p-2.5 flex flex-col items-center justify-center gap-2 shadow-sm hover:shadow-md active:scale-95 transition-all group"
+                >
+                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${service.color} group-hover:scale-110 transition-transform`}>
+                    {service.icon}
+                  </div>
+                  <span className="text-[11px] font-bold text-slate-600 dark:text-slate-300 capitalize tracking-wider">{service.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
 
-          <div className="grid grid-cols-4 gap-2 !mt-1">
-            <button
-              onClick={() => navigate("/book-pickup")}
-              className="rounded-2xl border p-2.5 flex border-slate-200 dark:border-slate-700 flex-col items-center gap-2 relative"
-            >
-              <div className="w-10 h-10 bg-primary text-white rounded-xl flex items-center justify-center">
-                <Truck className="w-5 h-5" />
+          {/* ── PRIMARY CTA: ON-DEMAND BOOKING ── */}
+          <button 
+            onClick={() => navigate("/book-pickup")}
+            className="w-full bg-gradient-to-r from-emerald-600 to-primary text-white dark:bg-white dark:text-slate-900 rounded-[20px] p-1 shadow-md shadow-slate-900/5 active:scale-[0.98] transition-transform overflow-hidden group"
+          >
+            <div className="border border-white/10 dark:border-slate-900/10 rounded-[16px] p-4 flex items-center justify-between bg-repeat opacity-95">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-white/10 dark:bg-slate-900/10 rounded-full flex items-center justify-center">
+                  <Truck className="w-5 h-5 text-white dark:text-slate-900 group-hover:translate-x-1 transition-transform" />
+                </div>
+                <div className="text-left">
+                  <h3 className="text-lg font-black tracking-tight leading-none mb-1">Book a Pickup</h3>
+                  <p className="text-[11px] font-bold text-slate-200 dark:text-slate-600">Turn your recyclables into cash today</p>
+                </div>
               </div>
-
-              <div className="text-center mt-auto">
-                <p className="text-[10px] font-semibold capitalize tracking-widest leading-none dark:text-white">
-                  Pickup
-                </p>
+              <div className="w-8 h-8 bg-white/20 dark:bg-slate-900/20 rounded-full flex items-center justify-center">
+                <ArrowRight className="w-4 h-4 text-white dark:text-slate-900 group-hover:translate-x-1 transition-transform" />
               </div>
-            </button>
+            </div>
+          </button>
+        </motion.div>
+        
 
-            <button
-              onClick={() => navigate("/my-bookings")}
-              className="rounded-2xl border p-2.5 flex border-slate-200 dark:border-slate-700 flex-col items-center gap-2 relative"
-            >
-              <div className="w-10 h-10 bg-green-600 text-white rounded-xl flex items-center justify-center">
-                <Recycle className="w-5 h-5" />
-              </div>
-
-              <div className="text-center mt-auto">
-                <p className="text-[10px] font-semibold capitalize tracking-widest leading-none dark:text-white">
-                  Bookings
-                </p>
-              </div>
-            </button>
-
-            <button
-              onClick={() => navigate("/Analytics")}
-              className="rounded-2xl border p-2.5 flex border-slate-200 dark:border-slate-700 flex-col items-center gap-2 relative"
-            >
-              <div className="w-10 h-10 bg-emerald-500 text-white rounded-xl flex items-center justify-center">
-                <BarChart2Icon className="w-5 h-5" />
-              </div>
-
-              <div className="text-center mt-auto">
-                <p className="text-[10px] font-semibold capitalize tracking-widest leading-none dark:text-white">
-                  Dashboard
-                </p>
-              </div>
-            </button>
-
-            <button
-              onClick={() => navigate("/resident-wallet")}
-              className="rounded-2xl border p-2.5 flex border-slate-200 dark:border-slate-700 flex-col items-center gap-2 relative"
-            >
-              <div className="w-10 h-10 bg-amber-500 text-white rounded-xl flex items-center justify-center">
-                <Wallet className="w-5 h-5" />
-              </div>
-
-              <div className="text-center mt-auto">
-                <p className="text-[10px] font-semibold capitalize tracking-widest leading-none dark:text-white">
-                  Wallet
-                </p>
-              </div>
+        {/* ── CATALOG: E-COMMERCE SCROLL ── */}
+        <motion.div variants={itemVariants} initial="hidden" animate="visible" transition={{ delay: 0.2 }} className="space-y-2">
+          <div className="flex items-center justify-between px-1">
+            <h3 className="text-[13px] font-black text-slate-800 dark:text-white capitalize tracking-widest">What Collectors Buy!</h3>
+            <button onClick={() => navigate("/discovery")} className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-widest hover:underline flex items-center">
+              view details <ChevronDownCircle className="w-3 h-3 ml-0.5" />
             </button>
           </div>
-          {/* Discovery Entry Point */}
-          <div
-            onClick={() => navigate("/discovery")}
-            className="bg-gradient-to-r from-emerald-600 to-primary !mt-2 rounded-xl p-4 border border-slate-100 dark:border-slate-800 flex items-center justify-between cursor-pointer active:scale-[0.98] transition-all group shadow-sm"
+          
+          <div className="flex gap-3 overflow-x-auto pb-4 custom-scrollbar snap-x snap-mandatory -mx-1.5 px-1.5 pr-6 sm:mx-0 sm:px-0">
+            {(categories.length > 0 ? categories : catalogItems as any[]).map((item: any, idx: number) => {
+              const palette = COLOR_PALETTES[idx % COLOR_PALETTES.length];
+              const isDB = categories.length > 0;
+              const priceVal = isDB ? (item.price_per_unit || item.price_per_kg || 0) : null;
+              const displayPrice = isDB 
+                ? (priceVal ? `Upto ${priceVal}/kg` : 'VARIES') 
+                : (item.price.includes('VARIES') ? 'VARIES' : `Upto ${item.price}`);
+              
+              const identifier = (item.slug || item.id || '').toLowerCase();
+              const itemLabel = (item.label || item.name || '').toLowerCase();
+              let bgImage = item.image_url;
+              if (!bgImage) {
+                if (identifier.includes('textile') || identifier.includes('clothes') || itemLabel.includes('textile') || itemLabel.includes('clothes')) bgImage = '/material-categories/textile.webp';
+                else if (identifier.includes('paper') || identifier.includes('cardboard') || identifier.includes('box')) bgImage = '/material-categories/boxes.webp';
+                else if (identifier.includes('plastic')) bgImage = '/material-categories/plastic.webp';
+                else if (identifier.includes('ewaste') || identifier.includes('e-waste') || identifier.includes('electronic')) bgImage = '/material-categories/E-waste.webp';
+                else if (identifier.includes('metal')) bgImage = '/material-categories/metal.webp';
+                else if (identifier.includes('organic') || identifier.includes('food')) bgImage = '/material-categories/organic-waste.webp';
+                else if (identifier.includes('general') || identifier.includes('trash')) bgImage = '/material-categories/general-waste.webp';
+                else if (identifier.includes('glass')) bgImage = '/material-categories/glasses.webp';
+                else if (identifier.includes('appliance')) bgImage = '/material-categories/bulky-item.webp';
+                else if (identifier.includes('bulky') || identifier.includes('sofa') || identifier.includes('furniture')) bgImage = '/material-categories/bulky-sofas.webp';
+                else if (identifier.includes('recycl')) bgImage = '/material-categories/recyclables.webp';
+              }
+              
+              return (
+                <div 
+                  key={item.id} 
+                  onClick={() => navigate(`/materials/${identifier}`)}
+                  className={`snap-start relative shrink-0 w-[140px] ${!bgImage ? `bg-gradient-to-br ${isDB ? palette.color : item.color}` : 'bg-slate-900'} border ${isDB ? palette.border : item.border} rounded-2xl p-3 cursor-pointer hover:scale-105 active:scale-95 transition-all shadow-sm flex flex-col h-full overflow-hidden`}
+                  style={bgImage ? {
+                    backgroundImage: `linear-gradient(to bottom, rgba(15, 23, 42, 0.4), rgba(15, 23, 42, 0.8)), url(${bgImage})`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center'
+                  } : {}}
+                >
+                  <div className={`text-2xl mb-2 w-10 h-10 rounded-xl flex items-center justify-center shadow-sm border relative z-10 ${bgImage ? 'bg-white/20 backdrop-blur-md border-white/20' : 'bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-700'}`}>
+                    {item.icon || '♻️'}
+                  </div>
+                  <h4 className={`text-xs font-black mb-2 leading-none relative z-10 ${bgImage ? 'text-white' : (isDB ? palette.text : item.text)}`}>{item.label || item.name}</h4>
+                  <div className={`rounded-lg px-2 py-1.5 mt-auto relative z-10 ${bgImage ? 'bg-black/40 backdrop-blur-md border border-white/10' : 'bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm'}`}>
+                    <p className={`text-[9px] font-black text-center leading-none ${bgImage ? 'text-emerald-400' : 'text-emerald-600 dark:text-emerald-400'}`}>{displayPrice}</p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </motion.div>
+
+        
+        {/* ── DISCOVER MORE (MARKET & COMMUNITY) ── */}
+        <motion.div variants={itemVariants} initial="hidden" animate="visible" transition={{ delay: 0.4 }} className="grid grid-cols-1 sm:grid-cols-2 gap-2 !mt-1">
+          <div 
+            onClick={() => navigate("/market-pulse")}
+            className="bg-slate-200 dark:bg-gradient-to-br dark:from-emerald-600 dark:to-emerald-600 border border-white dark:border-emerald-800/30 rounded-[20px] p-4 flex items-center justify-between cursor-pointer hover:shadow-md active:scale-95 transition-all shadow-sm group"
           >
-            <div className="flex items-center gap-2">
-              <div className="w-10 h-10 rounded-xl bg-emerald-600 flex items-center justify-center shrink-0">
-                <MapPin className="w-5 h-5 text-white" />
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-emerald-100 dark:bg-emerald-900/50 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                <BarChart3Icon className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
               </div>
               <div>
-                <h3 className="text-[14px] font-semibold text-white leading-none mb-1">
-                  Ready to recycle?
-                </h3>
-                <p className="text-[12px]  text-slate-100">
-                  Find a verified collection partner near you
-                </p>
+                <h4 className="text-[15px] font-black text-slate-900 dark:text-white leading-none mb-1">Market Pulse</h4>
+                <p className="text-[11px] font-semibold text-slate-500">Live recyclable prices</p>
               </div>
             </div>
-            <div className="w-8 h-8  rounded-full flex items-center justify-center shrink-0 transition-colors">
-              <ChevronRight className="w-4 h-4 text-white" />
-            </div>
-          </div>
-        </div>
-        <div className="bg-white dark:bg-slate-900/60 mt-3 rounded-[1rem] p-2 border border-slate-200 dark:border-slate-700 shadow-sm space-y-2">
-          <p className="text-[13px] font-semibold text-slate-600 dark:text-slate-400 tracking-wide px-1">
-            Market Intelligence
-          </p>
-
-          {/* ── MARKET INTELLIGENCE ── */}
-          <div
-            onClick={() => navigate("/market-pulse")}
-            className="bg-gradient-to-bl  from-primary to-emerald-600 to-emerald-800 border border-slate-200 dark:border-slate-700/50 rounded-2xl p-6 flex items-center group active:scale-[0.98] transition-all relative overflow-hidden h-full shadow-sm"
-          >
-            <div className="flex items-center gap-2.5 relative z-10 w-full">
-              <div className="w-9 h-9 bg-white/20 rounded-xl flex items-center justify-center text-white shrink-0">
-                <BarChart3Icon className="w-4 h-4 text-white" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <h3 className="text-[14px] sm:text-xs font-bold text-white capitalize tracking-tight leading-tight truncate">
-                  Market Prices
-                </h3>
-                <p className="text-[10px] font-medium text-emerald-100 leading-snug mt-0.5 line-clamp-2">
-                  View Material prices in the market
-                </p>
-              </div>
-              <ChevronRight className="w-4 h-4 text-white/70 shrink-0" />
+            <div className="w-8 h-8 rounded-full bg-emerald-50 dark:bg-emerald-900/30 flex items-center justify-center group-hover:bg-emerald-100 dark:group-hover:bg-emerald-800/50 transition-colors">
+              <ChevronRight className="w-4 h-4 text-emerald-600 dark:text-emerald-400 group-hover:translate-x-0.5 transition-transform" />
             </div>
           </div>
 
-          {/* ── COMMUNITY COLLECTIVE ── */}
-          <div
+          <div 
             onClick={() => navigate("/community-collective")}
-            className="bg-gradient-to-br from-blue-600 via-emerald-600 to-primary border border-slate-200 dark:border-slate-800 rounded-2xl p-6 flex items-center group active:scale-[0.98] transition-all relative overflow-hidden h-full shadow-sm"
+            className="bg-gradient-to-br from-indigo-400 to-purple-400 border border-white dark:border-indigo-400 rounded-[20px] p-4 flex items-center justify-between cursor-pointer hover:shadow-md active:scale-95 transition-all shadow-sm group"
           >
-            <div className="flex items-center gap-2.5 relative z-10 w-full">
-              <div className="w-9 h-9 bg-white/20 rounded-xl flex items-center justify-center text-white shrink-0">
-                <Users className="w-4 h-4 text-white" />
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-indigo-100 dark:bg-indigo-900/50 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                <Users className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
               </div>
-              <div className="flex-1 min-w-0">
-                <h3 className="text-[14px] sm:text-xs font-bold text-white capitalize tracking-tight leading-tight truncate">
-                  Collective Pickups
-                </h3>
-                <p className="text-[10px] font-medium text-indigo-100 leading-snug mt-0.5 line-clamp-2">
-                  Join community members for pickups and earn
-                </p>
+              <div>
+                <h4 className="text-[15px] font-black text-slate-900 dark:text-white leading-none mb-1">Community Pickups</h4>
+                <p className="text-[11px] font-semibold text-indigo-600">Join group pickups</p>
               </div>
-              <ChevronRight className="w-4 h-4 text-white/70 shrink-0" />
+            </div>
+            <div className="w-8 h-8 rounded-full bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center group-hover:bg-indigo-100 dark:group-hover:bg-indigo-800/50 transition-colors">
+              <ChevronRight className="w-4 h-4 text-indigo-600 dark:text-indigo-400 group-hover:translate-x-0.5 transition-transform" />
             </div>
           </div>
-        </div>
+        </motion.div>
+
       </div>
 
-
-      {/* Floating AI Voice Assistant */}
+      {/* ── FLOATING AI ASSISTANT ── */}
       <motion.button
-        whileHover={{ scale: 1.1 }}
-        whileTap={{ scale: 0.9 }}
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
         onClick={() => navigate("/hygenex")}
-        className="fixed bottom-24 right-6 w-14 h-14 bg-emerald-500 rounded-full flex items-center justify-center z-50 border-1 border-white dark:border-slate-800"
+        className="fixed bottom-24 right-6 w-14 h-14 bg-gradient-to-r from-emerald-400 to-emerald-600 rounded-full flex items-center justify-center z-50 shadow-lg shadow-emerald-500/30 border-2 border-white dark:border-slate-800 group"
       >
-        <div className="absolute inset-0 rounded-full bg-emerald-500 opacity-20" />
-        <BrainCircuit className="w-6 h-6 text-white" />
+        <div className="absolute inset-0 rounded-full bg-emerald-500 animate-ping opacity-20" />
+        <BrainCircuit className="w-6 h-6 text-white group-hover:rotate-12 transition-transform" />
       </motion.button>
+      
     </div>
   );
 }

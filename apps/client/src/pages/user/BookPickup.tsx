@@ -322,7 +322,7 @@ export default function BookPickup() {
         amount: 0,
         totalPrice: finalPrice,
         photoUrl: photoUrl || (rescheduleId ? bookings.find(b => b.id === rescheduleId)?.photoUrl : null),
-        agentId: selectedAgent?.id || null,
+        agentId: selectedAgent?.id || selectedCompanyId || null,
         notes: customDescription || '',
         bookingType: selectedTime?.type || 'any',
       };
@@ -345,7 +345,7 @@ export default function BookPickup() {
         `A pickup request for ${quantity}kg of ${selected.label || (selected.slug || selected.id)} is available in ${customLocation.estate || 'your area'}.`,
         'info', // type
         'agent', // target role
-        selectedAgent?.id || null, // targeted agent if manually selected
+        selectedAgent?.id || selectedCompanyId || null, // targeted agent if manually selected
         { wasteType: selected.slug || selected.id } // metadata for client-side filtering
       );
 

@@ -17,6 +17,8 @@ export default function PostTradeMaterialStep({
   getPriceForMaterial,
   selectedSubcategory,
   setSelectedSubcategory,
+  grade,
+  setGrade,
   userId
 }: any) {
   const materialPrices = useServiceStore(s => s.materialPrices);
@@ -105,9 +107,11 @@ export default function PostTradeMaterialStep({
           ).map((cat: any) => {
             const isSelected = wasteType?.id === cat.id;
             const identifier = (cat.slug || cat.id || '').toLowerCase();
+            const catLabel = (cat.label || (cat as any).name || '').toLowerCase();
             let bgImage = cat.image_url;
             if (!bgImage) {
-              if (identifier.includes('paper') || identifier.includes('cardboard') || identifier.includes('box')) bgImage = '/material-categories/boxes.webp';
+              if (identifier.includes('textile') || identifier.includes('clothes') || catLabel.includes('textile') || catLabel.includes('clothes')) bgImage = '/material-categories/textile.webp';
+              else if (identifier.includes('paper') || identifier.includes('cardboard') || identifier.includes('box')) bgImage = '/material-categories/boxes.webp';
               else if (identifier.includes('plastic')) bgImage = '/material-categories/plastic.webp';
               else if (identifier.includes('ewaste') || identifier.includes('e-waste') || identifier.includes('electronic')) bgImage = '/material-categories/E-waste.webp';
               else if (identifier.includes('metal')) bgImage = '/material-categories/metal.webp';
@@ -199,6 +203,25 @@ export default function PostTradeMaterialStep({
                 .map(m => (
                   <option key={m.id} value={m.material_name}>{m.material_name}</option>
                 ))}
+            </select>
+          </div>
+
+          <div className="animate-in fade-in slide-in-from-top-2 duration-300">
+            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-1 mb-2 mt-2">
+              Material Grade / Quality
+            </p>
+            <select
+              value={grade}
+              onChange={(e) => setGrade(e.target.value)}
+              className="w-full p-3 rounded-xl bg-white dark:bg-slate-900/60 border 
+                         border-slate-200 dark:border-slate-700 text-sm font-semibold 
+                         text-slate-900 dark:text-white outline-none focus:border-emerald-500 
+                         transition-all appearance-none"
+            >
+              <option value="Premium">Premium</option>
+              <option value="Standard">Standard</option>
+              <option value="Mixed">Mixed</option>
+              <option value="Low Grade">Low Grade</option>
             </select>
           </div>
 

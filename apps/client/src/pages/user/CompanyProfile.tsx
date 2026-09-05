@@ -106,7 +106,7 @@ export default function CompanyProfile() {
     : (company?.rating > 0 ? company.rating.toFixed(1) : '0.0');
 
   return (
-    <div className="bg-[#F8F8FF] dark:bg-slate-800 transition-colors min-h-screen">
+    <div className="bg-slate-50 dark:bg-slate-800 transition-colors min-h-screen">
       {/* ── FIXED HEADER ── */}
       <div className="fixed top-0 left-0 right-0 z-50 max-w-lg mx-auto  bg-white dark:bg-slate-800 pt-[calc(env(safe-area-inset-top,1rem)+1rem)] pb-3 px-4 border-b border-slate-100 dark:border-slate-900">
         <div className="flex items-center justify-between">
@@ -227,7 +227,9 @@ export default function CompanyProfile() {
               {(showAllMaterials ? materials : materials.slice(0, 3)).map((m: string) => {
                   let bgImage = '';
                   const identifier = m.toLowerCase();
-                  if (identifier.includes('paper') || identifier.includes('cardboard') || identifier.includes('carton')) bgImage = '/material-categories/boxes.webp';
+                  const catLabel = m.toLowerCase();
+                  if (identifier.includes('textile') || identifier.includes('clothes') || catLabel.includes('textile') || catLabel.includes('clothes')) bgImage = '/material-categories/textile.webp';
+                  else if (identifier.includes('paper') || identifier.includes('cardboard') || identifier.includes('carton')) bgImage = '/material-categories/boxes.webp';
                   else if (identifier.includes('plastic')) bgImage = '/material-categories/plastic.webp';
                   else if (identifier.includes('ewaste') || identifier.includes('e-waste') || identifier.includes('electronic')) bgImage = '/material-categories/E-waste.webp';
                   else if (identifier.includes('metal')) bgImage = '/material-categories/metal.webp';

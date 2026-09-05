@@ -137,9 +137,9 @@ export default function RedeemGFP() {
   };
 
   return (
-    <div className="-mx-1 px-1 bg-[#F8F8FF] dark:bg-slate-900 text-slate-900 dark:text-white pb-5 relative  overflow-x-hidden">
+    <div className="-mx-1 px-1 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white pb-5 relative  overflow-x-hidden">
       {/* AMBER TOP BACKGROUND (Perfectly fills edges by scaling and clipping overflow) */}
-      <div className="absolute top-0 left-0 right-0 h-[330px] bg-gradient-to-b from-amber-500 to-amber-600 rounded-b-[40%] scale-x-[1.5] z-0 shadow-sm" />
+      <div className="absolute top-0 left-0 right-0 h-[220px] bg-gradient-to-b from-amber-500 to-amber-600 rounded-b-[40%] scale-x-[1.5] z-0 shadow-sm" />
 
       {/* HEADER */}
       <div className="fixed top-0 left-0 right-0 z-50 bg-amber-500 dark:bg-amber-600 backdrop-blur-md pt-[calc(env(safe-area-inset-top,1rem)+0.6rem)] pb-3 px-4 max-w-lg mx-auto flex items-start justify-between">
@@ -149,7 +149,7 @@ export default function RedeemGFP() {
 
         <div className="absolute left-0 right-0 bottom-2 flex flex-col items-center pointer-events-none text-center px-12">
           <h1 className="text-[17px] font-bold tracking-wide text-white leading-tight">Redeem GFP</h1>
-          <p className="text-[9px] text-slate-50 font-medium tracking-wider uppercase mt-0.5">Turn  Green fuel points to rewards</p>
+          <p className="text-[9px] text-slate-50 font-medium tracking-wider capitalize mt-0.5">Turn  Green fuel points to rewards</p>
         </div>
 
         <button 
@@ -173,10 +173,10 @@ export default function RedeemGFP() {
         </div>
 
         {/* STATS CARD */}
-        <div className="bg-white dark:bg-slate-800 rounded-3xl p-2 shadow-sm border border-slate-200 dark:border-slate-700">
+        <div className="bg-white dark:bg-slate-800 rounded-xl p-2 shadow-sm border border-slate-200 dark:border-slate-700">
           <div className="flex items-center justify-between">
             <div className="text-center flex-1">
-              <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1.5">Available GFP</p>
+              <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400 capitalize tracking-widest mb-1.5">Available GFP</p>
               <div className="flex items-baseline justify-center gap-1 text-emerald-600 dark:text-emerald-400">
                 <span className="text-base font-black leading-none">
                   {isLoadingWallet ? '...' : gfpBalance.toLocaleString()}
@@ -187,7 +187,7 @@ export default function RedeemGFP() {
             <div className="w-[1px] h-10 bg-slate-200 dark:bg-slate-200" />
 
             <div className="text-center flex-1">
-              <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1.5">Worth (KES)</p>
+              <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400 capitalize tracking-widest mb-1.5">Worth (KES)</p>
               <div className="flex items-baseline justify-center gap-1 text-amber-600 dark:text-amber-500">
                 <span className="text-base font-black leading-none">
                   {maxKsh.toLocaleString()}
@@ -200,7 +200,7 @@ export default function RedeemGFP() {
         {/* OPTIONS GRID */}
         <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-700 p-5">
           <div className="text-center mb-5">
-            <h3 className="text-[15px] font-black text-slate-900 dark:text-white uppercase tracking-wider mb-1">Redeem your points</h3>
+            <h3 className="text-[15px] font-black text-slate-900 dark:text-white capitalize tracking-wider mb-1">Redeem your points</h3>
             <p className="text-xs font-medium text-slate-500 dark:text-slate-400">Choose a reward to claim instantly</p>
           </div>
 

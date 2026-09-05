@@ -9,11 +9,13 @@ const SupportPage = lazy(() => import('../../../pages/settings/SupportPage'));
 const FeedbackPage = lazy(() => import('../../../pages/settings/FeedbackPage'));
 const SubscriptionPage = lazy(() => import('../../../pages/settings/SubscriptionPage'));
 const SubscriptionDetail = lazy(() => import('../../../pages/settings/SubscriptionDetail'));
+const GeneralSettingsPage = lazy(() => import('../../../pages/settings/GeneralSettingsPage'));
 
 export function getSettingsRoutes() {
   return (
     <Route path="/settings">
       <Route index element={<SettingsMenu />} />
+      <Route path="general" element={<GeneralSettingsPage />} />
       <Route path="profile" element={<ProfilePage />} />
       <Route path="subscriptions" element={<SubscriptionPage />} />
       <Route path="subscriptions/:tierId" element={<SubscriptionDetail />} />

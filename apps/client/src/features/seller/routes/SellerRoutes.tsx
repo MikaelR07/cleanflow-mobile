@@ -11,6 +11,7 @@ const MarketplaceInventory = lazy(() => import('../../../pages/user/MarketplaceI
 const MarketIntelligenceHub = lazy(() => import('../../../pages/user/MarketIntelligenceHub'));
 const CircularResume = lazy(() => import('../../../pages/user/CircularResume'));
 const TransactionsHistory = lazy(() => import('../../../pages/user/TransactionsHistory'));
+const MaterialDetail = lazy(() => import('../../../pages/user/MaterialDetail'));
 
 export function getSellerRoutes() {
   return (
@@ -25,6 +26,7 @@ export function getSellerRoutes() {
       <Route path="/trust-score" element={<TrustScoreDetails />} />
       <Route path="/market-pulse" element={<MarketIntelligenceHub />} />
       <Route path="/circular-resume" element={<CircularResume />} />
+      <Route path="/materials/:slug" element={<MaterialDetail />} />
     </>
   );
 }

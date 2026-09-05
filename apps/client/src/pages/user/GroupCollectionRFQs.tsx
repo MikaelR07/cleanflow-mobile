@@ -64,14 +64,14 @@ export default function GroupCollectionRFQs() {
       }
 
       const { data, error } = await supabase
-        .from('rfqs')
+        .rpc('get_visible_rfqs', { p_seller_id: profile?.id })
         .select(`
           *,
           buyer:profiles!rfqs_buyer_id_fkey(company_name, name, avatar_url),
+          company:companies!rfqs_company_id_fkey(name),
           rfq_offers(count)
         `)
-        .eq('is_group_collection', true)
-        .order('created_at', { ascending: false });
+        .eq('is_group_collection', true);
 
       if (error) throw error;
 
@@ -95,7 +95,18 @@ export default function GroupCollectionRFQs() {
           });
         }
 
-        const mapped: GroupRFQ[] = data.map((r: any) => {
+        const mapped: GroupRFQ[] = data
+          .filter((r: any) => {
+            if (!r.deadline) return true;
+            const isExpired = new Date(r.deadline).getTime() < new Date().getTime();
+            if (isExpired) {
+              const hasPledged = myPledgedRfqs.has(r.id);
+              const isFulfilled = r.status === 'fulfilled' || r.status === 'completed';
+              return hasPledged || isFulfilled;
+            }
+            return true;
+          })
+          .map((r: any) => {
           let deadlineText = 'Open';
           if (r.deadline) {
             const daysLeft = Math.ceil((new Date(r.deadline).getTime() - new Date().getTime()) / (1000 * 3600 * 24));
@@ -117,7 +128,7 @@ export default function GroupCollectionRFQs() {
 
           return {
             id: r.id,
-            company: r.buyer?.company_name || r.buyer?.name || 'Unknown Buyer',
+            company: r.company?.name || r.buyer?.company_name || r.buyer?.name || 'Unknown Buyer',
             material: materialName,
             quantity: `${r.requested_weight}kg`,
             requestedWeight: r.requested_weight || 0,

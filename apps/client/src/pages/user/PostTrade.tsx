@@ -76,6 +76,7 @@ export default function PostTrade() {
   const [selectedSubItem, setSelectedSubItem] = useState<any>(null);
   const [quantity, setQuantity] = useState<any>(1);
   const [customLocation] = useState(profile?.location || { estate: 'Westlands', latitude: -1.2635, longitude: 36.8048 });
+  const [grade, setGrade] = useState('Standard');
   const [photos, setPhotos] = useState<any[]>([]); // Array of up to 4 photos
   const [customDescription, setCustomDescription] = useState('');
   const [selectedAgent, setSelectedAgent] = useState<any>(null);
@@ -92,14 +93,8 @@ export default function PostTrade() {
 
   const center: [number, number] = [customLocation.latitude || -1.2635, customLocation.longitude || 36.8048];
 
-  const nearbyHubs = liveAgents
-    .filter((a: any) => a.isHubActive && (a.hubLocation?.latitude || a.location?.latitude))
-    .map((hub: any) => ({
-      ...hub,
-      distance: hub.hubDistanceKm || hub.distance_km || 999
-    }))
-    .filter((hub: any) => hub.distance <= 50)
-    .sort((a: any, b: any) => a.distance - b.distance);
+  const [nearbyHubs, setNearbyHubs] = useState<any[]>([]);
+
 
   const hubIcon = L.divIcon({
     className: 'custom-hub-icon',
@@ -124,6 +119,27 @@ export default function PostTrade() {
     fetchNearbyAgents(lat, lng, currentWeight);
     subscribeToAgents(lat, lng, currentWeight);
 
+    // Fetch Hubs with Territories
+    const fetchHubs = async () => {
+      try {
+        const { data, error } = await supabase.rpc('get_nearby_hubs_with_territory', { p_lat: lat, p_lon: lng });
+        if (!error && data) {
+          // Adapt the returned data to match what the UI expects
+          setNearbyHubs(data.map((hub: any) => ({
+            ...hub,
+            companyName: hub.name,
+            hubAddress: `${hub.operating_radius_km}km coverage zone`,
+            lat: hub.lat,
+            lng: hub.lon,
+            distance: hub.operating_radius_km
+          })));
+        }
+      } catch (err) {
+        console.error("Failed to fetch hubs:", err);
+      }
+    };
+    fetchHubs();
+
     if (initialMode === 'service') {
       const generalCat = categories.find(c => c.id === 'general');
       if (generalCat) {
@@ -139,7 +155,7 @@ export default function PostTrade() {
     }
 
     return () => cleanupAgents();
-  }, [initialMode, categories.length, quantity, cleanupAgents, fetchCategories, fetchMaterialPrices, fetchConfig, fetchNearbyAgents, fetchPrices, subscribeToAgents]);
+  }, [initialMode, categories.length, quantity, cleanupAgents, fetchCategories, fetchMaterialPrices, fetchConfig, fetchNearbyAgents, fetchPrices, subscribeToAgents, customLocation]);
 
   // ── PRICING (Powered by Market Hub) ──
   const selected = selectedSubItem || wasteType;
@@ -202,7 +218,7 @@ export default function PostTrade() {
         longitude: pickupMode === 'dropoff' ? (selectedHub?.lng || customLocation.longitude) : customLocation.longitude,
         photoUrl: photoUrls.length > 0 ? photoUrls[0] : null, // Principal photo
         description: customDescription,
-        grade: 'Standard',
+        grade: grade,
         targetAgentId: pickupMode === 'dropoff' ? (selectedHub?.id || null) : (selectedAgent?.id || null),
         pickupMode: pickupMode,
       });
@@ -218,7 +234,7 @@ export default function PostTrade() {
       );
 
       toast.success("Collection Posted!");
-      navigate('/my-trades');
+      navigate('/');
     } catch (err) {
       console.error('Submission error:', err);
       toast.error("Posting Failed", { description: err instanceof Error ? err.message : 'An unknown error occurred' });
@@ -229,7 +245,7 @@ export default function PostTrade() {
   };
 
   return (
-    <div className="flex flex-col bg-[#F8F8FF] dark:bg-slate-800 transition-colors">
+    <div className="flex flex-col bg-slate-50 dark:bg-slate-800 transition-colors">
       {/* ── TOP NAV (Edge to Edge PWA Style) ── */}
       <div className="fixed top-0 left-0 right-0 z-50 bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl pt-[calc(env(safe-area-inset-top,1rem)+1rem)] pb-3 px-4 border-b border-slate-200 dark:border-slate-900/70 max-w-lg mx-auto">
         <div className="flex items-center justify-between max-w-lg mx-auto">
@@ -269,6 +285,8 @@ export default function PostTrade() {
                 getPriceForMaterial={getPriceForMaterial}
                 selectedSubcategory={selectedSubcategory}
                 setSelectedSubcategory={setSelectedSubcategory}
+                grade={grade}
+                setGrade={setGrade}
                 userId={userId}
               />
             )}
@@ -436,7 +454,7 @@ export default function PostTrade() {
                   </h3>
                   <p className="text-sm text-slate-500 font-medium leading-relaxed">
                     {pickupMode === 'pickup'
-                      ? 'Your listing will be posted to the marketplace. An agent will be dispatched to verify your stock and facilitate payment.'
+                      ? 'Your listing will be posted to KlinMarket. An agent will be dispatched to verify your stock and facilitate payment.'
                       : `Your trade will be posted. Please drop off the items at ${selectedHub?.name || 'the selected hub'} to complete the verification.`}
                   </p>
                 </div>

@@ -88,10 +88,10 @@ export default function TransferGFP() {
   };
 
   return (
-    <div className="-mx-1 px-1 bg-[#F8F8FF] dark:bg-slate-900 text-slate-900 dark:text-white pb-5 relative  overflow-x-hidden">
+    <div className="-mx-1 px-1 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white pb-5 relative  overflow-x-hidden">
       
       {/* EMERALD TOP BACKGROUND */}
-      <div className="absolute top-0 left-0 right-0 h-[330px] bg-gradient-to-b from-primary to-primary rounded-b-[40%] scale-x-[1.5] z-0 shadow-sm" />
+      <div className="absolute top-0 left-0 right-0 h-[300px] bg-gradient-to-b from-primary to-primary rounded-b-[40%] scale-x-[1.5] z-0 shadow-sm" />
 
       {/* HEADER */}
       <div className="fixed top-0 left-0 right-0 z-50 bg-primary  backdrop-blur-md pt-[calc(env(safe-area-inset-top,1rem)+0.6rem)] pb-3 px-4 max-w-lg mx-auto flex items-start justify-between">
@@ -126,7 +126,7 @@ export default function TransferGFP() {
         </div>
 
         {/* STATS CARD */}
-        <div className="bg-white dark:bg-slate-800 rounded-3xl p-2 shadow-sm border border-slate-200 dark:border-slate-700">
+        <div className="bg-white dark:bg-slate-800 rounded-xl p-2 shadow-sm border border-slate-200 dark:border-slate-700">
           <div className="flex items-center justify-between">
             <div className="text-center flex-1">
               <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1.5">Available Balance</p>

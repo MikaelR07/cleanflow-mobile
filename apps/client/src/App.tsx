@@ -65,7 +65,7 @@ function MobileLayout() {
   ];
 
   return (
-    <div className="flex flex-col min-h-[100dvh] max-w-lg mx-auto bg-[#F8F8FF] dark:bg-slate-800">
+    <div className="flex flex-col min-h-[100dvh] max-w-lg mx-auto bg-slate-50 dark:bg-slate-800">
       <div className="flex-1 pt-[calc(env(safe-area-inset-top,1.5rem)+1.5rem)] pb-[calc(env(safe-area-inset-bottom,0px)+6rem)] px-1">
         <Suspense fallback={<LoadingScreen message="Loading..." />}>
           <Outlet />
@@ -157,7 +157,7 @@ export default function App() {
   }, [isAuthenticated, userId, role, checkAppRole]);
 
   return (
-    <div className="min-h-dvh bg-[#F8F8FF] dark:bg-slate-800 transition-colors duration-200">
+    <div className="min-h-dvh bg-slate-50 dark:bg-slate-800 transition-colors duration-200">
       {isInitializing && <LoadingScreen message="Securing Session..." />}
       <OfflineBanner />
 

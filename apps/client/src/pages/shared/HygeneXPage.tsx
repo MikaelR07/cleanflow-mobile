@@ -207,7 +207,7 @@ export default function HygeneXPage() {
           </button>
           <div>
             <h1 className="text-xl font-black text-slate-100 capitalize tracking-tighter leading-none">HygeneX</h1>
-            <p className="text-[10px] font-bold text-emerald-100 dark:text-emerald-400 capitalize tracking-[0.2em] mt-1">Smart Waste Intelligence</p>
+            <p className="text-[10px] font-bold text-emerald-100 dark:text-emerald-400 capitalize tracking-[0.2em] mt-1">AI-Powered Recycling Copilot</p>
           </div>
         </div>
       </div>
@@ -324,7 +324,7 @@ export default function HygeneXPage() {
                       {/* AI TOOL CARD: MARKETPLACE */}
                       {isAi && msg.metadata?.marketplace_results && msg.metadata.marketplace_results.length > 0 && (
                         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col gap-2 mt-3">
-                          <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider px-1">Marketplace Matches</div>
+                          <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider px-1">KlinMarket Matches</div>
                           {msg.metadata.marketplace_results.map((listing: any, i: number) => (
                             <div key={i} className="px-4 py-3 rounded-xl bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm border border-slate-200/50 dark:border-slate-700/50 shadow-sm flex justify-between items-center group cursor-pointer hover:bg-white dark:hover:bg-slate-800 transition-colors">
                               <div>

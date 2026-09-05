@@ -43,9 +43,9 @@ export default function SubscriptionDetail() {
   const expandedDetails = {
     lite: {
       tagline: "Pay only for what you use.",
-      longDesc: "The Basic plan is perfect for occasional recyclers who want access to the Klinflow marketplace without a monthly commitment. You pay a small platform fee per booking to help us keep the network running.",
+      longDesc: "The Basic plan is perfect for occasional recyclers who want access to the KlinMarket without a monthly commitment. You pay a small platform fee per booking to help us keep the network running.",
       points: [
-        "Verified Fleet Marketplace Access",
+        "Verified Fleet KlinMarket Access",
         "Standard GFP Rewards (1x)",
         "Mobile App Support",
         "Secure M-Pesa Payments",

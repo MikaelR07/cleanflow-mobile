@@ -73,7 +73,7 @@ export default function DiscoveryHub() {
   }, [partners, activeMaterial, activeScale, searchQuery]);
 
   return (
-    <div className=" bg-[#F8F8FF] dark:bg-slate-800 transition-colors">
+    <div className=" bg-slate-50 dark:bg-slate-800 transition-colors">
       {/* ── FIXED HEADER ── */}
       <div className="fixed top-0 left-0 right-0 z-50 max-w-lg mx-auto bg-white dark:bg-slate-800 pt-[calc(env(safe-area-inset-top,1rem)+1rem)] pb-2 px-4 border-b border-slate-200 dark:border-slate-900/50 ">
         <div className="w-full mx-auto">
@@ -260,12 +260,7 @@ export default function DiscoveryHub() {
                            {scale}
                          </span>
                          
-                         <div className="flex items-center gap-1 mt-auto">
-                           <div className="text-left">
-                             <p className="text-[10px] text-slate-500 font-medium leading-none mb-1.5">From</p>
-                             <p className="text-[15px] font-black text-[#138a53] dark:text-green-400 leading-none mb-1">KSh {logisticsFee}</p>
-                             <p className="text-[9px] text-slate-500 font-medium leading-none">No booking fee</p>
-                           </div>
+                         <div className="flex items-center gap-1 mt-auto h-full">
                            <ChevronRight className="w-4 h-4 text-slate-700 dark:text-slate-300 ml-1 -mr-1" />
                          </div>
                        </div>

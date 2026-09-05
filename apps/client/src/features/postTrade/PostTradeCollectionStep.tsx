@@ -1,10 +1,7 @@
-import { useState } from 'react';
-import {
-  Zap, Star, ChevronRight, X, Clock, Truck, Home, Search, Loader2, User, ShieldCheck, AlertCircle
-} from 'lucide-react';
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import { useState, useEffect } from 'react';
+import { Zap, Star, ChevronRight, X, Clock, Truck, Home, Search, Loader2, User, ShieldCheck, AlertCircle } from 'lucide-react';
+import { MapContainer, TileLayer, Marker, Popup, Circle, useMap } from 'react-leaflet';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useEffect } from 'react';
 import { toast } from 'sonner';
 import { supabase } from '@klinflow/supabase';
 
@@ -67,7 +64,7 @@ export default function PostTradeCollectionStep({
   };
 
   // ── FILTER LIVE AGENTS FOR PICKUP VIEW ──
-  // Show Independent and Fleet Drivers directly (Uber-like behavior). Company Admins are not shown here.
+  // Hubs now handle fleet dispatch silently via territory logic.
   const filteredAgents = liveAgents.filter((agent: any) => {
     // Only show online agents on the live dispatch map
     if (!agent.isOnline) return false;
@@ -76,7 +73,8 @@ export default function PostTradeCollectionStep({
     const pDist = agent.pickupDistanceKm ?? agent.distance_km;
     if (pDist == null || pDist > 50) return false;
 
-    return agent.agentAccountType === 'independent' || agent.agentAccountType === 'fleet_driver';
+    // Only show independent agents.
+    return agent.agentAccountType === 'independent';
   });
 
   return (
@@ -142,19 +140,36 @@ export default function PostTradeCollectionStep({
             <ChangeView center={center as [number, number]} />
             <Marker position={center as [number, number]} {...({ icon: userIcon } as any)} />
 
-            {pickupMode === 'dropoff' ? (
-              nearbyHubs.map((hub: any) => (
-                <Marker key={hub.id} position={[hub.hubLocation?.latitude || hub.location?.latitude, hub.hubLocation?.longitude || hub.location?.longitude]} {...({ icon: hubIcon } as any)} eventHandlers={{ click: () => { setSelectedHub(hub); toast.success(`${hub.name || hub.companyName} Selected`); } }}>
-                  {/* @ts-ignore */}
-                  <Popup className="compact-popup">
-                    <div className="p-1.5 text-center leading-tight min-w-[100px]">
-                      <h4 className="text-[11px] font-bold text-slate-900 leading-tight truncate">{hub.companyName || hub.name}</h4>
-                      <p className="text-[9px] font-semibold text-slate-500 mt-0.5 capitalize tracking-widest leading-tight truncate">{hub.hubAddress}</p>
-                    </div>
-                  </Popup>
-                </Marker>
-              ))
-            ) : (
+            {pickupMode === 'dropoff' || pickupMode === 'pickup' ? (
+              <>
+                {nearbyHubs.map((hub: any) => (
+                  <div key={hub.id}>
+                    <Marker position={[hub.lat, hub.lng]} {...({ icon: hubIcon } as any)} eventHandlers={{ click: () => { setSelectedHub(hub); toast.success(`${hub.name || hub.companyName} Selected`); } }}>
+                      {/* @ts-ignore */}
+                      <Popup className="compact-popup">
+                        <div className="p-1.5 text-center leading-tight min-w-[100px]">
+                          <h4 className="text-[11px] font-bold text-slate-900 leading-tight truncate">{hub.companyName || hub.name}</h4>
+                          <p className="text-[9px] font-semibold text-slate-500 mt-0.5 capitalize tracking-widest leading-tight truncate">{hub.hubAddress}</p>
+                        </div>
+                      </Popup>
+                    </Marker>
+                    <Circle 
+                      center={[hub.lat, hub.lng]} 
+                      radius={(hub.distance || 20) * 1000} // Radius in meters
+                      pathOptions={{
+                        color: '#10b981', // emerald-500
+                        fillColor: '#10b981',
+                        fillOpacity: 0.1,
+                        weight: 1,
+                        dashArray: '4, 4'
+                      }}
+                    />
+                  </div>
+                ))}
+              </>
+            ) : null}
+
+            {pickupMode === 'pickup' && (
               <>
                 {filteredAgents.map((agent: any, index: number) => {
                   const isCompany = agent.agentAccountType === 'company_admin';

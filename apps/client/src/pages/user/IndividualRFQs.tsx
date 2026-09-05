@@ -11,6 +11,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useServiceStore } from '@klinflow/core/stores/serviceStore';
+import { useAuthStore } from '@klinflow/core/stores/authStore';
 import { supabase } from '@klinflow/supabase';
 import { getThumbnailUrl } from '@klinflow/core/utils/imageUtils';
 import { toast } from 'sonner';
@@ -33,6 +34,7 @@ interface IndividualRFQ {
 
 export default function IndividualRFQs() {
   const navigate = useNavigate();
+  const profile = useAuthStore(s => s.profile);
   const [rfqsList, setRfqsList] = useState<IndividualRFQ[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -48,14 +50,14 @@ export default function IndividualRFQs() {
     setIsLoading(true);
     try {
       const { data, error } = await supabase
-        .from('rfqs')
+        .rpc('get_visible_rfqs', { p_seller_id: profile?.id })
         .select(`
           *,
           buyer:profiles!rfqs_buyer_id_fkey(company_name, name, avatar_url),
+          company:companies!rfqs_company_id_fkey(name),
           rfq_offers(count)
         `)
-        .eq('status', 'open')
-        .order('created_at', { ascending: false });
+        .eq('status', 'open');
 
       if (error) throw error;
 
@@ -65,6 +67,10 @@ export default function IndividualRFQs() {
 
         const mapped = data
           .filter((r: any) => !r.is_group_collection) // Only individual RFQs
+          .filter((r: any) => {
+            if (!r.deadline) return true;
+            return new Date(r.deadline).getTime() > new Date().getTime();
+          })
           .map((r: any) => {
             let deadlineText = 'Open';
             if (r.deadline) {
@@ -87,7 +93,7 @@ export default function IndividualRFQs() {
 
             return {
               id: r.id,
-              company: r.buyer?.company_name || r.buyer?.name || 'Unknown Buyer',
+              company: r.company?.name || r.buyer?.company_name || r.buyer?.name || 'Unknown Buyer',
               material: materialName,
               quantity: `${r.requested_weight}kg`,
               price: r.target_price || 0,

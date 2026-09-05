@@ -77,10 +77,8 @@ export default function PostBulkTrade() {
   const [drillDownCompany, setDrillDownCompany] = useState<any>(null);
 
   const center: [number, number] = [customLocation.latitude || -1.2635, customLocation.longitude || 36.8048];
-  const nearbyHubs = liveAgents
-    .filter((a: any) => a.isHubActive && a.hubLocation?.lat)
-    .map((hub: any) => ({ ...hub, distance: hub.distance_km || 999 }))
-    .sort((a: any, b: any) => a.distance - b.distance);
+
+  const [nearbyHubs, setNearbyHubs] = useState<any[]>([]);
 
   const hubIcon = L.divIcon({ className: 'custom-hub-icon', html: `<div class="w-8 h-8 rounded-xl bg-emerald-600 border-2 border-white shadow-xl flex items-center justify-center animate-bounce-slow"><span class="text-xs">🏢</span></div>`, iconSize: [32, 32], iconAnchor: [16, 32] });
 
@@ -88,6 +86,9 @@ export default function PostBulkTrade() {
   const [customDate, setCustomDate] = useState(new Date().toLocaleDateString('en-CA'));
   const [customTime, setCustomTime] = useState('09:00');
   const [customPricePerKg, setCustomPricePerKg] = useState<number | null>(null);
+
+  const getCategoryPrice = usePriceStore(s => s.getCategoryPrice);
+  const quantity = swarm?.current_weight || 0;
 
   useEffect(() => {
     const loadSwarm = async () => {
@@ -109,16 +110,37 @@ export default function PostBulkTrade() {
     fetchConfig();
     const lat = customLocation.latitude || -1.2635;
     const lng = customLocation.longitude || 36.8048;
-    fetchNearbyAgents(lat, lng);
-    subscribeToAgents(lat, lng);
+    const currentWeight = parseFloat(quantity) || 0;
+    fetchNearbyAgents(lat, lng, currentWeight);
+    subscribeToAgents(lat, lng, currentWeight);
+
+    // Fetch Hubs with Territories
+    const fetchHubs = async () => {
+      try {
+        const { data, error } = await supabase.rpc('get_nearby_hubs_with_territory', { p_lat: lat, p_lon: lng });
+        if (!error && data) {
+          // Adapt the returned data to match what the UI expects
+          setNearbyHubs(data.map((hub: any) => ({
+            ...hub,
+            companyName: hub.name,
+            hubAddress: `${hub.operating_radius_km}km coverage zone`,
+            lat: hub.lat,
+            lng: hub.lon,
+            distance: hub.operating_radius_km
+          })));
+        }
+      } catch (err) {
+        console.error("Failed to fetch hubs:", err);
+      }
+    };
+    fetchHubs();
+
     loadSwarm();
 
     return () => cleanupAgents();
-  }, [id]);
+  }, [id, categories.length, quantity, cleanupAgents, fetchCategories, fetchConfig, fetchNearbyAgents, subscribeToAgents, customLocation]);
 
-  const getCategoryPrice = usePriceStore(s => s.getCategoryPrice);
   const liveRatePerKg = getCategoryPrice(swarm?.material || '');
-  const quantity = swarm?.current_weight || 0;
 
   const logisticsFee = pickupMode === 'dropoff' ? 0 : getConfigValue('fee_pickup', 200);
   const hubBonus = pickupMode === 'dropoff' ? 20 : 0;
@@ -174,7 +196,7 @@ export default function PostBulkTrade() {
         'agent'
       );
 
-      toast.success("Bulk Drive Posted to Marketplace!");
+      toast.success("Bulk Drive Posted to KlinMarket!");
       navigate('/my-trades');
     } catch (err) {
       console.error('Submission error:', err);
@@ -190,7 +212,7 @@ export default function PostBulkTrade() {
   }
 
   return (
-    <div className="flex flex-col bg-[#F8F8FF] dark:bg-slate-800 transition-colors">
+    <div className="flex flex-col bg-slate-50 dark:bg-slate-800 transition-colors">
       <div className="fixed top-0 left-0 right-0 z-50 bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl pt-[calc(env(safe-area-inset-top,1rem)+1rem)] pb-3 px-4 border-b border-slate-200 dark:border-slate-900/70 max-w-lg mx-auto">
         <div className="flex items-center justify-between max-w-lg mx-auto">
           <button onClick={() => step > 1 ? setStep(step - 1) : navigate(-1)} className="w-11 h-11 shrink-0 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center shadow-sm active:scale-95 transition-all group">
@@ -337,7 +359,7 @@ export default function PostBulkTrade() {
                   onClick={() => handleBook()}
                   className={`w-full p-5 bg-indigo-600 shadow-indigo-600/30 text-white rounded-2xl font-semibold text-sm active:scale-95 transition-all flex items-center justify-center gap-3`}
                 >
-                  {isSubmitting ? <span className="animate-pulse">POSTING BULK DRIVE...</span> : <span>POST TO MARKETPLACE</span>}
+                  {isSubmitting ? <span className="animate-pulse">POSTING BULK DRIVE...</span> : <span>POST TO KLINMARKET</span>}
                 </button>
                 <button onClick={() => setShowEscrowModal(false)} className="w-full text-xs font-semibold text-slate-400 capitalize tracking-widest mt-4">Go Back</button>
               </div>

@@ -25,6 +25,7 @@ const statusConfig = {
   confirmed: { label: "Trade Active", color: "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400", icon: HandCoins },
   scheduled: { label: "Scheduled", color: "bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400", icon: Clock },
   cancelled: { label: "Cancelled", color: "bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-400", icon: XCircle },
+  rejected: { label: "Rejected", color: "bg-rose-100 text-rose-700 dark:bg-rose-500/20 dark:text-rose-400", icon: XCircle },
   counter_offer_pending: { label: "Action Required", color: "bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400", icon: Zap },
 };
 
@@ -143,7 +144,28 @@ export default function MyTrades() {
       (b.estate && b.estate.toLowerCase().includes(s)) ||
       (b.id && b.id.toLowerCase().includes(s))
     );
-  }).filter((v: any, i: number, a: any[]) => a.findIndex((t) => t.id === v.id) === i).slice(0, activeTab === "History" ? 20 : undefined);
+  })
+  
+  // Mix in rejected offers into the history tab
+  const rejectedOffersFormatted = (receivedOffers || [])
+    .filter(o => o.status === 'rejected' && activeTab === 'History')
+    .map(o => ({
+      id: o.id,
+      wasteType: o.material,
+      status: 'rejected',
+      amount: o.offeredPrice * o.quantity,
+      actualWeightKg: o.quantity,
+      createdAt: o.createdAt,
+      date: o.createdAt ? new Date(o.createdAt).toLocaleDateString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }) : undefined,
+      estate: "Marketplace Bid",
+      photoUrl: o.photo,
+      isOffer: true
+    }));
+
+  const allFilteredItems = [...filteredBookings, ...rejectedOffersFormatted]
+    .filter((v: any, i: number, a: any[]) => a.findIndex((t) => t.id === v.id) === i)
+    .sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime())
+    .slice(0, activeTab === "History" ? 20 : undefined);
 
   const selectedOffer = receivedOffers?.find((o: MarketplaceOffer) => o.id === selectedOfferId);
 
@@ -200,7 +222,7 @@ export default function MyTrades() {
   };
 
   return (
-    <div className="flex flex-col bg-[#F8F8FF] dark:bg-slate-800 transition-colors">
+    <div className="flex flex-col bg-slate-50 dark:bg-slate-800 transition-colors">
       {!selectedOfferId && !expandedId && !reschedulingTrade && (
         <div className="fixed top-0 left-0 right-0 bg-white/90 dark:bg-slate-800/90 backdrop-blur-xl pt-[calc(env(safe-area-inset-top,1rem)+1rem)] px-4 border-b border-slate-200 dark:border-slate-800 z-50 transition-colors">
           <div className="max-w-lg mx-auto space-y-1.5">
@@ -386,7 +408,7 @@ export default function MyTrades() {
               </div>
             ) : (
               <div className="space-y-0">
-                {filteredBookings.map((b: any) => {
+                {allFilteredItems.map((b: any) => {
                   const materialVal = b.wasteType;
                   const waste = WASTE_TYPES?.find?.((w: any) => w.slug === materialVal || w.id === materialVal);
                   const status = (statusConfig as any)[b.status] || (statusConfig as any).pending;
@@ -450,9 +472,9 @@ export default function MyTrades() {
                   }
 
                   // ACTIVE & HISTORY
-                  const accentColor = b.status === 'completed' ? 'bg-emerald-500' : b.status === 'cancelled' ? 'bg-rose-500' : b.status === 'confirmed' ? 'bg-emerald-500' : b.status === 'in-progress' ? 'bg-blue-500' : 'bg-amber-500';
+                  const accentColor = b.status === 'completed' ? 'bg-emerald-500' : b.status === 'cancelled' || b.status === 'rejected' ? 'bg-rose-500' : b.status === 'confirmed' ? 'bg-emerald-500' : b.status === 'in-progress' ? 'bg-blue-500' : 'bg-amber-500';
                   return (
-                    <motion.div key={b.id} onClick={() => { setExpandedId(b.id); }} className="bg-white dark:bg-slate-900/60 shadow-sm border-b border-slate-100 dark:border-slate-800 active:bg-slate-50 dark:active:bg-slate-800/50 transition-colors cursor-pointer relative overflow-hidden">
+                    <motion.div key={b.id} onClick={() => { if (!b.isOffer) setExpandedId(b.id); }} className="bg-white dark:bg-slate-900/60 shadow-sm border-b border-slate-100 dark:border-slate-800 active:bg-slate-50 dark:active:bg-slate-800/50 transition-colors cursor-pointer relative overflow-hidden">
                       <div className={`absolute left-0 top-0 bottom-0 w-1 ${accentColor}`} />
                       <div className="flex gap-3 relative z-10 pl-4 pr-3.5 py-3">
                         <div className="w-16 h-16 rounded-xl bg-slate-50 dark:bg-slate-800 overflow-hidden flex items-center justify-center text-2xl shrink-0 border border-slate-100 dark:border-slate-700">
@@ -551,7 +573,7 @@ export default function MyTrades() {
                       </div>
                       <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-100 dark:border-slate-700 space-y-2 shadow-sm">
                         <p className="text-[9px] font-bold text-slate-400 capitalize tracking-widest">Material Description</p>
-                        <p className={`text-sm ${b.notes && !b.notes.startsWith("Marketplace trade") ? "text-slate-800 dark:text-slate-200 leading-relaxed font-medium" : "text-slate-400 dark:text-slate-500 italic"}`}>{b.notes && !b.notes.startsWith("Marketplace trade") ? b.notes : "No description provided."}</p>
+                        <p className={`text-sm ${b.notes && !b.notes.startsWith("KlinMarket trade") ? "text-slate-800 dark:text-slate-200 leading-relaxed font-medium" : "text-slate-400 dark:text-slate-500 italic"}`}>{b.notes && !b.notes.startsWith("KlinMarket trade") ? b.notes : "No description provided."}</p>
                       </div>
                       <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-100 dark:border-slate-700 space-y-3">
                         <div className="flex items-center justify-between"><span className="text-[10px] font-bold text-slate-400 capitalize tracking-widest">Scheduled</span><span className="text-xs font-bold text-slate-900 dark:text-white">{b.date || new Date(b.createdAt).toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" })}</span></div>
@@ -605,7 +627,7 @@ export default function MyTrades() {
                       handleRejectCounterConfirm(confirmAction.id);
                     }
                     setConfirmAction(null);
-                  }} className="py-3.5 rounded-xl font-bold text-white bg-rose-600 active:scale-95 transition-all shadow-sm shadow-rose-600/20">Yes, Cancel</button>
+                  }} className="py-3.5 rounded-xl font-bold text-white bg-rose-600 active:scale-95 transition-all shadow-sm shadow-rose-600/20">{confirmAction.type === 'cancelTrade' ? 'Yes, Cancel' : 'Yes, Reject'}</button>
                 </div>
               </motion.div>
             </motion.div>

@@ -11,7 +11,8 @@ import {
   IdCard,
   ChartBar,
   BarChart2,
-  Copy
+  Copy,
+  Settings
 } from 'lucide-react';
 import { useAuthStore } from '@klinflow/core/stores/authStore';
 import { useBookingStore } from '@klinflow/core/stores/bookingStore';
@@ -38,6 +39,7 @@ export default function SettingsMenu() {
     fetchProfile();
     fetchBookings();
     if (isSeller) fetchReceivedOrders();
+    if (isSeller) fetchReceivedOrders();
   }, [isSeller]);
 
   const metrics = useMemo(() => {
@@ -54,37 +56,8 @@ export default function SettingsMenu() {
     }
   }, [bookings, receivedOrders, isSeller, profile, rewardPoints]);
 
-  const secondaryMenu = [
-    {
-      icon: User, label: 'Profile Settings', subtitle: 'Edit Profile & Location',
-      path: '/settings/profile', color: 'text-indigo-600 bg-indigo-50 dark:bg-indigo-500/10'
-    },
-    {
-      icon: Bell, label: 'Notifications', subtitle: 'Manage alerts & SMS',
-      path: '/settings/notifications', color: 'text-amber-600 bg-amber-50 dark:bg-amber-500/10'
-    },
-    {
-      icon: ShieldCheck, label: 'Privacy and Security', subtitle: 'Passcode & Encryption',
-      path: '/settings/privacy', color: 'text-emerald-600 bg-emerald-50 dark:bg-emerald-500/10'
-    },
-    ...(isSeller ? [
-      {
-        icon: Building2, label: 'Business Profile', subtitle: 'NEMA & Trade Details',
-        path: '/settings/profile', color: 'text-blue-600 bg-blue-50 dark:bg-blue-500/10'
-      }
-    ] : []),
-    {
-      icon: HelpCircle, label: 'Support Center', subtitle: 'Help & WhatsApp',
-      path: '/settings/support', color: 'text-slate-600 bg-slate-50 dark:bg-slate-500/10'
-    },
-    {
-      icon: MessageCircle, label: 'Give Feedback', subtitle: 'Help us improve',
-      path: '/settings/feedback', color: 'text-rose-600 bg-rose-50 dark:bg-rose-500/10'
-    },
-  ];
-
   return (
-    <div className="flex flex-col bg-[#F8F8FF] dark:bg-slate-800 transition-colors pb-5">
+    <div className="flex flex-col bg-slate-50 dark:bg-slate-800 transition-colors pb-5">
 
       {/* ── FIXED TOP NAV ── */}
       <div className="fixed top-0 left-0 right-0 z-50 max-w-lg mx-auto bg-white/90 dark:bg-slate-800/90 backdrop-blur-xl border-b border-slate-200 dark:border-slate-600  transition-all duration-300">
@@ -226,25 +199,22 @@ export default function SettingsMenu() {
           </div>
         </div>
 
-        {/* ── SECONDARY SETTINGS MENU ── */}
+        {/* ── SETTINGS LINK ── */}
         <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-800 overflow-hidden shadow-sm">
           <div className="divide-y divide-slate-50 dark:divide-slate-800">
-            {secondaryMenu.map((item, i) => (
-              <button
-                key={i}
-                onClick={() => navigate(item.path)}
-                className="w-full flex items-center gap-4 p-5 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group"
-              >
-                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${item.color}`}>
-                  <item.icon className="w-5 h-5" />
-                </div>
-                <div className="flex-1 text-left">
-                  <p className="text-sm font-semibold text-slate-900 dark:text-white">{item.label}</p>
-                  <p className="text-[10px] text-slate-400 capitalize tracking-widest mt-0.5">{item.subtitle}</p>
-                </div>
-                <ChevronRight className="w-4 h-4 text-slate-300" />
-              </button>
-            ))}
+            <button
+              onClick={() => navigate('/settings/general')}
+              className="w-full flex items-center gap-4 p-5 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group"
+            >
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center text-slate-600 bg-slate-50 dark:text-slate-400 dark:bg-slate-500/10">
+                <Settings className="w-5 h-5" />
+              </div>
+              <div className="flex-1 text-left">
+                <p className="text-sm font-semibold text-slate-900 dark:text-white">Settings</p>
+                <p className="text-[10px] text-slate-400 capitalize tracking-widest mt-0.5">Manage Your Account</p>
+              </div>
+              <ChevronRight className="w-4 h-4 text-slate-300" />
+            </button>
           </div>
         </div>
 

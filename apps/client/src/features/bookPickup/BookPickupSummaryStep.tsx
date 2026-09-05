@@ -1,5 +1,5 @@
 /**
- * BookPickup Step 3 — Marketplace Summary & Pricing Breakdown
+ * BookPickup Step 3 — KlinMarket Summary & Pricing Breakdown
  * Extracted from BookPickup.tsx for modularity.
  */
 import { Info as InfoIcon } from 'lucide-react';
@@ -23,7 +23,7 @@ export default function BookPickupSummaryStep({
 }: BookPickupSummaryStepProps) {
   return (
     <motion.div key="p3" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-6 pb-6">
-      <h2 className="text-lg font-semibold text-slate-900 dark:text-white tracking-tight italic px-2">Marketplace Summary</h2>
+      <h2 className="text-lg font-semibold text-slate-900 dark:text-white tracking-tight italic px-2">KlinMarket Summary</h2>
       
       {/* ── MATERIAL PREVIEW ── */}
       <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm">

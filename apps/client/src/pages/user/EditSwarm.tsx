@@ -166,9 +166,11 @@ export default function EditSwarm() {
             {categories.map((cat) => {
               const isSelected = material === cat.label;
               const identifier = (cat.slug || cat.id || '').toLowerCase();
+              const catLabel = (cat.label || (cat as any).name || '').toLowerCase();
               let bgImage = cat.image_url;
               if (!bgImage) {
-                if (identifier.includes('paper') || identifier.includes('cardboard') || identifier.includes('box')) bgImage = '/material-categories/boxes.webp';
+                if (identifier.includes('textile') || identifier.includes('clothes') || catLabel.includes('textile') || catLabel.includes('clothes')) bgImage = '/material-categories/textile.webp';
+                else if (identifier.includes('paper') || identifier.includes('cardboard') || identifier.includes('box')) bgImage = '/material-categories/boxes.webp';
                 else if (identifier.includes('plastic')) bgImage = '/material-categories/plastic.webp';
                 else if (identifier.includes('ewaste') || identifier.includes('e-waste') || identifier.includes('electronic')) bgImage = '/material-categories/E-waste.webp';
                 else if (identifier.includes('metal')) bgImage = '/material-categories/metal.webp';

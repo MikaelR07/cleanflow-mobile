@@ -21,6 +21,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@klinflow/core/stores/authStore';
 import { useBookingStore } from '@klinflow/core/stores/bookingStore';
 import { walletService } from '@klinflow/core';
+import { supabase } from '@klinflow/supabase';
 import { toast } from 'sonner';
 
 export default function ResidentWallet() {
@@ -35,7 +36,9 @@ export default function ResidentWallet() {
 
   // Fetch real wallet balance and bookings
   useEffect(() => {
-    if (userId) {
+    if (!userId) return;
+
+    const loadData = () => {
       walletService.getWalletDetails(userId).then(data => {
         if (data) {
           setGfpBalance(data.available_points || 0);
@@ -47,7 +50,27 @@ export default function ResidentWallet() {
         setWalletTxns(data || []);
       });
       fetchBookings();
-    }
+    };
+
+    loadData();
+
+    const channel = supabase
+      .channel(`resident-wallet-realtime-${userId}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'wallet_transactions', filter: `profile_id=eq.${userId}` },
+        () => loadData()
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'user_wallets', filter: `user_id=eq.${userId}` },
+        () => loadData()
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [userId, fetchBookings]);
 
   // Derived metrics
@@ -75,11 +98,12 @@ export default function ResidentWallet() {
     return walletTxns.map((t: any) => ({
       id: t.id,
       type: t.amount > 0 ? 'earned' : 'reward',
-      label: (t.metadata?.type === 'material_buyback' || t.metadata?.type === 'swarm_payout' || t.metadata?.action === 'payout') ? 'Recycling Pickup' : 'Wallet Transaction',
+      buyerName: t.metadata?.hub_name || t.metadata?.buyer_name || (t.metadata?.type === 'material_buyback' ? 'Recycling Agent' : 'Klinflow Payout'),
+      materialSummary: t.metadata?.materials_summary || t.metadata?.material || t.metadata?.description || (t.amount > 0 ? 'Recyclables Sale Payout' : 'Wallet Transfer / Reward'),
       amount: t.amount,
       date: new Date(t.created_at),
       status: 'completed' as const,
-      reference: `TRX-${String(t.id).substring(0, 6).toUpperCase()}`,
+      reference: t.metadata?.waybill_id || `TRX-${String(t.id).substring(0, 6).toUpperCase()}`,
       metadata: t.metadata
     })).sort((a, b) => b.date.getTime() - a.date.getTime());
   }, [walletTxns]);
@@ -299,7 +323,7 @@ export default function ResidentWallet() {
             <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">
               Level {impact.level}
             </p>
-
+CAPIcapitalize
             <p className="text-sm font-black text-slate-900 dark:text-white leading-tight">
               {impact.label}
             </p>
@@ -324,119 +348,98 @@ export default function ResidentWallet() {
       </div>
 
       {/* ── SAVINGS + PICKUP SUMMARY ── */}
-      <div className="mx-1 grid grid-cols-2 gap-3">
-
-        {/* Savings This Month */}
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 p-4">
-
-          <h4 className="text-xs font-bold text-slate-900 dark:text-white mb-0.5">
-            Savings This Month
-          </h4>
-
-          <p className="text-[9px] font-semibold text-slate-400 mb-3">
-            Money earned by recycling
-          </p>
-
-          <p className="text-xl font-black text-slate-900 dark:text-white mb-1.5">
-            KES {Number(totalEarnedThisMonth).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-          </p>
-
-          <div className="flex items-center gap-1.5">
-            <TrendingUp className="w-3 h-3 text-emerald-500 shrink-0" />
-
-            <p className="text-[9px] font-bold text-emerald-500">
-              {thisMonthPickups.length > 0
-                ? `${thisMonthPickups.length} pickups completed this month`
-                : 'Start recycling to earn'}
-            </p>
-          </div>
-
-          {/* Dynamic Sparkline */}
-          <div className="mt-3 h-8 flex items-end gap-0.5">
-
-            {sparklineData.map((h, i) => (
-              <div
-                key={i}
-                style={{ height: `${h}%` }}
-                className="flex-1 bg-primary rounded-sm min-h-[2px] transition-all duration-500"
-              />
-            ))}
-
-          </div>
-
-        </div>
-
-        {/* Pickup Summary */}
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 p-4">
-
-          <div className="flex items-center justify-between mb-3">
-            <h4 className="text-xs font-bold text-slate-900 dark:text-white">
-              Pickup Summary
+      <div className="mx-1">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 p-4 flex flex-col">
+          
+          {/* Top Section: Savings */}
+          <div className="flex flex-col mb-4">
+            <h4 className="text-xs font-bold text-slate-900 dark:text-white mb-0.5">
+              Savings This Month
             </h4>
-
-            <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">
-              Overall
-            </span>
+            <p className="text-[9px] font-semibold text-slate-400 mb-3">
+              Money earned by recycling
+            </p>
+            <p className="text-xl font-black text-slate-900 dark:text-white mb-1.5">
+              KES {Number(totalEarnedThisMonth).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </p>
+            <div className="flex items-center gap-1.5">
+              <TrendingUp className="w-3 h-3 text-emerald-500 shrink-0" />
+              <p className="text-[9px] font-bold text-emerald-500">
+                {thisMonthPickups.length > 0
+                  ? `${thisMonthPickups.length} pickups completed this month`
+                  : 'Start recycling to earn'}
+              </p>
+            </div>
+            
+            {/* Dynamic Sparkline */}
+            <div className="mt-3 h-8 flex items-end gap-0.5">
+              {sparklineData.map((h, i) => (
+                <div
+                  key={i}
+                  style={{ height: `${h}%` }}
+                  className="flex-1 bg-primary rounded-sm min-h-[2px] transition-all duration-500"
+                />
+              ))}
+            </div>
           </div>
 
-          <div className="space-y-3.5">
+          <div className="h-px bg-slate-100 dark:bg-slate-800 w-full mb-4" />
 
-            <div className="flex items-center justify-between">
+          {/* Bottom Section: Pickup Summary */}
+          <div className="flex flex-col">
+            <div className="flex items-center justify-between mb-3">
+              <h4 className="text-xs font-bold text-slate-900 dark:text-white">
+                Pickup Summary
+              </h4>
+              <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">
+                Overall
+              </span>
+            </div>
 
-              <div className="flex items-center gap-2.5">
-                <Package className="w-4 h-4 text-blue-500 shrink-0" />
-
-                <p className="text-[11px] font-semibold text-slate-600 dark:text-slate-300">
-                  Total Pickups
+            <div className="space-y-3.5">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <Package className="w-4 h-4 text-blue-500 shrink-0" />
+                  <p className="text-[11px] font-semibold text-slate-600 dark:text-slate-300">
+                    Total Pickups
+                  </p>
+                </div>
+                <p className="text-sm font-black text-slate-900 dark:text-white">
+                  {totalPickups}
                 </p>
               </div>
 
-              <p className="text-sm font-black text-slate-900 dark:text-white">
-                {totalPickups}
-              </p>
+              <div className="h-px bg-slate-100 dark:bg-slate-800" />
 
-            </div>
-
-            <div className="h-px bg-slate-100 dark:bg-slate-800" />
-
-            <div className="flex items-center justify-between">
-
-              <div className="flex items-center gap-2.5">
-                <Clock className="w-4 h-4 text-amber-500 shrink-0" />
-
-                <p className="text-[11px] font-semibold text-slate-600 dark:text-slate-300">
-                  Upcoming
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <Clock className="w-4 h-4 text-amber-500 shrink-0" />
+                  <p className="text-[11px] font-semibold text-slate-600 dark:text-slate-300">
+                    Upcoming
+                  </p>
+                </div>
+                <p className="text-sm font-black text-slate-900 dark:text-white">
+                  {upcomingPickups}
                 </p>
               </div>
 
-              <p className="text-sm font-black text-slate-900 dark:text-white">
-                {upcomingPickups}
-              </p>
+              <div className="h-px bg-slate-100 dark:bg-slate-800" />
 
-            </div>
-
-            <div className="h-px bg-slate-100 dark:bg-slate-800" />
-
-            <div className="flex items-center justify-between">
-
-              <div className="flex items-center gap-2.5">
-                <CheckCircle className="w-4 h-4 text-emerald-500 shrink-0" />
-
-                <p className="text-[11px] font-semibold text-slate-600 dark:text-slate-300">
-                  Completed
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <CheckCircle className="w-4 h-4 text-emerald-500 shrink-0" />
+                  <p className="text-[11px] font-semibold text-slate-600 dark:text-slate-300">
+                    Completed
+                  </p>
+                </div>
+                <p className="text-sm font-black text-slate-900 dark:text-white">
+                  {completedBookings.length}
                 </p>
               </div>
-
-              <p className="text-sm font-black text-slate-900 dark:text-white">
-                {completedBookings.length}
-              </p>
-
             </div>
-
           </div>
 
         </div>
-
       </div>
 
       {/* ── RECENT TRANSACTIONS ── */}
@@ -461,7 +464,7 @@ export default function ResidentWallet() {
 
         </div>
 
-        <div className="divide-y divide-slate-100 dark:divide-slate-800">
+        <div className="space-y-2 p-3 pt-0 mt-1">
           <AnimatePresence mode="popLayout">
             {transactions.length > 0 ? (
               transactions.slice(0, 4).map((txn, i) => (
@@ -470,7 +473,7 @@ export default function ResidentWallet() {
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.25, delay: i * 0.04 }}
-                  className="px-4 py-3.5 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                  className="px-4 py-3 flex items-center justify-between bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-700/50 rounded-xl shadow-sm hover:shadow-md transition-shadow"
                 >
                   <div className="flex items-center gap-3 min-w-0 flex-1">
                     <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${txn.type === 'earned'
@@ -483,16 +486,16 @@ export default function ResidentWallet() {
                       }
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="text-xs font-bold text-slate-900 dark:text-white capitalize truncate leading-tight mb-0.5">
-                        {txn.type === 'earned' ? 'Pickup Payment' : 'Recycling Reward'}
+                      <p className="text-xs font-bold text-slate-900 dark:text-white truncate leading-tight mb-0.5">
+                        {txn.buyerName}
                       </p>
-                      <div className="flex items-center gap-1.5">
-                        <p className="text-[9px] font-bold text-emerald-600 dark:text-emerald-400 font-mono tracking-wide">
-                          {txn.reference}
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400 truncate">
+                          {txn.materialSummary}
                         </p>
                         <span className="text-slate-300 dark:text-slate-600">·</span>
                         <p className="text-[10px] font-medium text-slate-400">
-                          {txn.date.toLocaleDateString([], { day: 'numeric', month: 'short', year: 'numeric' })}
+                          {txn.date.toLocaleDateString([], { day: 'numeric', month: 'short', year: 'numeric' })} • {txn.date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}
                         </p>
                       </div>
                     </div>

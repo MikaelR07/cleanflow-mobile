@@ -72,6 +72,7 @@ export default function RFQDetailsPage() {
             `
             *,
             buyer:profiles!rfqs_buyer_id_fkey(company_name, name),
+            company:companies!rfqs_company_id_fkey(name),
             rfq_offers(count)
           `,
           )
@@ -124,7 +125,7 @@ export default function RFQDetailsPage() {
             id: data.id,
             buyer_id: data.buyer_id, // Needed for inserting offer
             company:
-              data.buyer?.company_name || data.buyer?.name || "Unknown Buyer",
+              data.company?.name || data.buyer?.company_name || data.buyer?.name || "Unknown Buyer",
             material: materialName,
             quantity: `${data.requested_weight}kg`,
             price: data.target_price || 0,

@@ -331,7 +331,7 @@ export default function ImpactAnalytics() {
 
   if (isLoading) {
     return (
-      <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#F8F8FF] dark:bg-slate-800">
+      <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-50 dark:bg-slate-800">
         <div className="flex flex-col items-center gap-4">
           <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
           <p className="text-xs font-semibold text-slate-400 capitalize tracking-widest">

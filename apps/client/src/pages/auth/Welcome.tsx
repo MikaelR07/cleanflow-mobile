@@ -55,7 +55,7 @@ export default function Welcome() {
                 <Store className="w-7 h-7" />
               </div>
               <div>
-                <p className="font-semibold text-slate-900 dark:text-white text-base">Waste-as-Asset Marketplace</p>
+                <p className="font-semibold text-slate-900 dark:text-white text-base">Waste-as-Asset KlinMarket</p>
                 <p className="text-xs text-slate-500 dark:text-slate-400 font-medium leading-relaxed">Don't just discard—sell. Whether you're a household or a professional picker, your collections are high-value assets for our Weaver network.</p>
               </div>
             </div>

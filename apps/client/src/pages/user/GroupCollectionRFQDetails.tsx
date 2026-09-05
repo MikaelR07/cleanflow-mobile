@@ -72,6 +72,7 @@ export default function GroupCollectionRFQDetails() {
         .select(`
           *,
           buyer:profiles!rfqs_buyer_id_fkey(company_name, name, avatar_url),
+          company:companies!rfqs_company_id_fkey(name),
           rfq_offers(count)
         `)
         .eq('id', id)
@@ -102,7 +103,7 @@ export default function GroupCollectionRFQDetails() {
         setRfq({
           id: data.id,
           buyer_id: data.buyer_id,
-          company: data.buyer?.company_name || data.buyer?.name || 'Unknown Buyer',
+          company: data.company?.name || data.buyer?.company_name || data.buyer?.name || 'Unknown Buyer',
           buyerAvatar: data.buyer?.avatar_url || null,
           material: materialName,
           quantity: `${data.requested_weight}kg`,
@@ -312,7 +313,7 @@ export default function GroupCollectionRFQDetails() {
           <div className="flex items-start justify-between">
             <div>
               <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">Material</p>
-              <h2 className="text-[16px] font-bold text-indigo-700 dark:text-white capitalize leading-tight">{rfq.material}</h2>
+              <h2 className="text-[14px] font-semibold text-indigo-700 dark:text-white capitalize leading-tight">{rfq.material}</h2>
             </div>
             <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-50 dark:bg-emerald-500/10 text-emerald-500 border border-emerald-200 dark:border-emerald-500/20">
               <CheckCircle2 className="w-3.5 h-3.5" />
@@ -327,7 +328,7 @@ export default function GroupCollectionRFQDetails() {
               <User className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
               <div>
                 <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Buyer</p>
-                <p className="text-xs font-black text-slate-900 dark:text-white capitalize">{rfq.company}</p>
+                <p className="text-xs font-semibold text-slate-900 dark:text-white capitalize">{rfq.company}</p>
               </div>
             </div>
 
@@ -335,7 +336,7 @@ export default function GroupCollectionRFQDetails() {
               <Scale className="w-4 h-4 text-indigo-500 shrink-0 mt-0.5" />
               <div>
                 <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Total Needed</p>
-                <p className="text-xs font-black text-slate-900 dark:text-white capitalize">{rfq.quantity}</p>
+                <p className="text-xs font-semibold text-slate-900 dark:text-white capitalize">{rfq.quantity}</p>
               </div>
             </div>
 
@@ -343,7 +344,7 @@ export default function GroupCollectionRFQDetails() {
               <Coins className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
               <div>
                 <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Target Price</p>
-                <p className="text-xs font-black text-emerald-600 leading-none">KSh {rfq.price}/kg</p>
+                <p className="text-xs font-semibold text-emerald-600 leading-none">KSh {rfq.price}/kg</p>
               </div>
             </div>
 
@@ -351,7 +352,7 @@ export default function GroupCollectionRFQDetails() {
               <Truck className="w-4 h-4 text-indigo-500 shrink-0 mt-0.5" />
               <div>
                 <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Delivery</p>
-                <p className="text-xs font-black text-slate-900 dark:text-white capitalize">{rfq.delivery}</p>
+                <p className="text-xs font-semibold text-slate-900 dark:text-white capitalize">{rfq.delivery}</p>
               </div>
             </div>
 
@@ -359,7 +360,7 @@ export default function GroupCollectionRFQDetails() {
               <Clock className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
               <div>
                 <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Deadline</p>
-                <span className="text-xs font-black text-rose-500 uppercase">{rfq.deadline === 'Open' ? 'No Deadline' : `${rfq.deadline} Left`}</span>
+                <span className="text-xs font-semibold text-rose-500 uppercase">{rfq.deadline === 'Open' ? 'No Deadline' : `${rfq.deadline} Left`}</span>
               </div>
             </div>
 
@@ -367,7 +368,7 @@ export default function GroupCollectionRFQDetails() {
               <MapPin className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
               <div>
                 <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Location</p>
-                <p className="text-xs font-black text-slate-900 dark:text-white capitalize">{rfq.region}</p>
+                <p className="text-xs font-semibold text-slate-900 dark:text-white capitalize">{rfq.region}</p>
               </div>
             </div>
           </div>

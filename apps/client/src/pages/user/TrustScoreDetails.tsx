@@ -88,7 +88,7 @@ export default function TrustScoreDetails() {
   const score = getCalculatedScore(receivedOffers as any, profile);
   const milestones = [
     { label: 'Verified Pro', status: profile?.isVerified ? 'Completed' : 'Pending', icon: ShieldCheck, desc: 'Complete identity verification to unlock higher loan limits.' },
-    { label: 'Century Club', status: stats.tradesCompleted >= 100 ? 'Completed' : 'Pending', icon: Award, desc: 'Complete 100 successful trades on the Klinflow marketplace.' },
+    { label: 'Century Club', status: stats.tradesCompleted >= 100 ? 'Completed' : 'Pending', icon: Award, desc: 'Complete 100 successful trades on the KlinMarket.' },
     { label: 'Bulk Master', status: stats.totalWeight >= 1000 ? 'Completed' : 'Pending', icon: Scale, desc: 'Successfully trade over 1,000kg of recyclable materials.' },
   ];
 
